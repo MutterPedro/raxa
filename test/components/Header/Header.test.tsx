@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { create } from 'react-test-renderer';
 
 import Header from '../../../src/components/header/Header';
 
@@ -8,9 +8,9 @@ describe('Header.tsx', function () {
       expect(Header).not.toBeFalsy();
     });
 
-    it('should render correctly', function () {
-      const result = render(<Header />);
-      
+    it('should render correctly #sanity', function () {
+      const tree = create(<Header />).toJSON();
+      expect(tree).toMatchSnapshot();
     });
   });
 });

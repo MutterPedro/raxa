@@ -4,11 +4,9 @@ const config: Config = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   setupFiles: ['./test/setup.ts'],
-  testMatch: ['./test/?(*.)+(test).ts?(x)'],
-  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   verbose: true,
   collectCoverage: true,
-  collectCoverageFrom: ['src/**/*.ts'],
+  collectCoverageFrom: ['src/**/*.ts(x)?'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'html'],
   coverageThreshold: {
@@ -23,8 +21,7 @@ const config: Config = {
   maxWorkers: 1,
   maxConcurrency: 1,
   testRunner: 'jest-circus/runner',
-  testResultsProcessor: 'jest-sonar-reporter',
-  reporters: ['default', 'jest-sonar'],
+  reporters: ['default'],
 };
 
 export default config;
