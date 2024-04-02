@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NewExpenseJumboButton.tsx Sanity tests should render correctly #sanity 1`] = `
+<button
+  className="bg-primary text-secondary-color align-middle arvo-bold text-center rounded-full max-h-36 text-4xl px-24 py-7"
+  type="button"
+>
+  + Nova Conta
+</button>
+`;

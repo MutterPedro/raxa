@@ -17,11 +17,8 @@
   -moz-osx-font-smoothing: grayscale;
 
   /*main colors variables*/
-  --primary-color: #640097;
-  --secondary-color: #ff9574;
-  --primary-color-light: #8600ca;
-  --third-color: #005b61;
-  --third-color-dark: #002b2e;
+  --primary-color: #005b61;
+  --secondary-color: #c1f2f6;
 }
 
 .bg-primary {
