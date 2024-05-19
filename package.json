@@ -16,6 +16,8 @@
     "test:watch": "npm run test -- --watch --testNamePattern='#unit|#sanity'"
   },
   "dependencies": {
+    "dexie": "^4.0.4",
+    "nanoid": "^5.0.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
