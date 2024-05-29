@@ -13,7 +13,8 @@
     "prepare": "husky",
     "test": "jest",
     "test:coverage": "npm run test -- --collectCoverage",
-    "test:watch": "npm run test -- --watch --testNamePattern='#unit|#sanity'"
+    "test:watch": "npm run test -- --watch --testNamePattern='#unit|#sanity'",
+    "test:integration": "npx playwright test"
   },
   "dependencies": {
     "dexie": "^4.0.4",
@@ -23,15 +24,18 @@
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
+    "@playwright/test": "^1.44.1",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.1",
     "@types/jest": "^29.5.12",
+    "@types/node": "^20.12.12",
     "@types/react": "^18.2.56",
     "@types/react-dom": "^18.2.19",
     "@types/react-test-renderer": "^18.0.7",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
     "@vitejs/plugin-react": "^4.2.1",
+    "casual": "^1.6.2",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",

@@ -21,6 +21,7 @@ const config: Config = {
   maxConcurrency: 1,
   testRunner: 'jest-circus/runner',
   reporters: ['default'],
+  modulePathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/test/integration'],
 };
 
 export default config;

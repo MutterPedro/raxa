@@ -14,12 +14,12 @@ export default class Bill extends BaseEntity<IBill> {
     protected readonly db: DBConnection<IBill>,
     protected readonly idGenerator: IDGenerator,
   ) {
-    super(db, idGenerator, 'bill', ['name', 'amount', 'date', 'owner']);
+    super(db, idGenerator, 'bill');
   }
 
   toPlainObject(): IBill {
     return {
-      id: 'my-super-complex-id-3',
+      id: this.id,
       name: 'test',
       amount: 100,
       date: new Date(),
