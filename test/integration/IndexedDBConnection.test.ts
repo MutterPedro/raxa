@@ -1,29 +1,31 @@
 import { test, expect } from '@playwright/test';
 
-import { IndexedDBConnection } from '../../src/infra/DBConnection';
+// import { IndexedDBConnection } from '../../src/infra/DBConnection';
 
 test.describe('IndexedDBConnection.ts', function () {
   test('it should add a new entity to IndexedDB', async ({ page }) => {
-    try {
-      const connEvalHandle = await page.evaluateHandle(`
-        window.conn = new IndexedDBConnection('test');
-      `);
+    await page.goto('http://0.0.0.0:5173/');
 
-      await page.evaluate(async (evalHandle) => {
-        const conn = evalHandle as IndexedDBConnection<unknown>;
+    const dbs = await page.evaluate(async () => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-ignore
+        const conn = window.conn;
+        console.log(conn);
+        conn.setUp('Test');
 
-        conn.add({
+        await conn.add({
           id: '1',
           name: 'test',
         });
 
         const dbs = await window.indexedDB.databases();
+        return dbs;
+      } catch (error: unknown) {
+        return error;
+      }
+    });
 
-        expect(dbs[0].name).toBe('test');
-      }, connEvalHandle);
-    } catch (e: unknown) {
-      console.error(e);
-      test.fail();
-    }
+    expect(dbs[0].name).toBe('test');
   });
 });
