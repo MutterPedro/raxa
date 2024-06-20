@@ -1,25 +1,22 @@
 import Dexie, { Table } from 'dexie';
 
 export interface DBConnection<T> {
-  setUp(tableName: string, version?: number): this;
   put(data: T): Promise<T>;
   add(data: T): Promise<T>;
   getById(id: string): Promise<T | void>;
 }
 
 export class IndexedDBConnection<T> implements DBConnection<T> {
-  private readonly db: Dexie;
   private table?: Table<T, string>;
 
-  constructor(private readonly dbName: string) {
-    this.db = new Dexie(this.dbName);
-  }
-
-  setUp(tableName: string, version: number = 1): this {
-    this.db.version(version).stores({ [tableName]: '' });
+  constructor(
+    private readonly db: Dexie,
+    tableName: string,
+    fields: Array<keyof T> = [],
+    version: number = 1,
+  ) {
+    this.db.version(version).stores({ [tableName]: fields.join(',') });
     this.table = this.db.table(tableName);
-
-    return this;
   }
 
   add(data: T): Promise<T> {
