@@ -1,28 +1,37 @@
-import { DBConnection } from '../../infra/DBConnection';
-import { IDGenerator } from '../../infra/IDGenerator';
+import { DBConnection, IndexedDBConnection } from '../../infra/DBConnection';
 import BaseEntity from './BaseEntity';
 
-interface IBill {
-  id: string;
+export interface BillProps {
   name: string;
   amount: number;
-  date: Date;
+  date: string;
+  ownerId: number;
 }
 
-export default class Bill extends BaseEntity<IBill> {
-  constructor(
-    protected readonly db: DBConnection<IBill>,
-    protected readonly idGenerator: IDGenerator,
-  ) {
-    super(db, idGenerator, 'bill');
+export default class Bill extends BaseEntity<BillProps> {
+  name: string = '';
+  amount: number = 0;
+  date: Date = new Date();
+  ownerId: number = 0;
+
+  private constructor(db: DBConnection<BillProps>) {
+    super(db);
   }
 
-  toPlainObject(): IBill {
+  toPlainObject(): BillProps {
     return {
-      id: this.id,
-      name: 'test',
-      amount: 100,
-      date: new Date(),
+      name: this.name,
+      amount: this.amount,
+      date: this.date.toISOString(),
+      ownerId: this.ownerId,
     };
+  }
+
+  static build(): Bill {
+    return new Bill(new IndexedDBConnection(window.conn, 'bill'));
+  }
+
+  static buildNullable(db: DBConnection<BillProps>): Bill {
+    return new Bill(db);
   }
 }
