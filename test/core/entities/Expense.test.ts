@@ -14,27 +14,27 @@ describe('Expense.ts', function () {
     it('should be saved respecting the fields defined at the migration #unit', async function () {
       const mockedDbConn = new MemoryDBConnection<ExpenseProps>();
 
-      const bill = Expense.buildNullable(mockedDbConn);
-      bill.name = 'Chicken Pizza';
-      bill.amount = 100;
-      bill.date = new Date();
-      bill.payerId = 1337;
-      bill.participantIds = [123, 321, 1337];
-      await bill.save();
+      const expense = Expense.buildNullable(mockedDbConn);
+      expense.name = 'Chicken Pizza';
+      expense.amount = 100;
+      expense.date = new Date();
+      expense.payerId = 1337;
+      expense.participantIds = [123, 321, 1337];
+      await expense.save();
 
-      const bill2 = Expense.buildNullable(mockedDbConn);
-      bill2.name = 'Juice';
-      bill2.amount = 20;
-      bill2.date = new Date();
-      bill2.payerId = 123;
-      bill2.participantIds = [123, 321];
-      await bill2.save();
+      const expense2 = Expense.buildNullable(mockedDbConn);
+      expense2.name = 'Juice';
+      expense2.amount = 20;
+      expense2.date = new Date();
+      expense2.payerId = 123;
+      expense2.participantIds = [123, 321];
+      await expense2.save();
 
       expect(mockedDbConn.items).toHaveLength(2);
-      expect(mockedDbConn.items[0].name).toBe(bill.name);
-      expect(mockedDbConn.items[1].name).toBe(bill2.name);
-      expect(mockedDbConn.items[0].date).toContain(bill.date.toISOString());
-      expect(mockedDbConn.items[1].date).toContain(bill2.date.toISOString());
+      expect(mockedDbConn.items[0].name).toBe(expense.name);
+      expect(mockedDbConn.items[1].name).toBe(expense2.name);
+      expect(mockedDbConn.items[0].date).toContain(expense.date.toISOString());
+      expect(mockedDbConn.items[1].date).toContain(expense2.date.toISOString());
     });
   });
 });
