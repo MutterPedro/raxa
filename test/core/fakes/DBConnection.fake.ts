@@ -16,7 +16,7 @@ export class MemoryDBConnection<T extends { id: string } = { id: string }> imple
     return Promise.resolve(this.data.find((d) => d.id === id));
   }
 
-  async put(data: T): Promise<T> {
+  async update(data: T): Promise<T> {
     const idx = this.data.findIndex((d) => d.id === data.id);
 
     if (idx === -1) {

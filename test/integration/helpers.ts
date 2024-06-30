@@ -6,6 +6,6 @@ export async function testWithinBrowser<T = unknown>(page: Page, t: () => Promis
 
   const [item, error] = await page.evaluate(t);
 
-  expect(error).toBeFalsy();
+  expect(error).toBeNull();
   return item!;
 }

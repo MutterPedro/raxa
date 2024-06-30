@@ -21,7 +21,7 @@ export default abstract class BaseEntity<T> {
       this.id = this.id || this.idGenerator.generate();
       await this.db.add(data as T);
     } else {
-      await this.db.put(data as T);
+      await this.db.update(data as T);
     }
   }
 }

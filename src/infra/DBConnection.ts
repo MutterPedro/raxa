@@ -1,61 +1,49 @@
-import Dexie, { Table } from 'dexie';
+import Dexie, { Table, UpdateSpec } from 'dexie';
+import type { WithId } from '../@types/utils';
 
 export interface DBConnection<T> {
-  put(data: T): Promise<T>;
+  update(id: number, data: Partial<T>): Promise<number>;
   add(data: T): Promise<T>;
-  getById(id: string): Promise<T | void>;
+  getById(id: number): Promise<T | void>;
 }
 
-export class IndexedDBConnection<T> implements DBConnection<T> {
-  private table?: Table<T, string>;
+export class IndexedDBConnection<T extends object> implements DBConnection<T> {
+  private table?: Table<T, number>;
 
   constructor(
     private readonly db: Dexie,
     tableName: string,
-    fields: Array<keyof T> = [],
-    version: number = 1,
   ) {
-    this.db.version(version).stores({ [tableName]: fields.join(',') });
     this.table = this.db.table(tableName);
   }
 
-  add(data: T): Promise<T> {
+  async add(data: T): Promise<WithId<T>> {
     if (!this.table) {
-      return Promise.reject(new Error('Table not setup'));
+      throw new Error('Table not setup');
     }
 
-    return new Promise((resolve, reject) => {
-      this.db.transaction('rw', this.table!, () => {
-        this.table!.add(data)
-          .then((id) => resolve({ ...data, id }))
-          .catch(reject);
-      });
-    });
+    const id = await this.table!.add(data);
+
+    return { ...data, id };
   }
 
-  put(data: T): Promise<T> {
+  async update(id: number, data: Partial<T>): Promise<number> {
     if (!this.table) {
-      return Promise.reject(new Error('Table not setup'));
+      throw new Error('Table not setup');
     }
 
-    return new Promise((resolve, reject) => {
-      this.db.transaction('rw', this.table!, () => {
-        this.table!.put(data)
-          .then((id) => resolve({ ...data, id }))
-          .catch(reject);
-      });
-    });
+    const rows = await this.table!.update(id, data as UpdateSpec<T>);
+
+    return rows;
   }
 
-  async getById(id: string): Promise<T | void> {
+  async getById(id: number): Promise<WithId<T> | void> {
     if (!this.table) {
-      return Promise.reject(new Error('Table not setup'));
+      throw new Error('Table not setup');
     }
 
-    return new Promise((resolve, reject) => {
-      this.table!.get(id)
-        .then((data) => resolve(data))
-        .catch(reject);
-    });
+    const entity = await this.table!.get(id);
+
+    return entity as WithId<T>;
   }
 }

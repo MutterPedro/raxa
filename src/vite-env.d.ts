@@ -1,11 +1,12 @@
 /// <reference types="vite/client" />
 
 import Dexie from 'dexie';
+import { IndexedDBConnection } from './infra/DBConnection';
 
 declare global {
   interface Window {
     conn: Dexie;
-    nullable_table: IndexedDBConnection<{ id: string; name: string }>;
-    doesDbExists: (dbName: string, version: number = 10) => Promise<boolean>;
+    doesDbExists(dbName: string, version: number = 10): Promise<boolean>;
+    createTable<T extends object>(name: string): IndexedDBConnection<T>;
   }
 }
