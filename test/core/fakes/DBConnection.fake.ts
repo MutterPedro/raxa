@@ -1,43 +1,28 @@
-import { word } from 'casual';
+import { WithId } from '../../../src/@types/utils';
 import { DBConnection } from '../../../src/infra/DBConnection';
 
-export class MemoryDBConnection<T extends { id: string } = { id: string }> implements DBConnection<T> {
-  public data: T[] = [];
-  public tableName: string = '';
-  public fieldsName: string[] = [];
-  public version?: number = 1;
+export class MemoryDBConnection<T> implements DBConnection<T> {
+  public items: T[] = [];
 
-  constructor(data: T[] = []) {
-    this.data = data;
-    this.tableName = word;
+  async update(id: number, data: Partial<T>): Promise<number> {
+    this.items[id - 1] = {
+      ...this.items[id - 1],
+      ...data,
+      id,
+    };
+
+    return 1;
   }
 
-  getById(id: string): Promise<void | T> {
-    return Promise.resolve(this.data.find((d) => d.id === id));
+  async add(data: T): Promise<WithId<T>> {
+    this.items.push(data);
+    return {
+      id: this.items.length,
+      ...data,
+    };
   }
 
-  async update(data: T): Promise<T> {
-    const idx = this.data.findIndex((d) => d.id === data.id);
-
-    if (idx === -1) {
-      throw new Error('Not found');
-    }
-
-    this.data[idx] = { ...this.data[idx], ...data };
-
-    return data;
-  }
-
-  async add(data: T): Promise<T> {
-    this.data.push(data);
-
-    return data;
-  }
-
-  setUp(tableName: string, version?: number): this {
-    this.tableName = tableName;
-    this.version = version;
-
-    return this;
+  async getById(id: number): Promise<void | WithId<T>> {
+    return { ...this.items[id - 1], id };
   }
 }

@@ -34,7 +34,7 @@ test.describe('IndexedDBConnection.ts', function () {
         const billTable = window.createTable<{ name: string; owner: number }>('bill');
         const entity = await billTable.add({
           name: 'test',
-          owner: '15',
+          owner: 15,
         });
 
         const rows = await billTable.update(entity.id, { name: 'test2' });

@@ -1,57 +1,72 @@
-import { word, string as casual_string } from 'casual';
 import BaseEntity from '../../../src/core/entities/BaseEntity';
 import { MemoryDBConnection } from '../fakes/DBConnection.fake';
-import { FixedIDGenerator } from '../fakes/IDGenerator.fake';
 
-class AClass extends BaseEntity<unknown> {
-  public id: string = '';
-  public foo: string = '';
+interface TestEntityProps {
+  name: string;
+  age: number;
+}
+class TestEntity extends BaseEntity<TestEntityProps> {
+  public name: string = '';
+  public age: number = 0;
 
-  static build(): AClass {
-    const instance = new AClass(new MemoryDBConnection(), new FixedIDGenerator(), word);
-    instance.id = casual_string.replace(/ /g, '-');
-
-    return instance;
-  }
-
-  toPlainObject(): unknown {
-    return { id: this.id, foo: this.foo };
-  }
-
-  getDbConnection(): MemoryDBConnection {
-    return this.db as MemoryDBConnection;
+  protected toPlainObject(): TestEntityProps {
+    return {
+      name: this.name,
+      age: this.age,
+    };
   }
 }
 
 describe('BaseEntity.ts', function () {
-  describe('Sanity tests', function () {
-    it('should exists #sanity', function () {
-      expect(BaseEntity).toBeInstanceOf(Function);
-    });
-  });
-
   describe('Unit tests', function () {
-    it("should create a new entity when don't exists yet #unit", async function () {
-      const entity = AClass.build();
-      expect(entity.getDbConnection().data).toHaveLength(0);
+    it('should be persist on the database when save() successfully #unit', async function () {
+      const mockedDbConnection = new MemoryDBConnection<TestEntityProps>();
+      const testEntity = new TestEntity(mockedDbConnection);
+      testEntity.name = 'John';
+      testEntity.age = 30;
 
-      await entity.save();
-      expect(entity.getDbConnection().data).toHaveLength(1);
-      expect(entity.getDbConnection().data[0].id).toEqual(entity.id);
+      expect(testEntity).toBeInstanceOf(BaseEntity);
+
+      const result = await testEntity.save();
+      expect(result).toBe(true);
+      expect(mockedDbConnection.items).toHaveLength(1);
+      expect(mockedDbConnection.items[0].age).toBe(testEntity.age);
+      expect(mockedDbConnection.items[0].name).toBe(testEntity.name);
+      expect(testEntity.id).toBeDefined();
+      expect(testEntity.id).toBeGreaterThan(0);
+
+      const testEntity2 = new TestEntity(mockedDbConnection);
+      testEntity2.name = 'Mary';
+      testEntity2.age = 25;
+      const result2 = await testEntity2.save();
+      expect(result2).toBe(true);
+
+      expect(mockedDbConnection.items).toHaveLength(2);
+      expect(mockedDbConnection.items[testEntity2.id - 1].age).toBe(testEntity2.age);
+      expect(mockedDbConnection.items[testEntity2.id - 1].name).toBe(testEntity2.name);
     });
 
-    it('should update an existing entity when exists #unit', async function () {
-      const entity = AClass.build();
-      await entity.save();
+    it('should be update the instance on the database when it already exists and save() successfully #unit', async function () {
+      const mockedDbConnection = new MemoryDBConnection<TestEntityProps>();
+      const testEntity = new TestEntity(mockedDbConnection);
+      testEntity.name = 'John';
+      testEntity.age = 30;
 
-      expect(entity.getDbConnection().data).toHaveLength(1);
+      let result = await testEntity.save();
+      expect(result).toBe(true);
 
-      entity.foo = 'bar';
-      await entity.save();
+      testEntity.name = 'Albert';
+      result = await testEntity.save();
+      expect(result).toBe(true);
 
-      expect(entity.getDbConnection().data).toHaveLength(1);
-      expect((entity.getDbConnection().data[0] as AClass).foo).toEqual(entity.foo);
-      expect(entity.getDbConnection().data[0].id).toEqual(entity.id);
+      expect(mockedDbConnection.items).toHaveLength(1);
+      expect(mockedDbConnection.items[0].age).toBe(30);
+      expect(mockedDbConnection.items[0].name).toBe('Albert');
+
+      testEntity.age = 31;
+      result = await testEntity.save();
+      expect(result).toBe(true);
+      expect(mockedDbConnection.items[0].age).toBe(31);
     });
   });
 });

@@ -3,8 +3,8 @@ import type { WithId } from '../@types/utils';
 
 export interface DBConnection<T> {
   update(id: number, data: Partial<T>): Promise<number>;
-  add(data: T): Promise<T>;
-  getById(id: number): Promise<T | void>;
+  add(data: T): Promise<WithId<T>>;
+  getById(id: number): Promise<WithId<T> | void>;
 }
 
 export class IndexedDBConnection<T extends object> implements DBConnection<T> {
