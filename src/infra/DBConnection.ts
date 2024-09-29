@@ -1,7 +1,7 @@
 import Dexie, { Table, UpdateSpec } from 'dexie';
 import type { WithId } from '../@types/utils';
 import { inject, injectable } from 'inversify';
-import { TYPES } from './types';
+import { TYPES } from './di';
 
 export interface DBConnection {
   update(id: number, data: object): Promise<number>;

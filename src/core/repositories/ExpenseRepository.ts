@@ -1,7 +1,7 @@
 import { inject } from 'inversify';
 import { ExpenseProps } from '../entities';
 import { BaseRepository } from './BaseRepository';
-import { TYPES } from '../../infra/types';
+import { TYPES } from '../../infra/di';
 import { DBConnection } from '../../infra/DBConnection';
 import Expense from '../entities/Expense';
 

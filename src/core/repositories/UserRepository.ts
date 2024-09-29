@@ -1,7 +1,7 @@
 import { inject } from 'inversify';
 import { UserProps } from '../entities';
 import { BaseRepository } from './BaseRepository';
-import { TYPES } from '../../infra/types';
+import { TYPES } from '../../infra/di';
 import { DBConnection } from '../../infra/DBConnection';
 import User from '../entities/User';
 

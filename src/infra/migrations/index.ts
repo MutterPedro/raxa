@@ -1,13 +1,11 @@
 import type Dexie from 'dexie';
-import { TABLES } from '../core/utils/decorators';
+import { TABLES } from '../../core/utils/decorators';
 
-import '../core/entities';
+import '../../core/entities';
 
 export function applyMigrations(db: Dexie) {
   const tables = Reflect.getMetadata(TABLES, globalThis) || {};
   const versions = new Set<number>();
-
-  console.info(`Applying Migrations...`, tables);
 
   for (const tableVersions of Object.values<Record<number, string[]>>(tables)) {
     Object.keys(tableVersions).forEach((version) => versions.add(Number(version)));
@@ -29,7 +27,6 @@ export function applyMigrations(db: Dexie) {
   }
 
   Object.entries(storesVersions).forEach(([version, stores]) => {
-    console.info(`Registering version ${version}`, stores);
     db.version(Number(version)).stores(stores);
   });
 }

@@ -32,8 +32,4 @@ export default class Expense {
 
   @field(1, 'date')
   date: Date = new Date();
-
-  static build(): Expense {
-    return new Expense();
-  }
 }

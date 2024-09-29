@@ -24,8 +24,4 @@ export default class Bill {
 
   @field(1, 'ownerId')
   ownerId: number = 0;
-
-  static build(): Bill {
-    return new Bill();
-  }
 }

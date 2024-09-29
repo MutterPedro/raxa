@@ -1,11 +1,11 @@
 import type Dexie from 'dexie';
 
 import { IndexedDBConnection } from './DBConnection.ts';
-import { applyMigrations } from '../migrations/index.ts';
+import { applyMigrations } from './migrations';
 
 import '../inversify.config';
 import { myContainer } from '../inversify.config';
-import { TYPES } from './types.ts';
+import { TYPES } from './di.ts';
 
 export function init(): void {
   const conn = myContainer.get<Dexie>(TYPES.Dexie);
