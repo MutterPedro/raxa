@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { DBConnection } from '../../infra/DBConnection';
 
-import { TABLE_FIELDS } from '../utils/annotations';
+import { TABLE_FIELDS } from '../utils/decorators';
 import { WithId } from '../../@types/utils';
 
 interface BaseEntity {

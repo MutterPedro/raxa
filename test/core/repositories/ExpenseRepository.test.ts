@@ -1,16 +1,14 @@
+import { expect } from '@jest/globals';
+
 import Expense, { ExpenseProps } from '../../../src/core/entities/Expense';
 import { MemoryDBConnection } from '../fakes/DBConnection.fake';
-import { TABLE_NAME } from '../../../src/core/utils/annotations/index';
 import { ExpenseRepository } from '../../../src/core/repositories/ExpenseRepository';
 
 describe('Expense.ts', function () {
   describe('Unit test', function () {
     it('should be an entity #unit', function () {
       const expense = new Expense();
-      const tableName = Reflect.getMetadata(TABLE_NAME, expense.constructor);
-
-      expect(tableName).toBeDefined();
-      expect(tableName.length).toBeGreaterThan(0);
+      expect(expense).toBeEntity();
     });
 
     it('should be saved respecting the fields defined at the migration #unit', async function () {

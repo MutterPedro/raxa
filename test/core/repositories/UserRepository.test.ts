@@ -1,16 +1,14 @@
+import { expect } from '@jest/globals';
+
 import User, { UserProps } from '../../../src/core/entities/User';
 import { UserRepository } from '../../../src/core/repositories/UserRepository';
-import { TABLE_NAME } from '../../../src/core/utils/annotations';
 import { MemoryDBConnection } from '../fakes/DBConnection.fake';
 
 describe('User.ts', function () {
   describe('Unit tests', function () {
     it('should be an entity #unit', function () {
       const user = new User();
-      const tableName = Reflect.getMetadata(TABLE_NAME, user.constructor);
-
-      expect(tableName).toBeDefined();
-      expect(tableName.length).toBeGreaterThan(0);
+      expect(user).toBeEntity();
     });
 
     it('should be saved respecting the fields defined at the migration #unit', async function () {

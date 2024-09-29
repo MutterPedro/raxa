@@ -1,5 +1,5 @@
 import { BaseRepository } from '../../../src/core/repositories/BaseRepository';
-import { auto_increment_field, field, table } from '../../../src/core/utils/annotations';
+import { auto_increment_field, field, table } from '../../../src/core/utils/decorators';
 import { MemoryDBConnection } from '../fakes/DBConnection.fake';
 
 interface TestEntityProps {

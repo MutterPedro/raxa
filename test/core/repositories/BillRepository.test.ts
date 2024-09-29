@@ -1,16 +1,14 @@
+import { expect } from '@jest/globals';
+
 import Bill, { BillProps } from '../../../src/core/entities/Bill';
 import { BillRepository } from '../../../src/core/repositories/BillRepository';
-import { TABLE_NAME } from '../../../src/core/utils/annotations';
 import { MemoryDBConnection } from '../fakes/DBConnection.fake';
 
 describe('Bill.ts', function () {
   describe('Unit test', function () {
     it('should be an entity #unit', function () {
       const bill = new Bill();
-      const tableName = Reflect.getMetadata(TABLE_NAME, bill.constructor);
-
-      expect(tableName).toBeDefined();
-      expect(tableName.length).toBeGreaterThan(0);
+      expect(bill).toBeEntity();
     });
 
     it('should be saved respecting the fields defined at the migration #unit', async function () {

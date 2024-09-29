@@ -1,4 +1,4 @@
-import { auto_increment_field, field, table } from '../utils/annotations';
+import { auto_increment_field, field, table } from '../utils/decorators';
 
 export interface UserProps {
   id: number;

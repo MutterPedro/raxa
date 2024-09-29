@@ -1,5 +1,5 @@
 import type Dexie from 'dexie';
-import { TABLES } from '../core/utils/annotations';
+import { TABLES } from '../core/utils/decorators';
 
 import '../core/entities';
 

@@ -2,7 +2,7 @@ import { Container, interfaces } from 'inversify';
 import { DBConnection, IndexedDBConnection } from './infra/DBConnection';
 import { TYPES } from './infra/types';
 import Dexie from 'dexie';
-import { TABLE_NAME } from './core/utils/annotations';
+import { TABLE_NAME } from './core/utils/decorators';
 
 const myContainer = new Container();
 
