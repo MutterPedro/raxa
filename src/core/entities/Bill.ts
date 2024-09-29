@@ -1,37 +1,31 @@
-import { DBConnection, IndexedDBConnection } from '../../infra/DBConnection';
-import BaseEntity from './BaseEntity';
+import { auto_increment_field, field, table } from '../utils/annotations';
 
 export interface BillProps {
+  id: number;
   name: string;
   amount: number;
-  date: string;
+  date: Date;
   ownerId: number;
 }
 
-export default class Bill extends BaseEntity<BillProps> {
+@table('bill')
+export default class Bill {
+  @auto_increment_field(1, 'id')
+  id: number = 0;
+
+  @field(1, 'name')
   name: string = '';
+
+  @field(1, 'amount')
   amount: number = 0;
+
+  @field(1, 'date')
   date: Date = new Date();
+
+  @field(1, 'ownerId')
   ownerId: number = 0;
 
-  private constructor(db: DBConnection<BillProps>) {
-    super(db);
-  }
-
-  toPlainObject(): BillProps {
-    return {
-      name: this.name,
-      amount: this.amount,
-      date: this.date.toISOString(),
-      ownerId: this.ownerId,
-    };
-  }
-
   static build(): Bill {
-    return new Bill(new IndexedDBConnection(window.conn, 'bill'));
-  }
-
-  static buildNullable(db: DBConnection<BillProps>): Bill {
-    return new Bill(db);
+    return new Bill();
   }
 }

@@ -1,0 +1,12 @@
+import { inject } from 'inversify';
+import { ExpenseProps } from '../entities';
+import { BaseRepository } from './BaseRepository';
+import { TYPES } from '../../infra/types';
+import { DBConnection } from '../../infra/DBConnection';
+import Expense from '../entities/Expense';
+
+export class ExpenseRepository extends BaseRepository<ExpenseProps> {
+  constructor(@inject(TYPES.DBConnection) factory: (clazz: object) => DBConnection) {
+    super(factory(Expense));
+  }
+}

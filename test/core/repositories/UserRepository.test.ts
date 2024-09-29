@@ -1,33 +1,35 @@
-import BaseEntity from '../../../src/core/entities/BaseEntity';
 import User, { UserProps } from '../../../src/core/entities/User';
+import { UserRepository } from '../../../src/core/repositories/UserRepository';
+import { TABLE_NAME } from '../../../src/core/utils/annotations';
 import { MemoryDBConnection } from '../fakes/DBConnection.fake';
 
 describe('User.ts', function () {
   describe('Unit tests', function () {
     it('should be an entity #unit', function () {
-      const mockedDbConn = new MemoryDBConnection<UserProps>();
+      const user = new User();
+      const tableName = Reflect.getMetadata(TABLE_NAME, user.constructor);
 
-      const user = User.buildNullable(mockedDbConn);
-
-      expect(user).toBeInstanceOf(BaseEntity);
+      expect(tableName).toBeDefined();
+      expect(tableName.length).toBeGreaterThan(0);
     });
 
     it('should be saved respecting the fields defined at the migration #unit', async function () {
       const mockedDbConn = new MemoryDBConnection<UserProps>();
+      const repo = new UserRepository(() => mockedDbConn);
 
-      const user = User.buildNullable(mockedDbConn);
+      const user = new User();
       user.name = 'Josnei';
       user.email = 'josnei.silva@email.com';
 
-      await user.save();
+      await repo.save(user);
       expect(mockedDbConn.items[0].name).toBe(user.name);
       expect(mockedDbConn.items[0].email).toBe(user.email);
 
-      const user2 = User.buildNullable(mockedDbConn);
+      const user2 = new User();
       user2.name = 'Jussara';
       user2.email = 'jussara.silva@email.com';
 
-      await user2.save();
+      await repo.save(user2);
       expect(mockedDbConn.items[1].name).toBe(user2.name);
       expect(mockedDbConn.items[1].email).toBe(user2.email);
     });

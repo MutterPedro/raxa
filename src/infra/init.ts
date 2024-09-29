@@ -1,11 +1,15 @@
-import Dexie from 'dexie';
+import type Dexie from 'dexie';
+
 import { IndexedDBConnection } from './DBConnection.ts';
 import { applyMigrations } from '../migrations/index.ts';
 
-window.conn = new Dexie('raxa');
+import '../inversify.config';
+import { myContainer } from '../inversify.config';
+import { TYPES } from './types.ts';
 
 export function init(): void {
-  applyMigrations(window.conn);
+  const conn = myContainer.get<Dexie>(TYPES.Dexie);
+  applyMigrations(conn);
 
   // infra test helpers
   window.createTable = createTable;
@@ -37,5 +41,5 @@ async function doesDbExists(dbName: string, version?: number): Promise<boolean> 
 }
 
 function createTable<T extends object>(name: string): IndexedDBConnection<T> {
-  return new IndexedDBConnection<T>(window.conn, name);
+  return new IndexedDBConnection<T>(myContainer.get<Dexie>(TYPES.Dexie), name);
 }

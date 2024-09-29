@@ -1,31 +1,23 @@
-import { DBConnection, IndexedDBConnection } from '../../infra/DBConnection';
-import BaseEntity from './BaseEntity';
+import { auto_increment_field, field, table } from '../utils/annotations';
 
 export interface UserProps {
+  id: number;
   name: string;
   email: string;
 }
 
-export default class User extends BaseEntity<UserProps> {
+@table('user')
+export default class User {
+  @auto_increment_field(1, 'id')
+  id: number = 0;
+
+  @field(1, 'name')
   name: string = '';
+
+  @field(1, 'email')
   email: string = '';
 
-  private constructor(conn: DBConnection<UserProps>) {
-    super(conn);
-  }
-
-  protected toPlainObject(): UserProps {
-    return {
-      name: this.name,
-      email: this.email,
-    };
-  }
-
   static build(): User {
-    return new User(new IndexedDBConnection(window.conn, 'user'));
-  }
-
-  static buildNullable(conn: DBConnection<UserProps>): User {
-    return new User(conn);
+    return new User();
   }
 }

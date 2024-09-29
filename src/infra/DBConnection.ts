@@ -1,17 +1,20 @@
 import Dexie, { Table, UpdateSpec } from 'dexie';
 import type { WithId } from '../@types/utils';
+import { inject, injectable } from 'inversify';
+import { TYPES } from './types';
 
-export interface DBConnection<T> {
-  update(id: number, data: Partial<T>): Promise<number>;
-  add(data: T): Promise<WithId<T>>;
-  getById(id: number): Promise<WithId<T> | void>;
+export interface DBConnection {
+  update(id: number, data: object): Promise<number>;
+  add(data: object): Promise<WithId<object>>;
+  getById(id: number): Promise<WithId<object> | void>;
 }
 
-export class IndexedDBConnection<T extends object> implements DBConnection<T> {
+@injectable()
+export class IndexedDBConnection<T extends object> implements DBConnection {
   private table?: Table<T, number>;
 
   constructor(
-    private readonly db: Dexie,
+    @inject(TYPES.Dexie) private readonly db: Dexie,
     tableName: string,
   ) {
     this.table = this.db.table(tableName);

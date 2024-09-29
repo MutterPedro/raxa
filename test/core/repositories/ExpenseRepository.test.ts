@@ -1,34 +1,37 @@
-import BaseEntity from '../../../src/core/entities/BaseEntity';
 import Expense, { ExpenseProps } from '../../../src/core/entities/Expense';
 import { MemoryDBConnection } from '../fakes/DBConnection.fake';
+import { TABLE_NAME } from '../../../src/core/utils/annotations/index';
+import { ExpenseRepository } from '../../../src/core/repositories/ExpenseRepository';
 
 describe('Expense.ts', function () {
   describe('Unit test', function () {
     it('should be an entity #unit', function () {
-      const mockedDbConn = new MemoryDBConnection<ExpenseProps>();
-      const expense = Expense.buildNullable(mockedDbConn);
+      const expense = new Expense();
+      const tableName = Reflect.getMetadata(TABLE_NAME, expense.constructor);
 
-      expect(expense).toBeInstanceOf(BaseEntity);
+      expect(tableName).toBeDefined();
+      expect(tableName.length).toBeGreaterThan(0);
     });
 
     it('should be saved respecting the fields defined at the migration #unit', async function () {
       const mockedDbConn = new MemoryDBConnection<ExpenseProps>();
+      const repo = new ExpenseRepository(() => mockedDbConn);
 
-      const expense = Expense.buildNullable(mockedDbConn);
+      const expense = new Expense();
       expense.name = 'Chicken Pizza';
       expense.amount = 100;
       expense.date = new Date();
       expense.payerId = 1337;
       expense.participantIds = [123, 321, 1337];
-      await expense.save();
+      await repo.save(expense);
 
-      const expense2 = Expense.buildNullable(mockedDbConn);
+      const expense2 = new Expense();
       expense2.name = 'Juice';
       expense2.amount = 20;
       expense2.date = new Date();
       expense2.payerId = 123;
       expense2.participantIds = [123, 321];
-      await expense2.save();
+      await repo.save(expense2);
 
       expect(mockedDbConn.items).toHaveLength(2);
       expect(mockedDbConn.items[0].name).toBe(expense.name);
