@@ -1,10 +1,10 @@
 import type { Config } from 'jest';
 
 const config: Config = {
+  verbose: true,
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['./test/setup.ts'],
-  verbose: true,
   collectCoverageFrom: ['src/**/*.{tsx,ts}'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'html'],

@@ -1,10 +1,19 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`NewExpenseJumboButton.tsx Sanity tests should render correctly #sanity 1`] = `
-<button
-  className="bg-primary text-secondary-color align-middle arvo-bold text-center rounded-full max-h-36 text-4xl px-24 py-7"
-  type="button"
+<div
+  className="container"
 >
-  + Nova Conta
-</button>
+  <button
+    className="bg-primary text-secondary-color align-middle arvo-bold text-center rounded-full max-h-36 text-4xl px-24 py-7"
+    onClick={[Function]}
+    type="button"
+  >
+    + Nova Conta
+  </button>
+  <ul
+    className="divide-y divide-gray-100 bg-gray-300"
+    role="list"
+  />
+</div>
 `;

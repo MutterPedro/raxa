@@ -1,9 +1,10 @@
-import { inject } from 'inversify';
+import { inject, injectable } from 'inversify';
 
 import Bill from '../entities/Bill';
 import { TYPES } from '../../infra/di';
 import { BillRepository } from '../repositories/BillRepository';
 
+@injectable()
 export class BillService {
   constructor(@inject(TYPES.BillRepository) private readonly billRepo: BillRepository) {}
 

@@ -13,6 +13,8 @@
     "preview": "vite preview",
     "prepare": "husky",
     "test": "jest",
+    "cucumber": "jest --testMatch **/*.steps.ts --testEnvironment node",
+    "test:bdd": "concurrently --kill-others \"npm run dev:host\" \"sleep 5 && npm run cucumber\"",
     "test:coverage": "npm run test -- --collectCoverage",
     "test:watch": "npm run test -- --watch --testNamePattern='#unit|#sanity'",
     "test:integration": "npx playwright test"
@@ -47,6 +49,7 @@
     "eslint-plugin-react-refresh": "^0.4.5",
     "husky": "^9.0.11",
     "jest": "^29.7.0",
+    "jest-cucumber": "^4.5.0",
     "jest-environment-jsdom": "^29.7.0",
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",

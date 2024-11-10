@@ -3,7 +3,6 @@ import type Dexie from 'dexie';
 import { IndexedDBConnection } from './DBConnection.ts';
 import { applyMigrations } from './migrations';
 
-import '../inversify.config';
 import { myContainer } from '../inversify.config';
 import { TYPES } from './di.ts';
 

@@ -3,11 +3,13 @@ import { DBConnection } from '../../infra/DBConnection';
 
 import { TABLE_FIELDS } from '../utils/decorators';
 import { WithId } from '../../@types/utils';
+import { injectable } from 'inversify';
 
 interface BaseEntity {
   id: number;
 }
 
+@injectable()
 export class BaseRepository<T extends BaseEntity> {
   constructor(private readonly dbConnection: DBConnection) {}
 
@@ -30,6 +32,8 @@ export class BaseRepository<T extends BaseEntity> {
 
   async save(entity: T): Promise<WithId<T>> {
     if (entity.id <= 0) {
+      //@ts-ignore
+      delete entity.id;
       const { id } = await this.dbConnection.add(this.toPlainObject(entity));
 
       return { ...entity, id };
