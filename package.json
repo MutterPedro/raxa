@@ -14,7 +14,7 @@
     "prepare": "husky",
     "test": "jest",
     "cucumber": "jest --testMatch **/*.steps.ts --testEnvironment node",
-    "test:bdd": "concurrently --kill-others \"npm run dev:host\" \"sleep 5 && npm run cucumber\"",
+    "test:bdd": "concurrently --kill-others \"npm run dev:host\" \"sleep 2 && npm run cucumber\"",
     "test:coverage": "npm run test -- --collectCoverage",
     "test:watch": "npm run test -- --watch --testNamePattern='#unit|#sanity'",
     "test:integration": "npx playwright test"
