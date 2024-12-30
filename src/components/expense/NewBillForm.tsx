@@ -1,43 +1,87 @@
 import { SyntheticEvent } from 'react';
 
-export default function NewBillForm({ handleSubmitBill }: { handleSubmitBill: (evt: SyntheticEvent) => void }) {
+export interface NewBillFormProps {
+  handleSubmitBill: (evt: SyntheticEvent) => void;
+  handleCancel: () => void;
+}
+
+export default function NewBillForm({ handleSubmitBill, handleCancel }: NewBillFormProps) {
   return (
-    <form data-testid="new-expense-form" onSubmit={handleSubmitBill}>
-      <label htmlFor="name" className="block text-sm font-medium leading-6 text-gray-900">
-        Nome da Conta
-      </label>
-      <div className="mt-2">
-        <input
-          type="text"
-          name="name"
-          id="name"
-          className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          placeholder="Conta de Luz"
-        />
-        <input
-          type="number"
-          name="amount"
-          id="amount"
-          className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          placeholder="100"
-          data-testid="new-expense-form-amount-input"
-        />
-        <input
-          type="date"
-          name="date"
-          id="date"
-          className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-        />
-        <input
-          type="text"
-          name="participants"
-          id="participants"
-          className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          placeholder="Fulano, Ciclano, Beltrano..."
-          data-testid="new-expense-form-participants-input"
-        />
-        <input type="submit" value="Criar" />
-      </div>
-    </form>
+    <div className="w-full max-w-xs">
+      <form
+        data-testid="new-expense-form"
+        onSubmit={handleSubmitBill}
+        className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
+      >
+        <div className="mb-4">
+          <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">
+            Nome da Conta
+          </label>
+          <input
+            type="text"
+            name="name"
+            id="name"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white"
+            placeholder="Conta de Luz"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">
+            Valor
+          </label>
+          <input
+            type="number"
+            name="amount"
+            id="amount"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white"
+            placeholder="100"
+            data-testid="new-expense-form-amount-input"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">
+            Data
+          </label>
+          <input
+            type="date"
+            name="date"
+            id="date"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">
+            Participantes
+          </label>
+          <input
+            type="text"
+            name="participants"
+            id="participants"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white"
+            placeholder="Fulano, Ciclano, Beltrano..."
+            data-testid="new-expense-form-participants-input"
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            type="submit"
+          >
+            Criar
+          </button>
+          <a
+            className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
+            href="#"
+            onClick={() => handleCancel()}
+          >
+            Cancelar
+          </a>
+        </div>
+      </form>
+    </div>
   );
 }

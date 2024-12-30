@@ -5,33 +5,43 @@ export interface BillsListProps {
   total: number;
 }
 
+const avatars = [
+  'https://images.unsplash.com/photo-1505840717430-882ce147ef2d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+  'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+];
+
 export default function BillsList({ bills, total }: BillsListProps) {
   return (
-    <ul role="list" className="divide-y divide-gray-100 bg-gray-300">
-      {bills.map((bill) => (
-        <li className="flex justify-between gap-x-6 py-5" key={`bill-${bill.id}`}>
-          <div className="flex min-w-0 gap-x-4">
-            <img
-              className="h-12 w-12 flex-none rounded-full bg-gray-50"
-              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-              alt=""
-            />
-            <div className="min-w-0 flex-auto">
-              <p className="text-sm font-semibold leading-6 text-gray-900">{bill.name}</p>
-              <p className="mt-1 truncate text-xs leading-5 text-gray-500">leslie.alexander@example.com</p>
+    <div className="w-full max-w-xs">
+      <div className="space-y-6">
+        {bills.map((bill) => (
+          <div key={bill.id} className="flex justify-between items-center border-b pb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">{bill.name}</h2>
+              <p className="text-sm text-gray-500">
+                {'Fulano, Beltrano, Ciclano'} &middot; {bill.date.toLocaleDateString()} &middot;{' '}
+                {bill.date.toLocaleTimeString()}
+              </p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex -space-x-2">
+                {avatars.map((avatar, index) => (
+                  <img key={index} src={avatar} alt="Avatar" className="w-8 h-8 rounded-full border-2 border-white" />
+                ))}
+              </div>
+              <div className="flex items-center text-gray-500">
+                R$
+                <span className="ml-2 text-sm">{bill.amount}</span>
+              </div>
             </div>
           </div>
-          <div className="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
-            <p className="text-sm leading-6 text-gray-900">{bill.amount}</p>
-            <p className="mt-1 text-xs leading-5 text-gray-500">
-              Last seen <time dateTime="2023-01-23T13:23Z">3h ago</time>
-            </p>
-          </div>
-        </li>
-      ))}
-      <li data-testid="bill-total" className="flex justify-between gap-x-6 py-5">
-        {total}
-      </li>
-    </ul>
+        ))}
+      </div>
+      <div className="flex justify-between items-center border-t pt-4">
+        <h2 className="text-lg font-semibold text-gray-800">Total</h2>
+        <span className="text-gray-500 text-sm">{total}</span>
+      </div>
+    </div>
   );
 }

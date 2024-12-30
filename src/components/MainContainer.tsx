@@ -33,9 +33,9 @@ export default function MainContainer() {
   }
 
   return (
-    <div className="container">
+    <div className="container flex flex-col items-center mx-auto">
       {showingForm ? (
-        <NewBillForm handleSubmitBill={handleSubmitBill} />
+        <NewBillForm handleSubmitBill={handleSubmitBill} handleCancel={() => showForm(!showingForm)} />
       ) : (
         <NewExpenseJumboButton handleOnClick={() => showForm(!showingForm)} />
       )}
