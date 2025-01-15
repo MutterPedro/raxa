@@ -17,4 +17,9 @@ export class BillService {
 
     return this.billRepo.save(bill);
   }
+
+  async getBills(page: number = 1): Promise<Bill[]> {
+    // debugger;
+    return this.billRepo.list(page);
+  }
 }

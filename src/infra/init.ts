@@ -39,6 +39,6 @@ async function doesDbExists(dbName: string, version?: number): Promise<boolean> 
   });
 }
 
-function createTable<T extends object>(name: string): IndexedDBConnection<T> {
-  return new IndexedDBConnection<T>(myContainer.get<Dexie>(TYPES.Dexie), name);
+function createTable<T extends object>(name: string, pageSize: number = 10): IndexedDBConnection<T> {
+  return new IndexedDBConnection<T>(myContainer.get<Dexie>(TYPES.Dexie), name, pageSize);
 }

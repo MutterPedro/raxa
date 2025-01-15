@@ -4,7 +4,7 @@ export interface BillProps {
   id: number;
   name: string;
   amount: number;
-  date: Date;
+  date: string;
   ownerId: number;
 }
 

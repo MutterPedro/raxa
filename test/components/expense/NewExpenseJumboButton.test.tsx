@@ -8,7 +8,7 @@ describe('NewExpenseJumboButton.tsx', function () {
     });
 
     it('should render correctly #sanity', function () {
-      const tree = create(<NewExpenseJumboButton />).toJSON();
+      const tree = create(<NewExpenseJumboButton handleOnClick={() => {}} />).toJSON();
       expect(tree).toMatchSnapshot();
     });
   });

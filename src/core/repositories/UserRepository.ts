@@ -6,7 +6,7 @@ import { DBConnection } from '../../infra/DBConnection';
 import User from '../entities/User';
 
 export class UserRepository extends BaseRepository<UserProps> {
-  constructor(@inject(TYPES.DBConnection) factory: (clazz: object) => DBConnection) {
+  constructor(@inject(TYPES.DBConnection) factory: (clazz: object) => DBConnection<UserProps>) {
     super(factory(User));
   }
 }

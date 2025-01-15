@@ -13,6 +13,8 @@ export default function MainContainer() {
   const billService = myContainer.get<BillService>(TYPES.BillService);
 
   const [bills, setBills] = useState<Bill[]>([]);
+  billService.getBills().then((bills) => setBills(bills));
+
   const [total, setTotal] = useState(0);
 
   async function handleSubmitBill(event: SyntheticEvent) {
@@ -39,7 +41,7 @@ export default function MainContainer() {
       ) : (
         <NewExpenseJumboButton handleOnClick={() => showForm(!showingForm)} />
       )}
-      <BillsList bills={bills} total={total} />
+      {bills.length > 0 && <BillsList bills={bills} total={total} />}
     </div>
   );
 }

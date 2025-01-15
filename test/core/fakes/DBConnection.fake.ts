@@ -1,7 +1,7 @@
 import { WithId } from '../../../src/@types/utils';
 import { DBConnection } from '../../../src/infra/DBConnection';
 
-export class MemoryDBConnection<T extends object> implements DBConnection {
+export class MemoryDBConnection<T extends object> implements DBConnection<T> {
   public items: WithId<T>[] = [];
 
   async update(id: number, data: Partial<T>): Promise<number> {
@@ -21,5 +21,9 @@ export class MemoryDBConnection<T extends object> implements DBConnection {
 
   async getById(id: number): Promise<void | WithId<T>> {
     return { ...this.items[id - 1], id };
+  }
+
+  async list(): Promise<WithId<T>[]> {
+    return this.items;
   }
 }

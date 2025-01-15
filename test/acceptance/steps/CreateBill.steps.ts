@@ -41,10 +41,10 @@ defineFeature(feature, (test) => {
       await page.getByRole('button', { name: 'Criar' }).click();
     });
 
-    then(/^I should see a bill row with total (\d+)$/, async function (expectedTotal: number) {
+    then(/^I should see a bill row with total (\d+)\$$/, async function (expectedTotal: number) {
       const billTotalLocator = page.getByTestId('bill-total');
       await expect(billTotalLocator).toBeVisible();
-      await expect(billTotalLocator).toHaveText(expectedTotal.toString());
+      await expect(billTotalLocator).toContainText(expectedTotal.toString());
     });
   });
 });

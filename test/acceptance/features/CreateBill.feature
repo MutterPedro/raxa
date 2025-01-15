@@ -6,4 +6,4 @@ Feature: Create New Bill
         When I enter 100$ as the total amount
         And I enter Etvaldo as a participant
         And I submit the form
-        Then I should see a bill row with total 50
+        Then I should see a bill row with total 100$

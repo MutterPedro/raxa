@@ -10,12 +10,13 @@ interface BaseEntity {
 }
 
 @injectable()
-export class BaseRepository<T extends BaseEntity> {
-  constructor(private readonly dbConnection: DBConnection) {}
+export class BaseRepository<T extends BaseEntity, P extends object = object> {
+  constructor(private readonly dbConnection: DBConnection<P>) {}
 
-  toPlainObject(entity: T): object {
+  toPlainObject(entity: T): P {
     const fields = Reflect.getMetadata(TABLE_FIELDS, entity.constructor);
 
+    //@ts-expect-error
     return Array.from<string>(fields).reduce<object>((acc: object, field: string) => {
       //@ts-expect-error
       if (entity[field] instanceof Date) {
@@ -30,6 +31,11 @@ export class BaseRepository<T extends BaseEntity> {
     }, {});
   }
 
+  fromPlainObject(data: WithId<P>): WithId<T> {
+    //@ts-expect-error
+    return data as WithId<T>;
+  }
+
   async save(entity: T): Promise<WithId<T>> {
     if (entity.id <= 0) {
       //@ts-ignore
@@ -41,5 +47,10 @@ export class BaseRepository<T extends BaseEntity> {
 
     await this.dbConnection.update(entity.id, this.toPlainObject(entity));
     return { ...entity };
+  }
+
+  async list(page: number): Promise<WithId<T>[]> {
+    const rawList = await this.dbConnection.list(page);
+    return rawList.map((data) => this.fromPlainObject(data));
   }
 }

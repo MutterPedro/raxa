@@ -81,4 +81,37 @@ test.describe('IndexedDBConnection.ts', function () {
     expect(result?.item?.name).toBe('test');
     expect(result?.item2?.name).toBe('test expense');
   });
+
+  test('it should list and filter an entity from IndexedDB #integration', async ({ page }) => {
+    const result = await testWithinBrowser(page, async () => {
+      try {
+        const billTable = window.createTable<{ name: string; owner: number }>('bill', 15);
+        await billTable.add({
+          name: 'test',
+          owner: 15,
+        });
+        await billTable.add({
+          name: 'test2',
+          owner: 15,
+        });
+
+        const bills = await billTable.list();
+
+        for (let i = 0; i < 15; i++) {
+          await billTable.add({
+            name: 'test' + i,
+            owner: 15 - i,
+          });
+        }
+        const secondPage = await billTable.list(2);
+
+        return [{ bills, secondPage }, null];
+      } catch (error) {
+        return [null, error];
+      }
+    });
+
+    expect(result?.bills.length).toBe(2);
+    expect(result?.secondPage.length).toBe(2);
+  });
 });
