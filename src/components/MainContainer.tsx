@@ -6,6 +6,7 @@ import { myContainer } from '../inversify.config';
 import Bill from '../core/entities/Bill';
 import { BillService } from '../core/services/BillService';
 import { TYPES } from '../infra/di';
+import NewExpenseFloatButton from './expense/NewExpenseFloatButton';
 
 export default function MainContainer() {
   const [showingForm, showForm] = useState(false);
@@ -13,9 +14,9 @@ export default function MainContainer() {
   const billService = myContainer.get<BillService>(TYPES.BillService);
 
   const [bills, setBills] = useState<Bill[]>([]);
-  billService.getBills().then((bills) => setBills(bills));
-
-  const [total, setTotal] = useState(0);
+  billService.getBills().then((bills) => {
+    setBills(bills);
+  });
 
   async function handleSubmitBill(event: SyntheticEvent) {
     event.preventDefault();
@@ -31,17 +32,19 @@ export default function MainContainer() {
     });
 
     setBills([...bills, bill]);
-    setTotal(total + bill.amount);
+    showForm(false);
   }
 
   return (
     <div className="container flex flex-col items-center mx-auto">
       {showingForm ? (
         <NewBillForm handleSubmitBill={handleSubmitBill} handleCancel={() => showForm(!showingForm)} />
+      ) : bills.length > 0 ? (
+        <NewExpenseFloatButton handleOnClick={() => showForm(!showingForm)} />
       ) : (
         <NewExpenseJumboButton handleOnClick={() => showForm(!showingForm)} />
       )}
-      {bills.length > 0 && <BillsList bills={bills} total={total} />}
+      {bills.length > 0 && <BillsList bills={bills} />}
     </div>
   );
 }

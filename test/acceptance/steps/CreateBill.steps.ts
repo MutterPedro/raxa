@@ -32,7 +32,7 @@ defineFeature(feature, (test) => {
       await expect(page.getByTestId('new-expense-form-amount-input')).toHaveValue(amount.toString());
     });
 
-    and(/I enter (\w+) as a participant$/, async function (participantName: string) {
+    and(/^I enter (\w+) as a participant$/, async function (participantName: string) {
       await page.getByTestId('new-expense-form-participants-input').fill(participantName);
       await expect(page.getByTestId('new-expense-form-participants-input')).toHaveValue(participantName);
     });
@@ -42,7 +42,7 @@ defineFeature(feature, (test) => {
     });
 
     then(/^I should see a bill row with total (\d+)\$$/, async function (expectedTotal: number) {
-      const billTotalLocator = page.getByTestId('bill-total');
+      const billTotalLocator = page.getByTestId('bill-total-1');
       await expect(billTotalLocator).toBeVisible();
       await expect(billTotalLocator).toContainText(expectedTotal.toString());
     });

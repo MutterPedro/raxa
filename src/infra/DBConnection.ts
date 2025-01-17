@@ -3,7 +3,7 @@ import type { WithId } from '../@types/utils';
 import { inject, injectable } from 'inversify';
 import { TYPES } from './di';
 
-export interface DBConnection<T> {
+export interface DBConnection<T extends object = object> {
   update(id: number, data: object): Promise<number>;
   add(data: object): Promise<WithId<T>>;
   getById(id: number): Promise<WithId<T> | void>;
