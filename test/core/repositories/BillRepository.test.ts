@@ -17,14 +17,12 @@ describe('Bill.ts', function () {
 
       const bill = new Bill();
       bill.name = 'Friends trip';
-      bill.amount = 1000;
       bill.date = new Date();
       bill.ownerId = 1337;
       await repo.save(bill);
 
       const bill2 = new Bill();
       bill2.name = 'Work trip';
-      bill2.amount = 2000;
       bill2.date = new Date();
       bill2.ownerId = 123;
       await repo.save(bill2);

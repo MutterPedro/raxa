@@ -1,13 +1,12 @@
 import { auto_increment_field, field, list_field, table } from '../utils/decorators';
 
 export interface ExpenseProps {
-  id: number;
   name: string;
   billId: number;
   participantIds: number[];
   payerId: number;
   amount: number;
-  date: Date;
+  date: string;
 }
 
 @table('expense')

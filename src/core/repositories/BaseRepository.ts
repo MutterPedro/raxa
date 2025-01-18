@@ -11,7 +11,7 @@ interface BaseEntity {
 
 @injectable()
 export class BaseRepository<T extends BaseEntity, P extends object = object> {
-  constructor(private readonly dbConnection: DBConnection<P>) {}
+  constructor(protected readonly dbConnection: DBConnection<P>) {}
 
   toPlainObject(entity: T): P {
     const fields = Reflect.getMetadata(TABLE_FIELDS, entity.constructor);
@@ -51,6 +51,11 @@ export class BaseRepository<T extends BaseEntity, P extends object = object> {
 
   async list(page: number): Promise<WithId<T>[]> {
     const rawList = await this.dbConnection.list(page);
+    return rawList.map((data) => this.fromPlainObject(data));
+  }
+
+  async filter(filter: Partial<P>): Promise<WithId<T>[]> {
+    const rawList = await this.dbConnection.filter(filter);
     return rawList.map((data) => this.fromPlainObject(data));
   }
 }

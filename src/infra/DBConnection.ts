@@ -9,6 +9,7 @@ export interface DBConnection<T extends object = object> {
   add(data: object): Promise<WithId<T>>;
   getById(id: number): Promise<WithId<T> | void>;
   list(page: number): Promise<WithId<T>[]>;
+  filter(filter: Partial<T>): Promise<WithId<T>[]>;
 }
 
 @injectable()
@@ -51,5 +52,9 @@ export class IndexedDBConnection<T extends object> implements DBConnection<T> {
       .toArray();
 
     return entities as WithId<T>[];
+  }
+
+  filter(filter: Partial<T>): Promise<WithId<T>[]> {
+    return this.table.where(filter).toArray() as Promise<WithId<T>[]>;
   }
 }

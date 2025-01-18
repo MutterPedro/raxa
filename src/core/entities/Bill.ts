@@ -3,7 +3,6 @@ import { auto_increment_field, field, table } from '../utils/decorators';
 export interface BillProps {
   id: number;
   name: string;
-  amount: number;
   date: string;
   ownerId: number;
 }
@@ -15,9 +14,6 @@ export default class Bill {
 
   @field(1, 'name')
   name: string = '';
-
-  @field(1, 'amount')
-  amount: number = 0;
 
   @field(1, 'date')
   date: Date = new Date();

@@ -16,7 +16,6 @@ export class BillRepository extends BaseRepository<Bill, BillProps> {
 
     bill.id = data.id;
     bill.name = data.name;
-    bill.amount = data.amount;
     bill.date = new Date(data.date);
     bill.ownerId = data.ownerId;
 

@@ -3,14 +3,19 @@ import { inject, injectable } from 'inversify';
 import Bill from '../entities/Bill';
 import { TYPES } from '../../infra/di';
 import { BillRepository } from '../repositories/BillRepository';
+import { ExpenseProps } from '../entities';
+import Expense from '../entities/Expense';
+import { ExpenseRepository } from '../repositories/ExpenseRepository';
 
 @injectable()
 export class BillService {
-  constructor(@inject(TYPES.BillRepository) private readonly billRepo: BillRepository) {}
+  constructor(
+    @inject(TYPES.BillRepository) private readonly billRepo: BillRepository,
+    @inject(TYPES.ExpenseRepository) private readonly expenseRepo: ExpenseRepository,
+  ) {}
 
-  async createBill(values: { name: string; amount: number; date?: Date; ownerId?: number }): Promise<Bill> {
+  async createBill(values: { name: string; date?: Date; ownerId?: number }): Promise<Bill> {
     const bill = new Bill();
-    bill.amount = values.amount;
     bill.name = values.name;
     bill.date = values.date || new Date();
     bill.ownerId = values.ownerId || 0;
@@ -21,5 +26,16 @@ export class BillService {
   async getBills(page: number = 1): Promise<Bill[]> {
     // debugger;
     return this.billRepo.list(page);
+  }
+
+  async addExpense(billId: number, expenseData: Omit<ExpenseProps, 'billId'>): Promise<Expense> {
+    const expense = this.expenseRepo.fromPlainObject({ ...expenseData, billId, id: 0 });
+    return this.expenseRepo.save(expense);
+  }
+
+  async getTotal(billId: number): Promise<number> {
+    const expenses = await this.expenseRepo.filter({ billId });
+
+    return expenses.reduce((acc, expense) => acc + expense.amount, 0);
   }
 }

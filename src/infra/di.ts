@@ -3,4 +3,5 @@ export const TYPES = {
   Dexie: Symbol.for('Dexie'),
   BillRepository: Symbol.for('BillRepository'),
   BillService: Symbol.for('BillService'),
+  ExpenseRepository: Symbol.for('ExpenseRepository'),
 };

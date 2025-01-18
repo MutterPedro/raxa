@@ -26,4 +26,12 @@ export class MemoryDBConnection<T extends object> implements DBConnection<T> {
   async list(): Promise<WithId<T>[]> {
     return this.items;
   }
+
+  async filter(filter: Partial<T>): Promise<WithId<T>[]> {
+    return this.items.filter((item) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-expect-error
+      return Object.entries(filter).every(([key, value]) => item[key] === value);
+    });
+  }
 }
