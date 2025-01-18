@@ -1,7 +1,8 @@
+import Dexie from 'dexie';
 import { Container, interfaces } from 'inversify';
+
 import { DBConnection, IndexedDBConnection } from './infra/DBConnection';
 import { TYPES } from './infra/di';
-import Dexie from 'dexie';
 import { TABLE_NAME } from './core/utils/decorators';
 import { BillRepository } from './core/repositories/BillRepository';
 import { BillService } from './core/services/BillService';
@@ -22,4 +23,10 @@ myContainer
 myContainer.bind<BillRepository>(TYPES.BillRepository).to(BillRepository);
 myContainer.bind<BillService>(TYPES.BillService).to(BillService);
 
-export { myContainer };
+export function billServiceFactory() {
+  return myContainer.get<BillService>(TYPES.BillService);
+}
+
+export function dexieFactory() {
+  return myContainer.get<Dexie>(TYPES.Dexie);
+}

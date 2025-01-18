@@ -1,4 +1,5 @@
 import Dexie, { Table, UpdateSpec } from 'dexie';
+
 import type { WithId } from '../@types/utils';
 import { inject, injectable } from 'inversify';
 import { TYPES } from './di';

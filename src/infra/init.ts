@@ -1,13 +1,10 @@
-import type Dexie from 'dexie';
-
 import { IndexedDBConnection } from './DBConnection.ts';
 import { applyMigrations } from './migrations';
 
-import { myContainer } from '../inversify.config';
-import { TYPES } from './di.ts';
+import { dexieFactory } from '../inversify.config';
 
 export function init(): void {
-  const conn = myContainer.get<Dexie>(TYPES.Dexie);
+  const conn = dexieFactory();
   applyMigrations(conn);
 
   // infra test helpers
@@ -40,5 +37,5 @@ async function doesDbExists(dbName: string, version?: number): Promise<boolean> 
 }
 
 function createTable<T extends object>(name: string, pageSize: number = 10): IndexedDBConnection<T> {
-  return new IndexedDBConnection<T>(myContainer.get<Dexie>(TYPES.Dexie), name, pageSize);
+  return new IndexedDBConnection<T>(dexieFactory(), name, pageSize);
 }

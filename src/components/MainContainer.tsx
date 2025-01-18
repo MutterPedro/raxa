@@ -1,19 +1,17 @@
 import { SyntheticEvent, useState } from 'react';
+
 import NewExpenseJumboButton from './expense/NewExpenseJumboButton';
 import NewBillForm from './expense/NewBillForm';
 import BillsList from './expense/BillsList';
-import { myContainer } from '../inversify.config';
 import Bill from '../core/entities/Bill';
-import { BillService } from '../core/services/BillService';
-import { TYPES } from '../infra/di';
 import NewExpenseFloatButton from './expense/NewExpenseFloatButton';
+import { useBillService } from './state/BillServiceContext';
 
 export default function MainContainer() {
+  const billService = useBillService();
   const [showingForm, showForm] = useState(false);
-
-  const billService = myContainer.get<BillService>(TYPES.BillService);
-
   const [bills, setBills] = useState<Bill[]>([]);
+
   billService.getBills().then((bills) => {
     setBills(bills);
   });
