@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 
-interface NewExpenseJumboButtonProps {
+interface NewBillJumboButtonProps {
   interval?: number;
   handleOnClick: () => void;
 }
 
-export default function NewExpenseJumboButton({ interval = 2000, handleOnClick }: NewExpenseJumboButtonProps) {
+export default function NewBillJumboButton({ interval = 2000, handleOnClick }: NewBillJumboButtonProps) {
   const wordsList = ['+ Nova Conta', '+ Nova Despesa', '+ Nova Compra', '+ Novo Rolê', '+ Novo RAXA!'];
 
   const [wordIndex, setWordIndex] = useState(0);
@@ -21,7 +21,7 @@ export default function NewExpenseJumboButton({ interval = 2000, handleOnClick }
       type="button"
       className="bg-primary text-secondary-color align-middle arvo-bold text-center rounded-full max-h-36 text-4xl px-24 py-7"
       onClick={handleOnClick}
-      data-testid="new-expense-jumbo-button"
+      data-testid="new-bill-jumbo-button"
     >
       {wordsList[wordIndex]}
     </button>

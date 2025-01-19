@@ -32,7 +32,7 @@ exports[`Header.tsx Sanity tests should render correctly #sanity 1`] = `
     >
       <a
         className="text-4xl leading-6"
-        href="#"
+        href="/"
       >
         RAXA
       </a>

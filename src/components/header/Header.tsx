@@ -9,7 +9,7 @@ export default function Header() {
       <NavBar>
         <Logo />
         <div className="hidden lg:flex lg:gap-x-12">
-          <a href="#" className="text-4xl leading-6">
+          <a href="/" className="text-4xl leading-6">
             RAXA
           </a>
         </div>

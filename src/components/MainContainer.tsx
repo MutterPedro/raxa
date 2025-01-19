@@ -1,10 +1,10 @@
 import { SyntheticEvent, useState } from 'react';
 
-import NewExpenseJumboButton from './expense/NewExpenseJumboButton';
+import NewBillJumboButton from './expense/NewExpenseJumboButton';
 import NewBillForm from './expense/NewBillForm';
 import BillsList from './expense/BillsList';
 import Bill from '../core/entities/Bill';
-import NewExpenseFloatButton from './expense/NewExpenseFloatButton';
+import NewBillFloatButton from './expense/NewExpenseFloatButton';
 import { useBillService } from './state/BillServiceContext';
 
 export default function MainContainer() {
@@ -24,7 +24,6 @@ export default function MainContainer() {
 
     const bill = await billService.createBill({
       name: formData.get('name') as string,
-      amount: Number(formData.get('amount')),
       date: new Date((formData.get('date') as string) || new Date()),
       ownerId: 0,
     });
@@ -38,9 +37,9 @@ export default function MainContainer() {
       {showingForm ? (
         <NewBillForm handleSubmitBill={handleSubmitBill} handleCancel={() => showForm(!showingForm)} />
       ) : bills.length > 0 ? (
-        <NewExpenseFloatButton handleOnClick={() => showForm(!showingForm)} />
+        <NewBillFloatButton handleOnClick={() => showForm(!showingForm)} />
       ) : (
-        <NewExpenseJumboButton handleOnClick={() => showForm(!showingForm)} />
+        <NewBillJumboButton handleOnClick={() => showForm(!showingForm)} />
       )}
       {bills.length > 0 && <BillsList bills={bills} />}
     </div>

@@ -3,8 +3,9 @@ import { applyMigrations } from './migrations';
 
 import { dexieFactory } from '../inversify.config';
 
+const conn = dexieFactory();
+
 export function init(): void {
-  const conn = dexieFactory();
   applyMigrations(conn);
 
   // infra test helpers
@@ -36,15 +37,6 @@ async function doesDbExists(dbName: string, version?: number): Promise<boolean> 
   });
 }
 
-function createTable<T extends object>(
-  name: string,
-  pageSize: number = 10,
-  indexes: string[] = [],
-): IndexedDBConnection<T> {
-  const db = dexieFactory();
-  if (indexes.length) {
-    db.version(1).stores({ [name]: '++id, ' + `[${indexes.join('+')}]` });
-  }
-
-  return new IndexedDBConnection<T>(db, name, pageSize);
+function createTable<T extends object>(name: string, pageSize: number = 10): IndexedDBConnection<T> {
+  return new IndexedDBConnection<T>(conn, name, pageSize);
 }

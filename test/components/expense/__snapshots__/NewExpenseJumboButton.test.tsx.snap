@@ -3,7 +3,7 @@
 exports[`NewExpenseJumboButton.tsx Sanity tests should render correctly #sanity 1`] = `
 <button
   className="bg-primary text-secondary-color align-middle arvo-bold text-center rounded-full max-h-36 text-4xl px-24 py-7"
-  data-testid="new-expense-jumbo-button"
+  data-testid="new-bill-jumbo-button"
   onClick={[Function]}
   type="button"
 >

@@ -1,14 +1,14 @@
 import { create } from 'react-test-renderer';
-import NewExpenseJumboButton from '../../../src/components/expense/NewExpenseJumboButton';
+import NewBillJumboButton from '../../../src/components/expense/NewExpenseJumboButton';
 
 describe('NewExpenseJumboButton.tsx', function () {
   describe('Sanity tests', function () {
     it('should exists #sanity', function () {
-      expect(NewExpenseJumboButton).not.toBeFalsy();
+      expect(NewBillJumboButton).not.toBeFalsy();
     });
 
     it('should render correctly #sanity', function () {
-      const tree = create(<NewExpenseJumboButton handleOnClick={() => {}} />).toJSON();
+      const tree = create(<NewBillJumboButton handleOnClick={() => {}} />).toJSON();
       expect(tree).toMatchSnapshot();
     });
   });

@@ -22,26 +22,26 @@ defineFeature(feature, (test) => {
       await expect(page).toHaveTitle(/Raxa/);
     });
 
-    and(/^I have a bill with total (\d+)\$$/, async function (amount: number) {
-      await page.getByTestId('new-expense-jumbo-button').click();
-      await page.getByTestId('new-expense-form-amount-input').fill(amount.toString());
+    and(/^I have a bill with name "(.*)"$/, async function (name: string) {
+      await page.getByTestId('new-bill-jumbo-button').click();
+      await page.getByTestId('new-bill-form-name-input').fill(name);
       await page.getByRole('button', { name: 'Criar' }).click();
     });
 
-    and(/^I have another bill with total (\d+)\$$/, async function (amount: number) {
-      await page.getByTestId('new-expense-float-button').click();
-      await page.getByTestId('new-expense-form-amount-input').fill(amount.toString());
+    and(/^I have another bill with name "(.*)"$/, async function (name: string) {
+      await page.getByTestId('new-bill-float-button').click();
+      await page.getByTestId('new-bill-form-name-input').fill(name);
       await page.getByRole('button', { name: 'Criar' }).click();
     });
 
-    then(/^I should see a bill row with total (\d+)\$$/, async function (total: number) {
-      const billTotalLocator = page.getByTestId('bill-total-1');
+    then(/^I should see a bill row with name "(.*)"$/, async function (total: number) {
+      const billTotalLocator = page.getByTestId('bill-item-name-1');
       await expect(billTotalLocator).toBeVisible();
       await expect(billTotalLocator).toContainText(total.toString());
     });
 
-    and(/^I should see another bill row with total (\d+)\$$/, async function (total: number) {
-      const billTotalLocator = page.getByTestId('bill-total-2');
+    and(/^I should see another bill row with name "(.*)"$/, async function (total: number) {
+      const billTotalLocator = page.getByTestId('bill-item-name-2');
       await expect(billTotalLocator).toBeVisible();
       await expect(billTotalLocator).toContainText(total.toString());
     });

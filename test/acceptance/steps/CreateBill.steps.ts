@@ -23,18 +23,13 @@ defineFeature(feature, (test) => {
     });
 
     and('I click in the create bill button', async function () {
-      await page.getByTestId('new-expense-jumbo-button').click();
+      await page.getByTestId('new-bill-jumbo-button').click();
       await expect(page.getByTestId('new-expense-form')).toBeVisible();
     });
 
-    when(/^I enter (\d+)\$ as the total amount$/, async function (amount: number) {
-      await page.getByTestId('new-expense-form-amount-input').fill(amount.toString());
-      await expect(page.getByTestId('new-expense-form-amount-input')).toHaveValue(amount.toString());
-    });
-
-    and(/^I enter (\w+) as a participant$/, async function (participantName: string) {
-      await page.getByTestId('new-expense-form-participants-input').fill(participantName);
-      await expect(page.getByTestId('new-expense-form-participants-input')).toHaveValue(participantName);
+    when(/^I enter "(.*)" as the name$/, async function (name: string) {
+      await page.getByTestId('new-bill-form-name-input').fill(name);
+      await expect(page.getByTestId('new-bill-form-name-input')).toHaveValue(name);
     });
 
     and('I submit the form', async function () {
@@ -45,6 +40,12 @@ defineFeature(feature, (test) => {
       const billTotalLocator = page.getByTestId('bill-total-1');
       await expect(billTotalLocator).toBeVisible();
       await expect(billTotalLocator).toContainText(expectedTotal.toString());
+    });
+
+    and(/^I should see a bill row with name "(.*)"$/, async function (name: string) {
+      const billTotalLocator = page.getByTestId('bill-item-name-1');
+      await expect(billTotalLocator).toBeVisible();
+      await expect(billTotalLocator).toContainText(name);
     });
   });
 });

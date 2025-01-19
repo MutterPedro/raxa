@@ -118,17 +118,17 @@ test.describe('IndexedDBConnection.ts', function () {
   test('it should filter an entity from IndexedDB #integration', async ({ page }) => {
     const result = await testWithinBrowser(page, async () => {
       try {
-        const billTable = window.createTable<{ name: string; owner: number }>('bill', 10, ['owner', 'name']);
+        const billTable = window.createTable<{ name: string; ownerId: number }>('bill');
         await billTable.add({
           name: 'test',
-          owner: 10,
+          ownerId: 10,
         });
         await billTable.add({
           name: 'test2',
-          owner: 15,
+          ownerId: 15,
         });
 
-        const bills = await billTable.filter({ owner: 15 });
+        const bills = await billTable.filter({ ownerId: 15 });
 
         return [bills, null];
       } catch (error) {
@@ -138,6 +138,6 @@ test.describe('IndexedDBConnection.ts', function () {
 
     expect(result?.length).toBe(1);
     expect(result?.[0].name).toBe('test2');
-    expect(result?.[0].owner).toBe(15);
+    expect(result?.[0].ownerId).toBe(15);
   });
 });

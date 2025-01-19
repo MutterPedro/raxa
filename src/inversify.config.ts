@@ -6,6 +6,7 @@ import { TYPES } from './infra/di';
 import { TABLE_NAME } from './core/utils/decorators';
 import { BillRepository } from './core/repositories/BillRepository';
 import { BillService } from './core/services/BillService';
+import { ExpenseRepository } from './core/repositories/ExpenseRepository';
 
 const myContainer = new Container();
 
@@ -21,6 +22,7 @@ myContainer
   });
 
 myContainer.bind<BillRepository>(TYPES.BillRepository).to(BillRepository);
+myContainer.bind<ExpenseRepository>(TYPES.ExpenseRepository).to(ExpenseRepository);
 myContainer.bind<BillService>(TYPES.BillService).to(BillService);
 
 export function billServiceFactory() {
