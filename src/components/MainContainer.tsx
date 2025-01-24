@@ -1,10 +1,10 @@
 import { SyntheticEvent, useState } from 'react';
 
-import NewBillJumboButton from './expense/NewExpenseJumboButton';
+import NewBillJumboButton from './expense/NewBillJumboButton';
 import NewBillForm from './expense/NewBillForm';
 import BillsList from './expense/BillsList';
 import Bill from '../core/entities/Bill';
-import NewBillFloatButton from './expense/NewExpenseFloatButton';
+import NewBillFloatButton from './expense/NewBillFloatButton';
 import { useBillService } from './state/BillServiceContext';
 
 export default function MainContainer() {

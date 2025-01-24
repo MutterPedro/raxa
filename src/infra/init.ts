@@ -3,9 +3,9 @@ import { applyMigrations } from './migrations';
 
 import { dexieFactory } from '../inversify.config';
 
-const conn = dexieFactory();
-
 export function init(): void {
+  const conn = dexieFactory();
+
   applyMigrations(conn);
 
   // infra test helpers
@@ -38,5 +38,7 @@ async function doesDbExists(dbName: string, version?: number): Promise<boolean> 
 }
 
 function createTable<T extends object>(name: string, pageSize: number = 10): IndexedDBConnection<T> {
+  const conn = dexieFactory();
+
   return new IndexedDBConnection<T>(conn, name, pageSize);
 }

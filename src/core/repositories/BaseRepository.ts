@@ -58,4 +58,9 @@ export class BaseRepository<T extends BaseEntity, P extends object = object> {
     const rawList = await this.dbConnection.filter(filter);
     return rawList.map((data) => this.fromPlainObject(data));
   }
+
+  async getById(id: number): Promise<WithId<T> | null> {
+    const data = await this.dbConnection.getById(id);
+    return data ? this.fromPlainObject(data) : null;
+  }
 }

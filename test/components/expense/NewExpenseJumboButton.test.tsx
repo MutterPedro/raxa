@@ -1,5 +1,5 @@
 import { create } from 'react-test-renderer';
-import NewBillJumboButton from '../../../src/components/expense/NewExpenseJumboButton';
+import NewBillJumboButton from '../../../src/components/expense/NewBillJumboButton';
 
 describe('NewExpenseJumboButton.tsx', function () {
   describe('Sanity tests', function () {

@@ -41,13 +41,13 @@ export default function NewBillForm({ handleSubmitBill, handleCancel }: NewBillF
 
         <div className="flex items-center justify-between">
           <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            className="bg-primary text-secondary-color hover:bg-green-900 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             type="submit"
           >
             Criar
           </button>
           <a
-            className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
+            className="inline-block align-baseline font-bold text-sm text-green-800 hover:text-green-900"
             href="#"
             onClick={() => handleCancel()}
           >

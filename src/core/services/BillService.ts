@@ -6,6 +6,7 @@ import { BillRepository } from '../repositories/BillRepository';
 import { ExpenseProps } from '../entities';
 import Expense from '../entities/Expense';
 import { ExpenseRepository } from '../repositories/ExpenseRepository';
+import { WithId } from '../../@types/utils';
 
 @injectable()
 export class BillService {
@@ -37,5 +38,9 @@ export class BillService {
     const expenses = await this.expenseRepo.filter({ billId });
 
     return expenses.reduce((acc, expense) => acc + expense.amount, 0);
+  }
+
+  async getById(billId: number): Promise<WithId<Bill> | null> {
+    return this.billRepo.getById(billId);
   }
 }
