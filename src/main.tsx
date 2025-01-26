@@ -12,10 +12,10 @@ init();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <BillServiceProvider>
+    <BillServiceProvider>
+      <BrowserRouter>
         <App />
-      </BillServiceProvider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </BillServiceProvider>
   </React.StrictMode>,
 );

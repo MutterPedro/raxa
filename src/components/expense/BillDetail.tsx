@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { useBillService } from '../state/BillServiceContext';
 import Bill from '../../core/entities/Bill';
@@ -13,10 +13,18 @@ export default function BillDetail() {
   const [total, setTotal] = useState<number>(0);
   const [showForm, setShowForm] = useState<boolean>(false);
 
-  billService.getById(Number(billId)).then((bill) => {
-    setBill(bill);
-  });
-  billService.getTotal(Number(billId)).then((t) => setTotal(t));
+  useEffect(() => {
+    billService
+      .getById(Number(billId))
+      .then((bill) => {
+        setBill(bill);
+      })
+      .catch(console.error);
+    billService
+      .getTotal(Number(billId))
+      .then((t) => setTotal(t))
+      .catch(console.error);
+  }, [billService, billId]);
 
   return bill ? (
     showForm ? (

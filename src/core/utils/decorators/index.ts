@@ -36,8 +36,8 @@ export function list_field(version: number, name: string) {
 }
 
 export function table(name: string) {
-  // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
-  return function <T extends { new (...args: any[]): {} }>(constructor: T) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return function <T extends { new (...args: any[]): unknown }>(constructor: T) {
     Reflect.defineMetadata(TABLE_NAME, name, constructor);
 
     const tables = Reflect.getMetadata(TABLES, globalThis) || {};

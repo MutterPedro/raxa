@@ -1,8 +1,7 @@
 import Dexie, { Table, UpdateSpec } from 'dexie';
 
 import type { WithId } from '../@types/utils';
-import { inject, injectable } from 'inversify';
-import { TYPES } from './di';
+import { injectable } from 'inversify';
 
 export interface DBConnection<T extends object = object> {
   update(id: number, data: object): Promise<number>;
@@ -17,7 +16,7 @@ export class IndexedDBConnection<T extends object> implements DBConnection<T> {
   private table: Table<T, number>;
 
   constructor(
-    @inject(TYPES.Dexie) private readonly db: Dexie,
+    private readonly db: Dexie,
     tableName: string,
     private readonly pageSize: number = 10,
   ) {

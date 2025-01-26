@@ -13,7 +13,7 @@ describe('User.ts', function () {
 
     it('should be saved respecting the fields defined at the migration #unit', async function () {
       const mockedDbConn = new MemoryDBConnection<UserProps>();
-      const repo = new UserRepository(() => mockedDbConn);
+      const repo = new UserRepository(mockedDbConn);
 
       const user = new User();
       user.name = 'Josnei';

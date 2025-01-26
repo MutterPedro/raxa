@@ -7,23 +7,47 @@ import { TABLE_NAME } from './core/utils/decorators';
 import { BillRepository } from './core/repositories/BillRepository';
 import { BillService } from './core/services/BillService';
 import { ExpenseRepository } from './core/repositories/ExpenseRepository';
+import { BillProps, ExpenseProps, UserProps } from './core/entities';
+import User from './core/entities/User';
+import Bill from './core/entities/Bill';
+import Expense from './core/entities/Expense';
 
-const myContainer = new Container();
+export const myContainer = new Container();
 
-myContainer.bind<Dexie>(TYPES.Dexie).toConstantValue(new Dexie('raxa'));
+const db = new Dexie('raxa');
+myContainer.bind<Dexie>(TYPES.Dexie).toConstantValue(db);
 
 myContainer
-  .bind<interfaces.Factory<DBConnection>>(TYPES.DBConnection)
-  .toFactory<DBConnection, [object]>((context: interfaces.Context) => {
-    return (entityClass: object) => {
-      const tableName = Reflect.getMetadata(TABLE_NAME, entityClass);
-      return new IndexedDBConnection(context.container.get<Dexie>(TYPES.Dexie), tableName);
-    };
-  });
+  .bind<DBConnection<UserProps>>(TYPES.DBConnection)
+  .toDynamicValue((context: interfaces.Context) => {
+    const tableName = Reflect.getMetadata(TABLE_NAME, User);
+    const db = context.container.get<Dexie>(TYPES.Dexie);
+    return new IndexedDBConnection<UserProps>(db, tableName);
+  })
+  .inSingletonScope()
+  .whenTargetTagged('entity', User.name);
+myContainer
+  .bind<DBConnection<BillProps>>(TYPES.DBConnection)
+  .toDynamicValue((context: interfaces.Context) => {
+    const tableName = Reflect.getMetadata(TABLE_NAME, Bill);
+    const db = context.container.get<Dexie>(TYPES.Dexie);
+    return new IndexedDBConnection<BillProps>(db, tableName);
+  })
+  .inSingletonScope()
+  .whenTargetTagged('entity', Bill.name);
+myContainer
+  .bind<DBConnection<ExpenseProps>>(TYPES.DBConnection)
+  .toDynamicValue((context: interfaces.Context) => {
+    const tableName = Reflect.getMetadata(TABLE_NAME, Expense);
+    const db = context.container.get<Dexie>(TYPES.Dexie);
+    return new IndexedDBConnection<ExpenseProps>(db, tableName);
+  })
+  .inSingletonScope()
+  .whenTargetTagged('entity', Expense.name);
 
-myContainer.bind<BillRepository>(TYPES.BillRepository).to(BillRepository);
-myContainer.bind<ExpenseRepository>(TYPES.ExpenseRepository).to(ExpenseRepository);
-myContainer.bind<BillService>(TYPES.BillService).to(BillService);
+myContainer.bind<BillRepository>(TYPES.BillRepository).to(BillRepository).inSingletonScope();
+myContainer.bind<ExpenseRepository>(TYPES.ExpenseRepository).to(ExpenseRepository).inSingletonScope();
+myContainer.bind<BillService>(TYPES.BillService).to(BillService).inSingletonScope();
 
 export function billServiceFactory() {
   return myContainer.get<BillService>(TYPES.BillService);

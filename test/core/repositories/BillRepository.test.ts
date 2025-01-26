@@ -13,7 +13,7 @@ describe('Bill.ts', function () {
 
     it('should be saved respecting the fields defined at the migration #unit', async function () {
       const mockedBillDbConn = new MemoryDBConnection<BillProps>();
-      const repo = new BillRepository(() => mockedBillDbConn);
+      const repo = new BillRepository(mockedBillDbConn);
 
       const bill = new Bill();
       bill.name = 'Friends trip';

@@ -1,12 +1,12 @@
-import { inject } from 'inversify';
+import { inject, tagged } from 'inversify';
 import { UserProps } from '../entities';
 import { BaseRepository } from './BaseRepository';
 import { TYPES } from '../../infra/di';
 import { DBConnection } from '../../infra/DBConnection';
 import User from '../entities/User';
 
-export class UserRepository extends BaseRepository<UserProps> {
-  constructor(@inject(TYPES.DBConnection) factory: (clazz: object) => DBConnection<UserProps>) {
-    super(factory(User));
-  }
+export class UserRepository extends BaseRepository<User, UserProps> {
+  @inject(TYPES.DBConnection)
+  @tagged('entity', User.name)
+  declare protected readonly dbConnection: DBConnection<UserProps>;
 }

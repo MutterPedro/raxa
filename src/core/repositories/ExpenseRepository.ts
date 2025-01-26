@@ -1,4 +1,4 @@
-import { inject } from 'inversify';
+import { inject, tagged } from 'inversify';
 
 import { ExpenseProps } from '../entities';
 import { BaseRepository } from './BaseRepository';
@@ -8,9 +8,9 @@ import Expense from '../entities/Expense';
 import { WithId } from '../../@types/utils';
 
 export class ExpenseRepository extends BaseRepository<Expense, ExpenseProps> {
-  constructor(@inject(TYPES.DBConnection) factory: (clazz: object) => DBConnection<ExpenseProps>) {
-    super(factory(Expense));
-  }
+  @inject(TYPES.DBConnection)
+  @tagged('entity', Expense.name)
+  declare protected readonly dbConnection: DBConnection<ExpenseProps>;
 
   fromPlainObject(data: WithId<ExpenseProps>): WithId<Expense> {
     const expense = new Expense();

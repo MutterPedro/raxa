@@ -1,4 +1,4 @@
-import { SyntheticEvent, useState } from 'react';
+import { SyntheticEvent, useEffect, useState } from 'react';
 
 import NewBillJumboButton from './expense/NewBillJumboButton';
 import NewBillForm from './expense/NewBillForm';
@@ -8,13 +8,19 @@ import NewBillFloatButton from './expense/NewBillFloatButton';
 import { useBillService } from './state/BillServiceContext';
 
 export default function MainContainer() {
-  const billService = useBillService();
   const [showingForm, showForm] = useState(false);
+  const billService = useBillService();
   const [bills, setBills] = useState<Bill[]>([]);
 
-  billService.getBills().then((bills) => {
-    setBills(bills);
-  });
+  useEffect(
+    function () {
+      billService
+        .getBills()
+        .catch(console.error)
+        .then((newBills) => setBills(newBills || []));
+    },
+    [billService],
+  );
 
   async function handleSubmitBill(event: SyntheticEvent) {
     event.preventDefault();

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import Bill from '../../core/entities/Bill';
@@ -16,7 +16,9 @@ export default function BillItem({ bill }: { bill: Bill }) {
 
   const [total, setTotal] = useState<number>(0);
 
-  billService.getTotal(bill.id).then((t) => setTotal(t));
+  useEffect(() => {
+    billService.getTotal(bill.id).then((t) => setTotal(t));
+  }, [billService, bill]);
 
   return (
     <div

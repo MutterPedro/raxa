@@ -1,4 +1,5 @@
-import { create } from 'react-test-renderer';
+import { render } from '@testing-library/react';
+
 import NewBillJumboButton from '../../../src/components/expense/NewBillJumboButton';
 
 describe('NewExpenseJumboButton.tsx', function () {
@@ -8,7 +9,7 @@ describe('NewExpenseJumboButton.tsx', function () {
     });
 
     it('should render correctly #sanity', function () {
-      const tree = create(<NewBillJumboButton handleOnClick={() => {}} />).toJSON();
+      const tree = render(<NewBillJumboButton handleOnClick={() => {}} />).asFragment();
       expect(tree).toMatchSnapshot();
     });
   });

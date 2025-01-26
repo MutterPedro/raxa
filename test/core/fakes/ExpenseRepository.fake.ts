@@ -5,7 +5,7 @@ import { MemoryDBConnection } from './DBConnection.fake';
 
 export class ExpenseRepositoryFake extends ExpenseRepository {
   static build(dbConn?: DBConnection<ExpenseProps>): ExpenseRepositoryFake {
-    return new ExpenseRepositoryFake(() => dbConn || new MemoryDBConnection<ExpenseProps>());
+    return new ExpenseRepositoryFake(dbConn || new MemoryDBConnection<ExpenseProps>());
   }
 
   static buildNullable(): ExpenseRepositoryFake {

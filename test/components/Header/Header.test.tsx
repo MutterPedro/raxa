@@ -1,4 +1,3 @@
-import { create } from 'react-test-renderer';
 import { render } from '@testing-library/react';
 
 import Header from '../../../src/components/header/Header';
@@ -10,7 +9,7 @@ describe('Header.tsx', function () {
     });
 
     it('should render correctly #sanity', function () {
-      const tree = create(<Header />).toJSON();
+      const tree = render(<Header />).asFragment();
       expect(tree).toMatchSnapshot();
     });
   });

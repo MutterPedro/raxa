@@ -1,4 +1,4 @@
-import type Dexie from 'dexie';
+import Dexie from 'dexie';
 import { TABLES } from '../../core/utils/decorators';
 
 import '../../core/entities';
@@ -11,6 +11,10 @@ export function applyMigrations(db: Dexie) {
     Object.keys(tableVersions).forEach((version) => versions.add(Number(version)));
   }
 
+  createStores(tables, versions, db);
+}
+
+function createStores(tables: { [s: string]: Record<number, string> }, versions: Set<number>, db: Dexie) {
   let storesVersions: { [x: number]: Record<string, string> } = {};
   for (const [table, tableVersions] of Object.entries<Record<number, string>>(tables)) {
     const biggestVersion = Math.max(...Object.keys(tableVersions).map(Number));
