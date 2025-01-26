@@ -4,6 +4,7 @@ import { useBillService } from '../state/BillServiceContext';
 import Bill from '../../core/entities/Bill';
 import LoadingGauge from '../common/LoadingGuage';
 import NewExpenseForm from './NewExpenseForm';
+import Expense from '../../core/entities/Expense';
 
 export default function BillDetail() {
   const { billId } = useParams();
@@ -26,9 +27,14 @@ export default function BillDetail() {
       .catch(console.error);
   }, [billService, billId]);
 
+  function onExpenseCreated(expense: Expense) {
+    setShowForm(false);
+    setTotal(total + expense.amount);
+  }
+
   return bill ? (
     showForm ? (
-      <NewExpenseForm bill={bill} handleCancel={() => setShowForm(false)} />
+      <NewExpenseForm bill={bill} handleCancel={() => setShowForm(false)} onExpenseCreated={onExpenseCreated} />
     ) : (
       <div className="relative w-full bg-white px-6 pt-10 pb-8 mt-8 shadow-xl ring-1 ring-gray-900/5 sm:mx-auto sm:max-w-2xl sm:rounded-lg sm:px-10">
         <div className="mx-auto px-5">
@@ -40,7 +46,10 @@ export default function BillDetail() {
             <div className="py-5">
               <details className="group">
                 <summary className="flex cursor-pointer list-none items-center justify-between font-medium">
-                  <span className="font-bold"> Total R$ {total.toFixed(2)}</span>
+                  <span className="font-bold" data-testid="bill-total-span">
+                    {' '}
+                    Total R$ {total.toFixed(2)}
+                  </span>
                   <span className="transition group-open:rotate-180">
                     <svg
                       fill="none"
