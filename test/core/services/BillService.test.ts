@@ -94,5 +94,35 @@ describe('BillService.ts', function () {
 
       expect(await service.getTotal(bill.id)).toBe(100 + expenseAmount);
     });
+
+    it('should list all the expenses of a bill #unit', async function () {
+      const conn = new MemoryDBConnection<BillProps>();
+      const conn2 = new MemoryDBConnection<ExpenseProps>();
+      const fakeBillRepo = BillRepositoryFake.build(conn);
+      const fakeExpenseRepo = ExpenseRepositoryFake.build(conn2);
+      const service = new BillService(fakeBillRepo, fakeExpenseRepo);
+
+      const bill = await service.createBill({ name: 'test' });
+      const expense = await service.addExpense(bill.id, {
+        name: 'expense',
+        amount: 111,
+        date: new Date().toISOString(),
+        participantIds: [1, 2],
+        payerId: 1,
+      });
+      const expense2 = await service.addExpense(bill.id, {
+        name: 'expense2',
+        amount: 222,
+        date: new Date().toISOString(),
+        participantIds: [1, 2],
+        payerId: 1,
+      });
+
+      const expenses = await service.getExpenses(bill.id);
+
+      expect(expenses).toHaveLength(2);
+      expect(expenses[0].name).toEqual(expense.name);
+      expect(expenses[1].name).toEqual(expense2.name);
+    });
   });
 });

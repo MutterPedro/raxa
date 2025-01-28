@@ -5,6 +5,7 @@ import Bill from '../../core/entities/Bill';
 import LoadingGauge from '../common/LoadingGuage';
 import NewExpenseForm from './NewExpenseForm';
 import Expense from '../../core/entities/Expense';
+import ExpenseItem from './ExpenseItem';
 
 export default function BillDetail() {
   const { billId } = useParams();
@@ -13,6 +14,7 @@ export default function BillDetail() {
   const [bill, setBill] = useState<Bill | null>(null);
   const [total, setTotal] = useState<number>(0);
   const [showForm, setShowForm] = useState<boolean>(false);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
 
   useEffect(() => {
     billService
@@ -25,11 +27,13 @@ export default function BillDetail() {
       .getTotal(Number(billId))
       .then((t) => setTotal(t))
       .catch(console.error);
+    billService.getExpenses(Number(billId)).then((expenses) => setExpenses(expenses));
   }, [billService, billId]);
 
   function onExpenseCreated(expense: Expense) {
     setShowForm(false);
     setTotal(total + expense.amount);
+    setExpenses([...expenses, expense]);
   }
 
   return bill ? (
@@ -66,11 +70,13 @@ export default function BillDetail() {
                     </svg>
                   </span>
                 </summary>
-                <p className="group-open:animate-fadeIn mt-3 text-neutral-600">
-                  Springerdata offers a variety of billing options, including monthly and annual subscription plans, as
-                  well as pay-as-you-go pricing for certain services. Payment is typically made through a credit card or
-                  other secure online payment method.
-                </p>
+                <div className="group-open:animate-fadeIn mt-3 text-neutral-600">
+                  <ul className="bg-white overflow-hidden sm:rounded-md max-w-full mt-5">
+                    {expenses.map((expense) => (
+                      <ExpenseItem expense={expense} />
+                    ))}
+                  </ul>
+                </div>
               </details>
             </div>
             <div className="py-5">

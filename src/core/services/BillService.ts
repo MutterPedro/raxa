@@ -34,6 +34,11 @@ export class BillService {
     return this.expenseRepo.save(expense);
   }
 
+  async getExpenses(billId: number): Promise<Expense[]> {
+    const expenses = await this.expenseRepo.filter({ billId });
+    return expenses;
+  }
+
   async getTotal(billId: number): Promise<number> {
     const expenses = await this.expenseRepo.filter({ billId });
 
