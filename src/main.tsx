@@ -6,16 +6,16 @@ import { BrowserRouter } from 'react-router';
 import App from './App.tsx';
 import './index.css';
 import { init } from './infra/init.ts';
-import { BillServiceProvider } from './components/state/BillServiceContext.tsx';
+import { ServicesProvider } from './components/state/ServicesProvider.tsx';
 
 init();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BillServiceProvider>
+    <ServicesProvider>
       <BrowserRouter>
         <App />
       </BrowserRouter>
-    </BillServiceProvider>
+    </ServicesProvider>
   </React.StrictMode>,
 );

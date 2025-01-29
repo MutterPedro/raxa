@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
-import { useBillService } from '../state/BillServiceContext';
+import { useBillService } from '../state/useBillService';
 import Bill from '../../core/entities/Bill';
 import LoadingGauge from '../common/LoadingGuage';
 import NewExpenseForm from './NewExpenseForm';

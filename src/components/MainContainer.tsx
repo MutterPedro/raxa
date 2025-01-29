@@ -5,7 +5,7 @@ import NewBillForm from './expense/NewBillForm';
 import BillsList from './expense/BillsList';
 import Bill from '../core/entities/Bill';
 import NewBillFloatButton from './expense/NewBillFloatButton';
-import { useBillService } from './state/BillServiceContext';
+import { useBillService } from './state/useBillService';
 
 export default function MainContainer() {
   const [showingForm, showForm] = useState(false);

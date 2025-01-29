@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Select from 'react-select';
 import Bill from '../../core/entities/Bill';
-import { useBillService } from '../state/BillServiceContext';
+import { useBillService } from '../state/useBillService';
 import Expense from '../../core/entities/Expense';
 
 interface NewExpenseFormProps {

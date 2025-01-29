@@ -2,7 +2,7 @@ import { render } from '@testing-library/react';
 
 import NewBillJumboButton from '../../../src/components/expense/NewBillJumboButton';
 
-describe('NewExpenseJumboButton.tsx', function () {
+describe('NewBillJumboButton.tsx', function () {
   describe('Sanity tests', function () {
     it('should exists #sanity', function () {
       expect(NewBillJumboButton).not.toBeFalsy();
@@ -13,6 +13,4 @@ describe('NewExpenseJumboButton.tsx', function () {
       expect(tree).toMatchSnapshot();
     });
   });
-
-  describe('Unit tests', function () {});
 });

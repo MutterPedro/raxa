@@ -11,6 +11,8 @@ import { BillProps, ExpenseProps, UserProps } from './core/entities';
 import User from './core/entities/User';
 import Bill from './core/entities/Bill';
 import Expense from './core/entities/Expense';
+import { UserRepository } from './core/repositories/UserRepository';
+import { UserService } from './core/services/UserService';
 
 export const myContainer = new Container();
 
@@ -48,9 +50,15 @@ myContainer
 myContainer.bind<BillRepository>(TYPES.BillRepository).to(BillRepository).inSingletonScope();
 myContainer.bind<ExpenseRepository>(TYPES.ExpenseRepository).to(ExpenseRepository).inSingletonScope();
 myContainer.bind<BillService>(TYPES.BillService).to(BillService).inSingletonScope();
+myContainer.bind<UserRepository>(TYPES.UserRepository).to(UserRepository).inSingletonScope();
+myContainer.bind<UserService>(TYPES.UserService).to(UserService).inSingletonScope();
 
 export function billServiceFactory() {
   return myContainer.get<BillService>(TYPES.BillService);
+}
+
+export function userServiceFactory() {
+  return myContainer.get<UserService>(TYPES.UserService);
 }
 
 export function dexieFactory() {

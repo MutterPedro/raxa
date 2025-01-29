@@ -1,15 +1,17 @@
 import { BillProps, ExpenseProps } from '../../../src/core/entities';
 import { BillService } from '../../../src/core/services/BillService';
+import { UserService } from '../../../src/core/services/UserService';
 import { BillRepositoryFake } from '../fakes/BillRepository.fake';
 import { MemoryDBConnection } from '../fakes/DBConnection.fake';
 import { ExpenseRepositoryFake } from '../fakes/ExpenseRepository.fake';
+import { UserRepositoryFake } from '../fakes/UserRepository.fake';
 
 describe('BillService.ts', function () {
   describe('Unit tests', function () {
     it('should add a new bill anonymously #unit', async function () {
       const conn = new MemoryDBConnection<BillProps>();
       const fakeRepo = BillRepositoryFake.build(conn);
-      const service = new BillService(fakeRepo, ExpenseRepositoryFake.buildNullable());
+      const service = new BillService(fakeRepo, ExpenseRepositoryFake.build(), UserRepositoryFake.build());
 
       const name = 'test';
       const date = new Date();
@@ -27,7 +29,7 @@ describe('BillService.ts', function () {
     it('should add a new bill belonging to a provided user #unit', async function () {
       const conn = new MemoryDBConnection<BillProps>();
       const fakeRepo = BillRepositoryFake.build(conn);
-      const service = new BillService(fakeRepo, ExpenseRepositoryFake.buildNullable());
+      const service = new BillService(fakeRepo, ExpenseRepositoryFake.build(), UserRepositoryFake.build());
 
       const name = 'test';
       const ownerId = 1337;
@@ -43,11 +45,11 @@ describe('BillService.ts', function () {
     });
 
     it('should add a new expense to a bill #unit', async function () {
-      const conn = new MemoryDBConnection<BillProps>();
-      const conn2 = new MemoryDBConnection<ExpenseProps>();
-      const fakeBillRepo = BillRepositoryFake.build(conn);
-      const fakeExpenseRepo = ExpenseRepositoryFake.build(conn2);
-      const service = new BillService(fakeBillRepo, fakeExpenseRepo);
+      const conn = new MemoryDBConnection<ExpenseProps>();
+      const fakeBillRepo = BillRepositoryFake.build();
+      const fakeExpenseRepo = ExpenseRepositoryFake.build(conn);
+      const fakeUserRepo = UserRepositoryFake.build();
+      const service = new BillService(fakeBillRepo, fakeExpenseRepo, fakeUserRepo);
 
       const bill = await service.createBill({ name: 'test' });
       const expense = await service.addExpense(bill.id, {
@@ -64,16 +66,15 @@ describe('BillService.ts', function () {
       expect(expense.participantIds).toEqual([1, 2]);
       expect(expense.payerId).toBe(1);
       expect(expense.id).toBeGreaterThan(0);
-      expect(conn2.items).toHaveLength(1);
-      expect(conn2.items[0].id).toBe(expense.id);
+      expect(conn.items).toHaveLength(1);
+      expect(conn.items[0].id).toBe(expense.id);
     });
 
     it.each<number>([120, 50])('should calculate the total of a bill #unit', async function (expenseAmount) {
-      const conn = new MemoryDBConnection<BillProps>();
-      const conn2 = new MemoryDBConnection<ExpenseProps>();
-      const fakeBillRepo = BillRepositoryFake.build(conn);
-      const fakeExpenseRepo = ExpenseRepositoryFake.build(conn2);
-      const service = new BillService(fakeBillRepo, fakeExpenseRepo);
+      const fakeBillRepo = BillRepositoryFake.build();
+      const fakeExpenseRepo = ExpenseRepositoryFake.build();
+      const fakeUserRepo = UserRepositoryFake.build();
+      const service = new BillService(fakeBillRepo, fakeExpenseRepo, fakeUserRepo);
 
       const bill = await service.createBill({ name: 'test' });
       await service.addExpense(bill.id, {
@@ -96,11 +97,10 @@ describe('BillService.ts', function () {
     });
 
     it('should list all the expenses of a bill #unit', async function () {
-      const conn = new MemoryDBConnection<BillProps>();
-      const conn2 = new MemoryDBConnection<ExpenseProps>();
-      const fakeBillRepo = BillRepositoryFake.build(conn);
-      const fakeExpenseRepo = ExpenseRepositoryFake.build(conn2);
-      const service = new BillService(fakeBillRepo, fakeExpenseRepo);
+      const fakeBillRepo = BillRepositoryFake.build();
+      const fakeExpenseRepo = ExpenseRepositoryFake.build();
+      const fakeUserRepo = UserRepositoryFake.build();
+      const service = new BillService(fakeBillRepo, fakeExpenseRepo, fakeUserRepo);
 
       const bill = await service.createBill({ name: 'test' });
       const expense = await service.addExpense(bill.id, {
@@ -124,5 +124,48 @@ describe('BillService.ts', function () {
       expect(expenses[0].name).toEqual(expense.name);
       expect(expenses[1].name).toEqual(expense2.name);
     });
+
+    it.each<string[]>([
+      ['Fulano', 'Ciclanp', 'Beltrano'],
+      ['Maria', 'João', 'José', 'Pedro'],
+    ])('should list all the participants of a bill #unit', async function (...userNames: string[]) {
+      const fakeBillRepo = BillRepositoryFake.build();
+      const fakeExpenseRepo = ExpenseRepositoryFake.build();
+      const fakeUserRepo = UserRepositoryFake.build();
+      const userService = new UserService(fakeUserRepo);
+      const service = new BillService(fakeBillRepo, fakeExpenseRepo, fakeUserRepo);
+
+      const userIds = (
+        await Promise.all(
+          userNames.map(async (name) => {
+            const user = await userService.createUser({ name, email: 'random@email.com' });
+            return user;
+          }),
+        )
+      ).map((u) => u.id);
+
+      const bill = await service.createBill({ name: 'test' });
+      await service.addExpense(bill.id, {
+        name: 'expense',
+        amount: 111,
+        date: new Date().toISOString(),
+        participantIds: userIds.slice(0, 2),
+        payerId: 1,
+      });
+
+      await service.addExpense(bill.id, {
+        name: 'expense2',
+        amount: 222,
+        date: new Date().toISOString(),
+        participantIds: userIds,
+        payerId: 1,
+      });
+
+      const participants = await service.getParticipants(bill.id);
+
+      expect(participants.map((p) => p.name)).toEqual(userNames);
+    });
+
+    it('should list all the participants of a expense #unit', async function () {});
   });
 });

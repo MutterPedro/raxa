@@ -15,13 +15,13 @@ const toBeEntity: MatcherFunction = (actual: unknown) => {
   if (!tableName) {
     return {
       pass: false,
-      message: () => `Expected ${actual.constructor.name} is an entity`,
+      message: () => `Expected ${actual.constructor.name} to be an entity`,
     };
   }
 
   return {
     pass: true,
-    message: () => `Expected ${actual.constructor.name} to be an entity`,
+    message: () => `${actual.constructor.name} is an entity`,
   };
 };
 

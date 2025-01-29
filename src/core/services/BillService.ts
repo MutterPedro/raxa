@@ -7,12 +7,15 @@ import { ExpenseProps } from '../entities';
 import Expense from '../entities/Expense';
 import { ExpenseRepository } from '../repositories/ExpenseRepository';
 import { WithId } from '../../@types/utils';
+import User from '../entities/User';
+import { UserRepository } from '../repositories/UserRepository';
 
 @injectable()
 export class BillService {
   constructor(
     @inject(TYPES.BillRepository) private readonly billRepo: BillRepository,
     @inject(TYPES.ExpenseRepository) private readonly expenseRepo: ExpenseRepository,
+    @inject(TYPES.UserRepository) private readonly userRepo: UserRepository,
   ) {}
 
   async createBill(values: { name: string; date?: Date; ownerId?: number }): Promise<Bill> {
@@ -47,5 +50,21 @@ export class BillService {
 
   async getById(billId: number): Promise<WithId<Bill> | null> {
     return this.billRepo.getById(billId);
+  }
+
+  async getParticipants(billId: number): Promise<User[]> {
+    const expenses = await this.getExpenses(billId);
+    const participantsIds = new Set(expenses.flatMap((expense) => expense.participantIds));
+
+    const userList = [];
+
+    for (const participantId of participantsIds) {
+      const user = await this.userRepo.getById(participantId);
+      if (user) {
+        userList.push(user);
+      }
+    }
+
+    return userList;
   }
 }

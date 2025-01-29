@@ -20,7 +20,7 @@ export class MemoryDBConnection<T extends object> implements DBConnection<T> {
   }
 
   async getById(id: number): Promise<void | WithId<T>> {
-    return { ...this.items[id - 1], id };
+    return this.items[id - 1] ? { ...this.items[id - 1], id } : undefined;
   }
 
   async list(): Promise<WithId<T>[]> {
