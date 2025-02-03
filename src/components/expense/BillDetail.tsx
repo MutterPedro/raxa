@@ -6,6 +6,7 @@ import LoadingGauge from '../common/LoadingGuage';
 import NewExpenseForm from './NewExpenseForm';
 import Expense from '../../core/entities/Expense';
 import ExpenseItem from './ExpenseItem';
+import BillParticipantsPartList from './BillParticipantsPartList';
 
 export default function BillDetail() {
   const { billId } = useParams();
@@ -73,7 +74,7 @@ export default function BillDetail() {
                 <div className="group-open:animate-fadeIn mt-3 text-neutral-600">
                   <ul className="bg-white overflow-hidden sm:rounded-md max-w-full mt-5">
                     {expenses.map((expense) => (
-                      <ExpenseItem expense={expense} />
+                      <ExpenseItem expense={expense} key={expense.id} />
                     ))}
                   </ul>
                 </div>
@@ -99,18 +100,14 @@ export default function BillDetail() {
                     </svg>
                   </span>
                 </summary>
-                <p className="group-open:animate-fadeIn mt-3 text-neutral-600">
-                  We offer a 30-day money-back guarantee for most of its subscription plans. If you are not satisfied
-                  with your subscription within the first 30 days, you can request a full refund. Refunds for
-                  subscriptions that have been active for longer than 30 days may be considered on a case-by-case basis.
-                </p>
+                <BillParticipantsPartList billId={Number(billId)} />
               </details>
             </div>
           </div>
           <div className="mx-auto mt-8 grid max-w-xl divide-y divide-neutral-200 justify-center align-middle">
             <button
               type="button"
-              className="bg-primary text-secondary-color align-middle arvo-bold text-center rounded-full max-h-36 px-12 py-5"
+              className="bg-primary text-secondary-color align-middle arvo-bold text-center rounded-full max-h-36 px-12 py-5 cursor-pointer"
               onClick={() => setShowForm(true)}
               data-testid="new-expense-button"
             >

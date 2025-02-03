@@ -28,7 +28,6 @@ export class BillService {
   }
 
   async getBills(page: number = 1): Promise<Bill[]> {
-    // debugger;
     return this.billRepo.list(page);
   }
 
@@ -43,7 +42,7 @@ export class BillService {
   }
 
   async getTotal(billId: number): Promise<number> {
-    const expenses = await this.expenseRepo.filter({ billId });
+    const expenses = await this.getExpenses(billId);
 
     return expenses.reduce((acc, expense) => acc + expense.amount, 0);
   }
@@ -66,5 +65,30 @@ export class BillService {
     }
 
     return userList;
+  }
+
+  async getParticipantsParts(billId: number): Promise<{ amount: number; user: User }[]> {
+    const participants = await this.getParticipants(billId);
+    const expenses = await this.getExpenses(billId);
+
+    return participants.map((user) => {
+      const amount = expenses.reduce((acc, expense) => {
+        if (expense.participantIds.includes(user.id)) {
+          const part = acc + expense.amount / expense.participantIds.length;
+
+          if (expense.payerId === user.id) {
+            return part - expense.amount;
+          }
+
+          return part;
+        }
+        return acc;
+      }, 0);
+
+      return {
+        amount,
+        user,
+      };
+    });
   }
 }

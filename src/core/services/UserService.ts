@@ -30,4 +30,8 @@ export class UserService {
     user.email = 'placeholder@email.com';
     return this.userRepo.save(user);
   }
+
+  async getUsers(): Promise<User[]> {
+    return this.userRepo.list(1);
+  }
 }

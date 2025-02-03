@@ -1,3 +1,4 @@
+import casual from 'casual';
 import { BillProps, ExpenseProps } from '../../../src/core/entities';
 import { BillService } from '../../../src/core/services/BillService';
 import { UserService } from '../../../src/core/services/UserService';
@@ -126,8 +127,8 @@ describe('BillService.ts', function () {
     });
 
     it.each<string[]>([
-      ['Fulano', 'Ciclanp', 'Beltrano'],
-      ['Maria', 'João', 'José', 'Pedro'],
+      [casual.name, casual.name, casual.name],
+      [casual.name, casual.name, casual.name, casual.name],
     ])('should list all the participants of a bill #unit', async function (...userNames: string[]) {
       const fakeBillRepo = BillRepositoryFake.build();
       const fakeExpenseRepo = ExpenseRepositoryFake.build();
@@ -138,7 +139,7 @@ describe('BillService.ts', function () {
       const userIds = (
         await Promise.all(
           userNames.map(async (name) => {
-            const user = await userService.createUser({ name, email: 'random@email.com' });
+            const user = await userService.createUser({ name, email: casual.email });
             return user;
           }),
         )
@@ -166,6 +167,47 @@ describe('BillService.ts', function () {
       expect(participants.map((p) => p.name)).toEqual(userNames);
     });
 
-    it('should list all the participants of a expense #unit', async function () {});
+    it('should list all the participants of a bill with their part of the total #unit', async function () {
+      const fakeBillRepo = BillRepositoryFake.build();
+      const fakeExpenseRepo = ExpenseRepositoryFake.build();
+      const fakeUserRepo = UserRepositoryFake.build();
+      const userService = new UserService(fakeUserRepo);
+      const service = new BillService(fakeBillRepo, fakeExpenseRepo, fakeUserRepo);
+
+      const user1 = await userService.createUser({ name: casual.name, email: casual.email });
+      const user2 = await userService.createUser({ name: casual.name, email: casual.email });
+      const user3 = await userService.createUser({ name: casual.name, email: casual.email });
+
+      const bill = await service.createBill({ name: 'test' });
+      await service.addExpense(bill.id, {
+        name: casual.title,
+        amount: 500,
+        date: new Date().toISOString(),
+        participantIds: [user1.id, user2.id],
+        payerId: user1.id,
+      });
+      await service.addExpense(bill.id, {
+        name: casual.title,
+        amount: 300,
+        date: new Date().toISOString(),
+        participantIds: [user1.id, user2.id, user3.id],
+        payerId: user3.id,
+      });
+      await service.addExpense(bill.id, {
+        name: casual.title,
+        amount: 150,
+        date: new Date().toISOString(),
+        participantIds: [user1.id, user2.id, user3.id],
+        payerId: user1.id,
+      });
+
+      const parts = await service.getParticipantsParts(bill.id);
+      expect(parts).toHaveLength(3);
+
+      const sorted = parts.sort((a, b) => a.user.id - b.user.id);
+      expect(sorted[0].amount).toBe(-250);
+      expect(sorted[1].amount).toBe(400);
+      expect(sorted[2].amount).toBe(-150);
+    });
   });
 });

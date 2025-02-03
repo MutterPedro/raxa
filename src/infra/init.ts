@@ -1,12 +1,15 @@
 import { IndexedDBConnection } from './DBConnection.ts';
 import { applyMigrations } from './migrations';
 
-import { dexieFactory } from '../inversify.config';
+import { dexieFactory, userServiceFactory } from '../inversify.config';
 
 export function init(): void {
   const conn = dexieFactory();
 
   applyMigrations(conn);
+
+  const userService = userServiceFactory();
+  userService.createSelf().catch(console.error);
 
   // infra test helpers
   window.createTable = createTable;

@@ -38,5 +38,22 @@ describe('UserService.ts', function () {
       expect(user2.id).toBe(user.id);
       expect(conn.items).toHaveLength(1);
     });
+
+    it('should list all the users #unit', async function () {
+      const fakeRepo = UserRepositoryFake.build();
+      const service = new UserService(fakeRepo);
+
+      expect(await service.getUsers()).toHaveLength(0);
+
+      const user1 = await service.createUser({ name: casual.name, email: casual.email });
+      const user2 = await service.createUser({ name: casual.name, email: casual.email });
+      const user3 = await service.createUser({ name: casual.name, email: casual.email });
+
+      const users = await service.getUsers();
+      expect(users).toHaveLength(3);
+      expect(users).toContainEqual(user1);
+      expect(users).toContainEqual(user2);
+      expect(users).toContainEqual(user3);
+    });
   });
 });
