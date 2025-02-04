@@ -1,11 +1,24 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Expense from '../../core/entities/Expense';
+import Avatar from '../common/Avatar';
+import User from '../../core/entities/User';
+import { useUserService } from '../state/useUserService';
 
 interface ExpenseItemProps {
   expense: Expense;
 }
 
 const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense }) => {
+  const [participants, setParticipants] = useState<User[]>([]);
+  const userService = useUserService();
+
+  useEffect(() => {
+    userService
+      .getByIds(expense.participantIds)
+      .then((list) => setParticipants(list))
+      .catch(console.error);
+  }, [userService, expense]);
+
   return (
     <li>
       <div className="px-2 py-5">
@@ -15,7 +28,11 @@ const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense }) => {
         </div>
         <div className="mt-4 flex items-center justify-between">
           <p className="text-sm font-medium text-gray-500">
-            Participantes: <span className="text-green-600">Active</span>
+            <div className="flex -space-x-2">
+              {participants.map((p, index) => (
+                <Avatar key={index} user={p} size="30px" highlight={p.id === expense.payerId} />
+              ))}
+            </div>
           </p>
           <a href="#" className="font-medium text-secondary-primary hover:green-900">
             R$ {expense.amount.toFixed(2)}

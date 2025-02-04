@@ -92,7 +92,7 @@ const NewExpenseForm: React.FC<NewExpenseFormProps> = ({ handleCancel, onExpense
             Data:
           </label>
           <input
-            type="date"
+            type="datetime-local"
             id="date"
             name="date"
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white"
@@ -105,6 +105,8 @@ const NewExpenseForm: React.FC<NewExpenseFormProps> = ({ handleCancel, onExpense
           </label>
           <input
             type="number"
+            step="0.01"
+            min="0"
             id="amount"
             name="amount"
             data-testid="new-expense-form-amount-input"

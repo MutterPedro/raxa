@@ -34,4 +34,9 @@ export class UserService {
   async getUsers(): Promise<User[]> {
     return this.userRepo.list(1);
   }
+
+  async getByIds(ids: number[]): Promise<User[]> {
+    const list = await Promise.all(ids.map((id) => this.userRepo.getById(id)));
+    return list.filter((u) => !!u);
+  }
 }

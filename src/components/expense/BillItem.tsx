@@ -3,21 +3,27 @@ import { useNavigate } from 'react-router';
 
 import Bill from '../../core/entities/Bill';
 import { useBillService } from '../state/useBillService';
-
-const avatars = [
-  'https://images.unsplash.com/photo-1505840717430-882ce147ef2d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-  'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-];
+import User from '../../core/entities/User';
+import Avatar from '../common/Avatar';
 
 export default function BillItem({ bill }: { bill: Bill }) {
   const navigate = useNavigate();
   const billService = useBillService();
 
   const [total, setTotal] = useState<number>(0);
+  const [participants, setParticipants] = useState<User[]>([]);
 
   useEffect(() => {
-    billService.getTotal(bill.id).then((t) => setTotal(t));
+    billService
+      .getTotal(bill.id)
+      .then((t) => setTotal(t))
+      .catch(console.error);
+    billService
+      .getParticipants(bill.id)
+      .then((users) => {
+        setParticipants(users);
+      })
+      .catch(console.error);
   }, [billService, bill]);
 
   return (
@@ -31,14 +37,13 @@ export default function BillItem({ bill }: { bill: Bill }) {
           {bill.name}
         </h2>
         <p className="text-sm text-gray-500">
-          {'Fulano, Beltrano, Ciclano'} &middot; {bill.date.toLocaleDateString()} &middot;{' '}
-          {bill.date.toLocaleTimeString()}
+          {participants.map((p) => p.name).join(', ')} &middot; {bill.date.toLocaleDateString()}
         </p>
       </div>
       <div className="flex items-center space-x-4 w-1/3">
         <div className="flex -space-x-2">
-          {avatars.map((avatar, index) => (
-            <img key={index} src={avatar} alt="Avatar" className="w-8 h-8 rounded-full border-2 border-white" />
+          {participants.map((p, index) => (
+            <Avatar key={index} user={p} size="30px" />
           ))}
         </div>
         <div className="flex items-center text-gray-500 font-semibold w-1/2">

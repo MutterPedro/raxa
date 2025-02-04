@@ -50,3 +50,11 @@
   font-weight: 700;
   font-style: italic;
 }
+
+.ava-group-hover\:block {
+  &:is(:where(.ava-group):hover *) {
+    @media (hover: hover) {
+      display: block;
+    }
+  }
+}
