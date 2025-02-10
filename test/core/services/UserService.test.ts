@@ -51,9 +51,27 @@ describe('UserService.ts', function () {
 
       const users = await service.getUsers();
       expect(users).toHaveLength(3);
-      expect(users).toContainEqual(user1);
-      expect(users).toContainEqual(user2);
-      expect(users).toContainEqual(user3);
+      expect(users.map((u) => u.id)).toContainEqual(user1.id);
+      expect(users.map((u) => u.id)).toContainEqual(user2.id);
+      expect(users.map((u) => u.id)).toContainEqual(user3.id);
+    });
+
+    it('should sign up the self user #unit', async function () {
+      const conn = new MemoryDBConnection<UserProps>();
+      const fakeRepo = UserRepositoryFake.build(conn);
+      const service = new UserService(fakeRepo);
+
+      const email = casual.email;
+      const password = casual.password;
+      const name = casual.name;
+      const user = await service.signUp(email, password, name);
+
+      expect(user).toBeDefined();
+      expect(user.email).toBe(email);
+      expect(user.name).toBe(name);
+      expect(user.id).toBeGreaterThan(0);
+      expect(conn.items).toHaveLength(1);
+      expect(conn.items[0].id).toBe(user.id);
     });
   });
 });

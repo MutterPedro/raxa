@@ -2,7 +2,7 @@ import { inject, injectable, tagged } from 'inversify';
 import { BillProps } from '../entities';
 import { BaseRepository } from './BaseRepository';
 import { TYPES } from '../../infra/di';
-import { DBConnection } from '../../infra/DBConnection';
+import type { DBConnection } from '../../infra/DBConnection';
 import Bill from '../entities/Bill';
 
 @injectable()

@@ -13,11 +13,15 @@ import Bill from './core/entities/Bill';
 import Expense from './core/entities/Expense';
 import { UserRepository } from './core/repositories/UserRepository';
 import { UserService } from './core/services/UserService';
+import type { FirebaseApp } from 'firebase/app';
+import { app } from './infra/firebase';
 
 export const myContainer = new Container();
 
 const db = new Dexie('raxa');
 myContainer.bind<Dexie>(TYPES.Dexie).toConstantValue(db);
+
+myContainer.bind<FirebaseApp>(TYPES.FirebaseApp).toConstantValue(app);
 
 myContainer
   .bind<DBConnection<UserProps>>(TYPES.DBConnection)

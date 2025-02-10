@@ -39,4 +39,12 @@ export class UserService {
     const list = await Promise.all(ids.map((id) => this.userRepo.getById(id)));
     return list.filter((u) => !!u);
   }
+
+  async signUp(email: string, password: string, name: string): Promise<User> {
+    const user = new User();
+    user.email = email;
+    user.name = name;
+    console.log({ password });
+    return user;
+  }
 }

@@ -3,7 +3,7 @@ import { inject, tagged } from 'inversify';
 import { ExpenseProps } from '../entities';
 import { BaseRepository } from './BaseRepository';
 import { TYPES } from '../../infra/di';
-import { DBConnection } from '../../infra/DBConnection';
+import type { DBConnection } from '../../infra/DBConnection';
 import Expense from '../entities/Expense';
 import { WithId } from '../../@types/utils';
 

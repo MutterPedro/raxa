@@ -16,4 +16,6 @@ export default class User {
 
   @field(1, 'email')
   email: string = '';
+
+  logged_in: boolean = false;
 }

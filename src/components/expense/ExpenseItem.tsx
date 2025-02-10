@@ -27,13 +27,12 @@ const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense }) => {
           <p className="mt-1 max-w-2xl text-sm text-gray-500">{expense.date.toLocaleString()}</p>
         </div>
         <div className="mt-4 flex items-center justify-between">
-          <p className="text-sm font-medium text-gray-500">
-            <div className="flex -space-x-2">
-              {participants.map((p, index) => (
-                <Avatar key={index} user={p} size="30px" highlight={p.id === expense.payerId} />
-              ))}
-            </div>
-          </p>
+          <div className="text-sm font-medium text-gray-500 flex -space-x-2">
+            {participants.map((p, index) => (
+              <Avatar key={index} user={p} size="30px" highlight={p.id === expense.payerId} />
+            ))}
+          </div>
+
           <a href="#" className="font-medium text-secondary-primary hover:green-900">
             R$ {expense.amount.toFixed(2)}
           </a>

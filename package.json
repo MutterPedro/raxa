@@ -12,7 +12,7 @@
     "format": "prettier --write .",
     "preview": "vite preview",
     "prepare": "husky",
-    "test": "jest",
+    "test": "NODE_OPTIONS=\"--experimental-vm-modules\" jest",
     "cucumber": "jest --testMatch **/*.steps.ts --testEnvironment node",
     "test:bdd": "concurrently --kill-others \"npm run dev:host\" \"sleep 2 && npm run cucumber\"",
     "test:coverage": "npm run test -- --collectCoverage",
@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "dexie": "^4.0.11",
+    "firebase": "^11.3.0",
     "inversify": "^6.2.1",
     "nanoid": "^5.0.9",
     "react": "^19.0.0",
