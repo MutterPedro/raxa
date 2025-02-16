@@ -20,7 +20,7 @@ describe('BillService.ts', function () {
 
       expect(bill).toBeDefined();
       expect(bill.name).toBe(name);
-      expect(bill.date).toBe(date);
+      expect(bill.date.toISOString()).toBe(date.toISOString());
       expect(bill.ownerId).toBeFalsy();
       expect(bill.id).toBeGreaterThan(0);
       expect(conn.items).toHaveLength(1);

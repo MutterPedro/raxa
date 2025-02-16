@@ -2,7 +2,7 @@ import type { Config } from 'jest';
 
 const config: Config = {
   verbose: true,
-  preset: 'ts-jest/presets/default-esm',
+  preset: 'ts-jest',
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['./test/setup.ts'],
   collectCoverageFrom: ['src/**/*.{tsx,ts}'],
@@ -22,10 +22,6 @@ const config: Config = {
   testRunner: 'jest-circus/runner',
   reporters: ['default'],
   modulePathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/test/integration'],
-  transformIgnorePatterns: ['node_modules/(?!(@firebase|firebase)/)'],
-  moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
-  },
 };
 
 export default config;

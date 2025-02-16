@@ -3,7 +3,7 @@ import { Container, interfaces } from 'inversify';
 
 import { DBConnection, IndexedDBConnection } from './infra/DBConnection';
 import { TYPES } from './infra/di';
-import { TABLE_NAME } from './core/utils/decorators';
+import { TABLE_NAME } from './core/utils/decorators/database';
 import { BillRepository } from './core/repositories/BillRepository';
 import { BillService } from './core/services/BillService';
 import { ExpenseRepository } from './core/repositories/ExpenseRepository';
@@ -53,8 +53,8 @@ myContainer
 
 myContainer.bind<BillRepository>(TYPES.BillRepository).to(BillRepository).inSingletonScope();
 myContainer.bind<ExpenseRepository>(TYPES.ExpenseRepository).to(ExpenseRepository).inSingletonScope();
-myContainer.bind<BillService>(TYPES.BillService).to(BillService).inSingletonScope();
 myContainer.bind<UserRepository>(TYPES.UserRepository).to(UserRepository).inSingletonScope();
+myContainer.bind<BillService>(TYPES.BillService).to(BillService).inSingletonScope();
 myContainer.bind<UserService>(TYPES.UserService).to(UserService).inSingletonScope();
 
 export function billServiceFactory() {

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { DBConnection } from '../../infra/DBConnection';
 
-import { TABLE_FIELDS } from '../utils/decorators';
+import { TABLE_FIELDS } from '../utils/decorators/database';
 import { WithId } from '../../@types/utils';
 import { injectable } from 'inversify';
 
@@ -10,7 +10,7 @@ interface BaseEntity {
 }
 
 @injectable()
-export class BaseRepository<T extends BaseEntity, P extends object = object> {
+export abstract class BaseRepository<T extends BaseEntity, P extends object = object> {
   constructor(protected readonly dbConnection: DBConnection<P>) {}
 
   toPlainObject(entity: T): P {
@@ -31,22 +31,24 @@ export class BaseRepository<T extends BaseEntity, P extends object = object> {
     }, {});
   }
 
-  fromPlainObject(data: WithId<P>): WithId<T> {
-    //@ts-expect-error
-    return data as WithId<T>;
+  abstract fromPlainObject(data: WithId<P>): WithId<T>;
+
+  async create(entity: WithId<T>): Promise<WithId<T>> {
+    const obj = await this.dbConnection.add(this.toPlainObject(entity));
+
+    return this.fromPlainObject(obj);
   }
 
   async save(entity: T): Promise<WithId<T>> {
-    if (entity.id <= 0) {
+    if (!entity.id || entity.id <= 0) {
       //@ts-ignore
       delete entity.id;
-      const { id } = await this.dbConnection.add(this.toPlainObject(entity));
-
-      return { ...entity, id };
+      return this.create(entity);
     }
 
     await this.dbConnection.update(entity.id, this.toPlainObject(entity));
-    return { ...entity };
+    const updated = await this.getById(entity.id);
+    return updated!;
   }
 
   async list(page: number): Promise<WithId<T>[]> {

@@ -1,5 +1,5 @@
 import Dexie from 'dexie';
-import { TABLES } from '../../core/utils/decorators';
+import { TABLES } from '../../core/utils/decorators/database';
 
 import '../../core/entities';
 

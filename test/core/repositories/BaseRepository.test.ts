@@ -1,5 +1,5 @@
 import { BaseRepository } from '../../../src/core/repositories/BaseRepository';
-import { auto_increment_field, field, table } from '../../../src/core/utils/decorators';
+import { auto_increment_field, field, table } from '../../../src/core/utils/decorators/database';
 import { MemoryDBConnection } from '../fakes/DBConnection.fake';
 
 interface TestEntityProps {
@@ -18,11 +18,22 @@ class TestEntity {
   public age: number = 0;
 }
 
+class TestRepository extends BaseRepository<TestEntity, TestEntityProps> {
+  fromPlainObject(data: TestEntityProps): TestEntity {
+    const entity = new TestEntity();
+    entity.id = data.id;
+    entity.name = data.name;
+    entity.age = data.age;
+
+    return entity;
+  }
+}
+
 describe('BaseEntity.ts', function () {
   describe('Unit tests', function () {
     it('should be persist on the database when save() successfully #unit', async function () {
       const mockedDbConnection = new MemoryDBConnection<TestEntityProps>();
-      const repo = new BaseRepository(mockedDbConnection);
+      const repo = new TestRepository(mockedDbConnection);
 
       const testEntity = new TestEntity();
       testEntity.name = 'John';
@@ -50,7 +61,7 @@ describe('BaseEntity.ts', function () {
 
     it('should be update the instance on the database when it already exists and save() successfully #unit', async function () {
       const mockedDbConnection = new MemoryDBConnection<TestEntityProps>();
-      const repo = new BaseRepository(mockedDbConnection);
+      const repo = new TestRepository(mockedDbConnection);
 
       const testEntity = new TestEntity();
       testEntity.name = 'John';

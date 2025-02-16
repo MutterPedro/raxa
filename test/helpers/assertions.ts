@@ -1,6 +1,6 @@
 import { expect } from '@jest/globals';
 import type { MatcherFunction } from 'expect';
-import { TABLE_NAME } from '../../src/core/utils/decorators';
+import { TABLE_NAME } from '../../src/core/utils/decorators/database';
 
 const toBeEntity: MatcherFunction = (actual: unknown) => {
   if (typeof actual !== 'object' || actual === null) {

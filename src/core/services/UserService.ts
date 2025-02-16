@@ -2,10 +2,11 @@ import { inject, injectable } from 'inversify';
 import { TYPES } from '../../infra/di';
 import { UserRepository } from '../repositories/UserRepository';
 import User, { UserProps } from '../entities/User';
+import { synchronized } from '../utils/decorators';
 
 @injectable()
 export class UserService {
-  RESERVED_SELF_ID = 1;
+  private static RESERVED_SELF_ID = 1337;
 
   constructor(
     @inject(TYPES.UserRepository)
@@ -19,8 +20,9 @@ export class UserService {
     return this.userRepo.save(user);
   }
 
+  @synchronized()
   async createSelf(): Promise<User> {
-    const self = await this.userRepo.getById(this.RESERVED_SELF_ID);
+    const self = await this.userRepo.getById(UserService.RESERVED_SELF_ID);
     if (self) {
       return self;
     }
@@ -28,7 +30,8 @@ export class UserService {
     const user = new User();
     user.name = 'Eu';
     user.email = 'placeholder@email.com';
-    return this.userRepo.save(user);
+    user.id = UserService.RESERVED_SELF_ID;
+    return this.userRepo.create(user);
   }
 
   async getUsers(): Promise<User[]> {
@@ -40,11 +43,14 @@ export class UserService {
     return list.filter((u) => !!u);
   }
 
-  async signUp(email: string, password: string, name: string): Promise<User> {
-    const user = new User();
-    user.email = email;
-    user.name = name;
-    console.log({ password });
-    return user;
+  async signUp(email: string, _password: string, name: string): Promise<User> {
+    const self = await this.createSelf();
+    self.email = email;
+    self.name = name;
+
+    const updated = await this.userRepo.save(self);
+    this.userRepo.setLogged(updated);
+
+    return updated;
   }
 }

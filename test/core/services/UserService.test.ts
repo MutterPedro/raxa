@@ -58,7 +58,7 @@ describe('UserService.ts', function () {
 
     it('should sign up the self user #unit', async function () {
       const conn = new MemoryDBConnection<UserProps>();
-      const fakeRepo = UserRepositoryFake.build(conn);
+      const fakeRepo = await UserRepositoryFake.buildPopulated(conn, 5);
       const service = new UserService(fakeRepo);
 
       const email = casual.email;
@@ -69,9 +69,12 @@ describe('UserService.ts', function () {
       expect(user).toBeDefined();
       expect(user.email).toBe(email);
       expect(user.name).toBe(name);
-      expect(user.id).toBeGreaterThan(0);
-      expect(conn.items).toHaveLength(1);
-      expect(conn.items[0].id).toBe(user.id);
+      expect(user.logged_in).toBe(true);
+      expect(conn.items).toHaveLength(6);
+      expect(conn.items[conn.items.length - 1].id).toBe(user.id);
+
+      const self = await service.createSelf();
+      expect(self).toStrictEqual(user);
     });
   });
 });

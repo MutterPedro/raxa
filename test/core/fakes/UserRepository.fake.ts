@@ -1,4 +1,6 @@
+import casual from 'casual';
 import { UserProps } from '../../../src/core/entities';
+import User from '../../../src/core/entities/User';
 import { UserRepository } from '../../../src/core/repositories/UserRepository';
 import { DBConnection } from '../../../src/infra/DBConnection';
 import { MemoryDBConnection } from './DBConnection.fake';
@@ -6,5 +8,17 @@ import { MemoryDBConnection } from './DBConnection.fake';
 export class UserRepositoryFake extends UserRepository {
   static build(dbConn?: DBConnection<UserProps>): UserRepositoryFake {
     return new UserRepositoryFake(dbConn || new MemoryDBConnection<UserProps>());
+  }
+
+  static async buildPopulated(dbConn?: DBConnection<UserProps>, count: number = 1): Promise<UserRepositoryFake> {
+    const repo = UserRepositoryFake.build(dbConn);
+    for (let i = 0; i < count; i++) {
+      const user = new User();
+      user.name = casual.name;
+      user.email = casual.email;
+      await repo.save(user);
+    }
+
+    return repo;
   }
 }

@@ -8,7 +8,7 @@ defineFeature(feature, (test) => {
   let page: Page;
 
   beforeAll(async () => {
-    browser = await chromium.launch({ headless: true });
+    browser = await chromium.launch({ headless: true, slowMo: 50 });
     page = await browser.newPage();
   });
   afterAll(async () => {
@@ -81,5 +81,5 @@ defineFeature(feature, (test) => {
       await expect(page.getByTestId('bill-part-amount-Eu')).toHaveText('R$ -' + Number(amount).toFixed(2));
       await expect(page.getByTestId('bill-part-participant-Eu')).toHaveText('Eu');
     });
-  });
+  }, 10000);
 });

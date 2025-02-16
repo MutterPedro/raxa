@@ -6,7 +6,7 @@ class ConfigError extends Error {
 }
 
 function requiredEnv(name: string): never {
-  throw new ConfigError(`Missing required environment variable ${name}`);
+  throw new ConfigError(`Missing required environment variable "${name}"`);
 }
 
 export const IS_PROD: boolean = import.meta.env.PROD;
