@@ -6,6 +6,12 @@ export class MemoryDBConnection<T extends object> implements DBConnection<T> {
   public items: WithId<T>[] = [];
   private indexes: Map<number, number> = new Map();
 
+  private constructor() {}
+
+  static build<T extends object>(): MemoryDBConnection<T> {
+    return new MemoryDBConnection<T>();
+  }
+
   async update(id: number, data: Partial<T>): Promise<number> {
     const idx = this.indexes.get(id);
     if (idx === undefined) {

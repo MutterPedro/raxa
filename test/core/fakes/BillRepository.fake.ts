@@ -5,6 +5,6 @@ import { MemoryDBConnection } from './DBConnection.fake';
 
 export class BillRepositoryFake extends BillRepository {
   static build(dbConn?: DBConnection<BillProps>): BillRepositoryFake {
-    return new BillRepositoryFake(dbConn || new MemoryDBConnection<BillProps>());
+    return new BillRepositoryFake(dbConn || MemoryDBConnection.build<BillProps>());
   }
 }

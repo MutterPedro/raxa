@@ -2,6 +2,7 @@ import { IndexedDBConnection } from './DBConnection.ts';
 import { applyMigrations } from './migrations';
 
 import { dexieFactory, userServiceFactory } from '../inversify.config';
+import { FirebaseSessionManager, SessionManager } from './SessionManager.ts';
 
 export function init(): void {
   const conn = dexieFactory();
@@ -14,6 +15,7 @@ export function init(): void {
   // infra test helpers
   window.createTable = createTable;
   window.doesDbExists = doesDbExists;
+  window.getFirebaseSessionManager = getFirebaseSessionManager;
 }
 
 async function doesDbExists(dbName: string, version?: number): Promise<boolean> {
@@ -44,4 +46,8 @@ function createTable<T extends object>(name: string, pageSize: number = 10): Ind
   const conn = dexieFactory();
 
   return new IndexedDBConnection<T>(conn, name, pageSize);
+}
+
+function getFirebaseSessionManager(): SessionManager {
+  return new FirebaseSessionManager();
 }

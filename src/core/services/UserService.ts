@@ -43,13 +43,13 @@ export class UserService {
     return list.filter((u) => !!u);
   }
 
-  async signUp(email: string, _password: string, name: string): Promise<User> {
+  async signUp(email: string, password: string, name: string): Promise<User> {
     const self = await this.createSelf();
     self.email = email;
     self.name = name;
 
     const updated = await this.userRepo.save(self);
-    this.userRepo.setLogged(updated);
+    await this.userRepo.setLoggedSignUp(updated, password);
 
     return updated;
   }

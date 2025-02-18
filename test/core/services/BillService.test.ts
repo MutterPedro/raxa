@@ -10,7 +10,7 @@ import { UserRepositoryFake } from '../fakes/UserRepository.fake';
 describe('BillService.ts', function () {
   describe('Unit tests', function () {
     it('should add a new bill anonymously #unit', async function () {
-      const conn = new MemoryDBConnection<BillProps>();
+      const conn = MemoryDBConnection.build<BillProps>();
       const fakeRepo = BillRepositoryFake.build(conn);
       const service = new BillService(fakeRepo, ExpenseRepositoryFake.build(), UserRepositoryFake.build());
 
@@ -28,7 +28,7 @@ describe('BillService.ts', function () {
     });
 
     it('should add a new bill belonging to a provided user #unit', async function () {
-      const conn = new MemoryDBConnection<BillProps>();
+      const conn = MemoryDBConnection.build<BillProps>();
       const fakeRepo = BillRepositoryFake.build(conn);
       const service = new BillService(fakeRepo, ExpenseRepositoryFake.build(), UserRepositoryFake.build());
 
@@ -46,7 +46,7 @@ describe('BillService.ts', function () {
     });
 
     it('should add a new expense to a bill #unit', async function () {
-      const conn = new MemoryDBConnection<ExpenseProps>();
+      const conn = MemoryDBConnection.build<ExpenseProps>();
       const fakeBillRepo = BillRepositoryFake.build();
       const fakeExpenseRepo = ExpenseRepositoryFake.build(conn);
       const fakeUserRepo = UserRepositoryFake.build();

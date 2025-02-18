@@ -12,7 +12,7 @@ describe('Expense.ts', function () {
     });
 
     it('should be saved respecting the fields defined at the migration #unit', async function () {
-      const mockedDbConn = new MemoryDBConnection<ExpenseProps>();
+      const mockedDbConn = MemoryDBConnection.build<ExpenseProps>();
       const repo = new ExpenseRepository(mockedDbConn);
 
       const expense = new Expense();

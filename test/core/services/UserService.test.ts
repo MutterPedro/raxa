@@ -7,7 +7,7 @@ import { UserService } from '../../../src/core/services/UserService';
 describe('UserService.ts', function () {
   describe('Unit tests', function () {
     it('should add a new user #unit', async function () {
-      const conn = new MemoryDBConnection<UserProps>();
+      const conn = MemoryDBConnection.build<UserProps>();
       const fakeRepo = UserRepositoryFake.build(conn);
       const service = new UserService(fakeRepo);
 
@@ -24,7 +24,7 @@ describe('UserService.ts', function () {
     });
 
     it("should create the self user if it doesn't exist #unit", async function () {
-      const conn = new MemoryDBConnection<UserProps>();
+      const conn = MemoryDBConnection.build<UserProps>();
       const fakeRepo = UserRepositoryFake.build(conn);
       const service = new UserService(fakeRepo);
 
@@ -57,7 +57,7 @@ describe('UserService.ts', function () {
     });
 
     it('should sign up the self user #unit', async function () {
-      const conn = new MemoryDBConnection<UserProps>();
+      const conn = MemoryDBConnection.build<UserProps>();
       const fakeRepo = await UserRepositoryFake.buildPopulated(conn, 5);
       const service = new UserService(fakeRepo);
 

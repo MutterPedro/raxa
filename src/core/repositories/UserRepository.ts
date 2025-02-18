@@ -1,17 +1,26 @@
 import { inject, tagged } from 'inversify';
+
 import { UserProps } from '../entities';
 import { BaseRepository } from './BaseRepository';
 import { TYPES } from '../../infra/di';
-import type { DBConnection } from '../../infra/DBConnection';
 import User from '../entities/User';
-import { WithId } from '../../@types/utils';
+
+import type { WithId } from '../../@types/utils';
+import type { DBConnection } from '../../infra/DBConnection';
+import type { SessionManager } from '../../infra/SessionManager';
 
 export class UserRepository extends BaseRepository<User, UserProps> {
   private static LOGGED_USER_ID: number;
 
-  @inject(TYPES.DBConnection)
-  @tagged('entity', User.name)
-  declare protected readonly dbConnection: DBConnection<UserProps>;
+  constructor(
+    @inject(TYPES.DBConnection)
+    @tagged('entity', User.name)
+    protected readonly dbConnection: DBConnection<UserProps>,
+    @inject(TYPES.SessionManager)
+    protected readonly sessionManager: SessionManager,
+  ) {
+    super(dbConnection);
+  }
 
   fromPlainObject(data: WithId<UserProps>): WithId<User> {
     const user = new User();
@@ -22,12 +31,14 @@ export class UserRepository extends BaseRepository<User, UserProps> {
     return user;
   }
 
-  setLogged(user: User) {
+  async setLoggedSignUp(user: User, password: string): Promise<void> {
+    await this.sessionManager.signUpWithPassword(user.email, password);
+
     UserRepository.LOGGED_USER_ID = user.id;
     user.logged_in = true;
   }
 
-  isLogged(id: number): boolean {
+  private isLogged(id: number): boolean {
     return UserRepository.LOGGED_USER_ID === id;
   }
 }

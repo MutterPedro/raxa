@@ -15,6 +15,7 @@ import { UserRepository } from './core/repositories/UserRepository';
 import { UserService } from './core/services/UserService';
 import type { FirebaseApp } from 'firebase/app';
 import { app } from './infra/firebase';
+import { FirebaseSessionManager, SessionManager } from './infra/SessionManager';
 
 export const myContainer = new Container();
 
@@ -50,6 +51,8 @@ myContainer
   })
   .inSingletonScope()
   .whenTargetTagged('entity', Expense.name);
+
+myContainer.bind<SessionManager>(TYPES.SessionManager).to(FirebaseSessionManager).inSingletonScope();
 
 myContainer.bind<BillRepository>(TYPES.BillRepository).to(BillRepository).inSingletonScope();
 myContainer.bind<ExpenseRepository>(TYPES.ExpenseRepository).to(ExpenseRepository).inSingletonScope();

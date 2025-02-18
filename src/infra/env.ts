@@ -1,9 +1,4 @@
-class ConfigError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ConfigError';
-  }
-}
+import { ConfigError } from '../core/utils/errors';
 
 function requiredEnv(name: string): never {
   throw new ConfigError(`Missing required environment variable "${name}"`);

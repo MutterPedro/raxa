@@ -32,7 +32,7 @@ class TestRepository extends BaseRepository<TestEntity, TestEntityProps> {
 describe('BaseEntity.ts', function () {
   describe('Unit tests', function () {
     it('should be persist on the database when save() successfully #unit', async function () {
-      const mockedDbConnection = new MemoryDBConnection<TestEntityProps>();
+      const mockedDbConnection = MemoryDBConnection.build<TestEntityProps>();
       const repo = new TestRepository(mockedDbConnection);
 
       const testEntity = new TestEntity();
@@ -60,7 +60,7 @@ describe('BaseEntity.ts', function () {
     });
 
     it('should be update the instance on the database when it already exists and save() successfully #unit', async function () {
-      const mockedDbConnection = new MemoryDBConnection<TestEntityProps>();
+      const mockedDbConnection = MemoryDBConnection.build<TestEntityProps>();
       const repo = new TestRepository(mockedDbConnection);
 
       const testEntity = new TestEntity();

@@ -7,4 +7,5 @@ export const TYPES = {
   UserRepository: Symbol.for('UserRepository'),
   UserService: Symbol.for('UserService'),
   FirebaseApp: Symbol.for('FirebaseApp'),
+  SessionManager: Symbol.for('SessionManager'),
 };

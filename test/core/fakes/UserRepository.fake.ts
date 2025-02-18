@@ -4,10 +4,19 @@ import User from '../../../src/core/entities/User';
 import { UserRepository } from '../../../src/core/repositories/UserRepository';
 import { DBConnection } from '../../../src/infra/DBConnection';
 import { MemoryDBConnection } from './DBConnection.fake';
+import { SessionManager } from '../../../src/infra/SessionManager';
+import { SessionManagerFake } from './SessionManager.fake';
 
 export class UserRepositoryFake extends UserRepository {
-  static build(dbConn?: DBConnection<UserProps>): UserRepositoryFake {
-    return new UserRepositoryFake(dbConn || new MemoryDBConnection<UserProps>());
+  private constructor(dbConn: DBConnection<UserProps>, sessionManager: SessionManager) {
+    super(dbConn, sessionManager);
+  }
+
+  static build(dbConn?: DBConnection<UserProps>, sessionManager?: SessionManager): UserRepositoryFake {
+    return new UserRepositoryFake(
+      dbConn || MemoryDBConnection.build<UserProps>(),
+      sessionManager || SessionManagerFake.build(),
+    );
   }
 
   static async buildPopulated(dbConn?: DBConnection<UserProps>, count: number = 1): Promise<UserRepositoryFake> {
