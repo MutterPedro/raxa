@@ -67,19 +67,19 @@ describe('BaseEntity.ts', function () {
       testEntity.name = 'John';
       testEntity.age = 30;
 
-      let result = await repo.save(testEntity);
+      const result = await repo.save(testEntity);
       expect(result.id).toBeGreaterThan(0);
 
       testEntity.id = result.id;
       testEntity.name = 'Albert';
-      result = await repo.save(testEntity);
+      await repo.save(testEntity);
 
       expect(mockedDbConnection.items).toHaveLength(1);
       expect(mockedDbConnection.items[0].age).toBe(30);
       expect(mockedDbConnection.items[0].name).toBe('Albert');
 
       testEntity.age = 31;
-      result = await repo.save(testEntity);
+      await repo.save(testEntity);
       expect(mockedDbConnection.items[0].age).toBe(31);
     });
   });

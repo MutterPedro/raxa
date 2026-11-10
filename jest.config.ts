@@ -25,7 +25,6 @@ const config: Config = {
   testTimeout: 30000,
   maxWorkers: 1,
   maxConcurrency: 1,
-  testRunner: 'jest-circus/runner',
   reporters: ['default'],
   modulePathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/test/integration'],
 };

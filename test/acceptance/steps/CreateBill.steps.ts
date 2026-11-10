@@ -18,7 +18,7 @@ defineFeature(feature, (test) => {
 
   test('Creating a valid bill anonymously', ({ given, when, then, and }) => {
     given('I am in the home page', async function () {
-      await page.goto('http://0.0.0.0:5173/');
+      await page.goto('http://127.0.0.1:5173/');
       await expect(page).toHaveTitle(/Raxa/);
     });
 
