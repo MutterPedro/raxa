@@ -1,5 +1,5 @@
 import casual from 'casual';
-import { BillProps, ExpenseProps } from '../../../src/core/entities';
+import { BillProps, ExpenseProps, UserProps } from '../../../src/core/entities';
 import { BillService } from '../../../src/core/services/BillService';
 import { UserService } from '../../../src/core/services/UserService';
 import { BillRepositoryFake } from '../fakes/BillRepository.fake';
@@ -208,6 +208,60 @@ describe('BillService.ts', function () {
       expect(sorted[0].amount).toBe(-250);
       expect(sorted[1].amount).toBe(400);
       expect(sorted[2].amount).toBe(-150);
+    });
+
+    it('should list bills using the default page and an explicit one #unit', async function () {
+      const conn = MemoryDBConnection.build<BillProps>();
+      const fakeRepo = BillRepositoryFake.build(conn);
+      const service = new BillService(fakeRepo, ExpenseRepositoryFake.build(), UserRepositoryFake.build());
+
+      expect(await service.getBills()).toHaveLength(0);
+
+      await service.createBill({ name: casual.name });
+      await service.createBill({ name: casual.name });
+
+      expect(await service.getBills()).toHaveLength(2);
+      expect(await service.getBills(1)).toHaveLength(2);
+    });
+
+    it('should get a bill by its id #unit', async function () {
+      const conn = MemoryDBConnection.build<BillProps>();
+      const fakeRepo = BillRepositoryFake.build(conn);
+      const service = new BillService(fakeRepo, ExpenseRepositoryFake.build(), UserRepositoryFake.build());
+
+      const bill = await service.createBill({ name: 'a very specific bill' });
+
+      const found = await service.getById(bill.id);
+      expect(found).toBeDefined();
+      expect(found?.id).toBe(bill.id);
+      expect(found?.name).toBe('a very specific bill');
+
+      expect(await service.getById(99999)).toBeNull();
+    });
+
+    it('should ignore participants that no longer exist when listing them #unit', async function () {
+      const conn = MemoryDBConnection.build<BillProps>();
+      const usersConn = MemoryDBConnection.build<UserProps>();
+      const userService = new UserService(UserRepositoryFake.build(usersConn));
+      const service = new BillService(
+        BillRepositoryFake.build(conn),
+        ExpenseRepositoryFake.build(),
+        UserRepositoryFake.build(usersConn),
+      );
+
+      const user = await userService.createUser({ name: casual.name, email: casual.email });
+      const bill = await service.createBill({ name: casual.name });
+      await service.addExpense(bill.id, {
+        name: casual.title,
+        amount: 100,
+        date: new Date().toISOString(),
+        participantIds: [user.id, 999999],
+        payerId: user.id,
+      });
+
+      const participants = await service.getParticipants(bill.id);
+      expect(participants).toHaveLength(1);
+      expect(participants[0].id).toBe(user.id);
     });
   });
 });

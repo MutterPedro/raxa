@@ -5,13 +5,19 @@ const config: Config = {
   preset: 'ts-jest',
   // inversify v8 and its @inversifyjs/* packages are ESM-only: compile them to CJS for Jest.
   transform: {
-    '^.+\\.tsx?$': 'ts-jest',
+    // emitDecoratorMetadata off: unit tests build services/repositories directly with fakes, so
+    // nothing reads the design:type metadata, and its emitted `typeof X ? _a : Object` guards
+    // would show up as unreachable uncovered branches. importHelpers keeps the remaining
+    // __decorate helper inside tslib (uninstrumented) instead of inlining it per file.
+    '^.+\\.tsx?$': ['ts-jest', { tsconfig: { emitDecoratorMetadata: false, importHelpers: true } }],
     '^.+\\.[cm]?js$': ['ts-jest', { tsconfig: { allowJs: true, esModuleInterop: true } }],
   },
   transformIgnorePatterns: ['/node_modules/(?!(?:inversify|@inversifyjs)/)'],
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['./test/setup.ts'],
-  collectCoverageFrom: ['src/**/*.{tsx,ts}'],
+  // Jest can only instrument code its own suites execute: src/core is unit-tested with fakes,
+  // while src/infra + src/components run inside real browsers (test:bdd, test:integration).
+  collectCoverageFrom: ['src/core/**/*.{ts,tsx}'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'html'],
   coverageThreshold: {

@@ -76,5 +76,20 @@ describe('UserService.ts', function () {
       const self = await service.createSelf();
       expect(self).toStrictEqual(user);
     });
+
+    it('should get users by their ids, skipping the missing ones #unit', async function () {
+      const conn = MemoryDBConnection.build<UserProps>();
+      const fakeRepo = UserRepositoryFake.build(conn);
+      const service = new UserService(fakeRepo);
+
+      const user1 = await service.createUser({ name: casual.name, email: casual.email });
+      const user2 = await service.createUser({ name: casual.name, email: casual.email });
+
+      const users = await service.getByIds([user1.id, 123456, user2.id]);
+      expect(users).toHaveLength(2);
+      expect(users.map((u) => u.id)).toEqual([user1.id, user2.id]);
+
+      expect(await service.getByIds([])).toHaveLength(0);
+    });
   });
 });

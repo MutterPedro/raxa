@@ -8,7 +8,7 @@ Raxa is an expense-splitting app: React 19 + TypeScript + Vite SPA, offline-firs
 - `npm run build` — runs `tsc --project tsconfig.build.json` (src only), then `vite build`. Tailwind is handled by `@tailwindcss/vite` (CSS-first via `src/index.css`; there is no `tailwind.config.js` and no separate CSS build step).
 - `npm run lint` — ESLint with `--max-warnings 0`; Prettier violations are lint **errors** (config: `.prettierrc`, printWidth 120, single quotes). `npm run format` fixes them.
 - `npm test` — Jest (jsdom + ts-jest). Single file: `npx jest test/core/services/BillService.test.ts`; by name: `npx jest -t 'total of a bill'`.
-- `npm run test:coverage` — must stay above the enforced **95% global coverage threshold** (branches/functions/lines/statements) or Jest fails.
+- `npm run test:coverage` — enforces the **95% global threshold** (branches/functions/lines/statements) on `src/core/**` (the unit-testable domain layer; `src/infra` + `src/components` run only inside browsers and are covered by the BDD/integration suites). Currently at 100%. The Jest ts-jest transform sets `emitDecoratorMetadata: false` + `importHelpers: true` so transpiled decorator helpers don't count as unreachable branches.
 - `npm run test:integration` — Playwright (`test/integration/`); auto-starts `dev:host` via `webServer` config and reuses a running one locally.
 - `npm run test:bdd` — jest-cucumber acceptance tests; starts `dev:host` itself and drives headless Chromium against it.
 
