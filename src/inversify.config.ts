@@ -1,5 +1,5 @@
 import Dexie from 'dexie';
-import { Container, interfaces } from 'inversify';
+import { Container, ResolutionContext } from 'inversify';
 
 import { DBConnection, IndexedDBConnection } from './infra/DBConnection';
 import { TYPES } from './infra/di';
@@ -26,31 +26,31 @@ myContainer.bind<FirebaseApp>(TYPES.FirebaseApp).toConstantValue(app);
 
 myContainer
   .bind<DBConnection<UserProps>>(TYPES.DBConnection)
-  .toDynamicValue((context: interfaces.Context) => {
+  .toDynamicValue((context: ResolutionContext) => {
     const tableName = Reflect.getMetadata(TABLE_NAME, User);
-    const db = context.container.get<Dexie>(TYPES.Dexie);
+    const db = context.get<Dexie>(TYPES.Dexie);
     return new IndexedDBConnection<UserProps>(db, tableName);
   })
   .inSingletonScope()
-  .whenTargetTagged('entity', User.name);
+  .whenTagged('entity', User.name);
 myContainer
   .bind<DBConnection<BillProps>>(TYPES.DBConnection)
-  .toDynamicValue((context: interfaces.Context) => {
+  .toDynamicValue((context: ResolutionContext) => {
     const tableName = Reflect.getMetadata(TABLE_NAME, Bill);
-    const db = context.container.get<Dexie>(TYPES.Dexie);
+    const db = context.get<Dexie>(TYPES.Dexie);
     return new IndexedDBConnection<BillProps>(db, tableName);
   })
   .inSingletonScope()
-  .whenTargetTagged('entity', Bill.name);
+  .whenTagged('entity', Bill.name);
 myContainer
   .bind<DBConnection<ExpenseProps>>(TYPES.DBConnection)
-  .toDynamicValue((context: interfaces.Context) => {
+  .toDynamicValue((context: ResolutionContext) => {
     const tableName = Reflect.getMetadata(TABLE_NAME, Expense);
-    const db = context.container.get<Dexie>(TYPES.Dexie);
+    const db = context.get<Dexie>(TYPES.Dexie);
     return new IndexedDBConnection<ExpenseProps>(db, tableName);
   })
   .inSingletonScope()
-  .whenTargetTagged('entity', Expense.name);
+  .whenTagged('entity', Expense.name);
 
 myContainer.bind<SessionManager>(TYPES.SessionManager).to(FirebaseSessionManager).inSingletonScope();
 

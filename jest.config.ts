@@ -3,6 +3,12 @@ import type { Config } from 'jest';
 const config: Config = {
   verbose: true,
   preset: 'ts-jest',
+  // inversify v8 and its @inversifyjs/* packages are ESM-only: compile them to CJS for Jest.
+  transform: {
+    '^.+\\.tsx?$': 'ts-jest',
+    '^.+\\.[cm]?js$': ['ts-jest', { tsconfig: { allowJs: true, esModuleInterop: true } }],
+  },
+  transformIgnorePatterns: ['/node_modules/(?!(?:inversify|@inversifyjs)/)'],
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['./test/setup.ts'],
   collectCoverageFrom: ['src/**/*.{tsx,ts}'],
