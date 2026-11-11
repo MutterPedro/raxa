@@ -9,5 +9,6 @@ declare global {
     doesDbExists(dbName: string, version: number = 10): Promise<boolean>;
     createTable<T extends object>(name: string, pageSize: number = 10): IndexedDBConnection<T>;
     getFirebaseSessionManager(): SessionManager;
+    __seedVisualDemo?: () => Promise<number[]>;
   }
 }

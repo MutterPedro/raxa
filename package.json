@@ -19,7 +19,9 @@
     "test:bdd": "concurrently --kill-others \"npm run dev:host\" \"sleep 2 && npm run cucumber\"",
     "test:coverage": "npm run test -- --collectCoverage",
     "test:watch": "npm run test -- --watch --testNamePattern='#unit|#sanity'",
-    "test:integration": "npx playwright test"
+    "test:integration": "npx playwright test",
+    "test:visual": "playwright test --config playwright.visual.config.ts",
+    "test:visual:update": "playwright test --config playwright.visual.config.ts --update-snapshots"
   },
   "dependencies": {
     "dexie": "^4.4.7",
