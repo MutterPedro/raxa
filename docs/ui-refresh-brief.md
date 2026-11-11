@@ -64,7 +64,8 @@ services only through the context hooks `useBillService`/`useUserService`, never
 
 ## House style
 
-Mirror surrounding code (naming, structure, comments only when required). Tailwind classes stay Tailwind-native
-(CSS-first tokens in `src/index.css` once T1.3 lands; before that, don't invent new hardcoded colors — use
-`--primary-color`/`--secondary-color`). Browser-driven tests select via `data-testid`; keep them on components
-they target.
+Mirror surrounding code (naming, structure, comments only when required). **All code, comments, identifiers, and
+test names are English** — Portuguese is only for user-facing UI strings (the rendered PT-BR interface). Tailwind
+classes stay Tailwind-native (CSS-first tokens in `src/index.css` once T1.3 lands; before that, don't invent new
+hardcoded colors — use `--primary-color`/`--secondary-color`). Browser-driven tests select via `data-testid`; keep
+them on components they target.

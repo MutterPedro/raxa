@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="raxa">
+  <style>
+    .c { fill: #C2410C; } .o { fill: #F97316; }
+    @media (prefers-color-scheme: dark) {
+      .c { fill: #F97316; } .o { fill: #FDBA74; }
+    }
+  </style>
+  <circle cx="8" cy="8" r="4" class="c"/>
+  <circle cx="24" cy="8" r="4" class="c"/>
+  <circle cx="8" cy="24" r="4" class="c"/>
+  <circle cx="24" cy="24" r="4" class="c"/>
+  <circle cx="16" cy="16" r="6" class="o"/>
+</svg>

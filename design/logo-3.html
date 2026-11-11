@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>raxa · logo rodada 3 — o x de cinco pontos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ============================================================
+         raxa — T1.2(a) round 3. The x of "raxa" promoted to mark:
+         four dots plus one in the middle (quincunx — the "5" face of
+         the die, the Roman five-ounce mark). The center dot is the
+         mark's glow moment (the bill, the heart of the matter).
+         Mixes with the Talão (direction 5 of round 1) included.
+         ============================================================ */
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+        background: #0b0b0e;
+        color: #e8e6ef;
+        line-height: 1.5;
+        padding-bottom: 110px;
+      }
+
+      .page-head { max-width: 1060px; margin: 0 auto; padding: 56px 24px 8px; }
+      .page-head h1 { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; }
+      .page-head h1 span { opacity: 0.5; font-weight: 300; }
+      .page-head p { max-width: 700px; margin-top: 10px; color: #a5a2b3; font-size: 15px; }
+      .page-head p b { color: #e8e6ef; }
+      .page-head p em { color: #e8b98a; font-style: normal; }
+      .page-nav { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+      .page-nav a {
+        color: #e8e6ef; text-decoration: none; font-size: 13px; font-weight: 700;
+        border: 1px solid #35323f; border-radius: 999px; padding: 7px 14px;
+      }
+      .page-nav a:hover { border-color: #6b6680; }
+
+      section.dir { max-width: 1060px; margin: 88px auto 0; padding: 0 24px; }
+      .dir-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+      .dir-num {
+        font-size: 13px; font-weight: 800; letter-spacing: 0.08em;
+        border-radius: 8px; padding: 3px 10px; color: #0b0b0e; background: #f97316;
+      }
+      .dir-head h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+      .dir-head .tag { color: #a5a2b3; font-size: 14px; }
+      .dir .story { max-width: 780px; margin: 12px 0 8px; color: #c9c5d6; font-size: 14.5px; }
+      .dir .story b { color: #e8e6ef; }
+
+      .craft {
+        max-width: 780px; margin: 10px 0 22px; font-size: 13px; color: #a5a2b3;
+        background: #141219; border: 1px solid #2c2a35; border-radius: 12px; padding: 12px 16px;
+      }
+      .craft b { color: #f0b47e; font-weight: 700; }
+      .craft ul { margin: 6px 0 0 18px; }
+      .craft li { margin-top: 3px; }
+
+      .verdict {
+        max-width: 780px; margin-top: 16px; font-size: 13px; color: #a5a2b3;
+        border-left: 2px solid #42394f; padding-left: 14px;
+      }
+      .verdict b.pro { color: #7dd3a0; }
+      .verdict b.con { color: #fb9aa8; }
+
+      /* ---------- contexts ---------- */
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+      figure.tile { display: flex; flex-direction: column; gap: 8px; }
+      figure.tile figcaption {
+        font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8f8c9d;
+      }
+      .tile .box {
+        aspect-ratio: 1; border-radius: 22px; border: 1px solid #2c2a35;
+        display: grid; place-items: center; padding: 26px 22px;
+      }
+      .tile .box > svg { width: 100%; height: auto; }
+
+      :root { --x-a: #c2410c; --x-b: #f97316; --rec: #1c1410; }
+      /* wordmark: 3 own tones per context — dark corners, glow center */
+      .ctx-light {
+        --x-a: #c2410c; --x-b: #f97316; --rec: #1c1410;
+        --wm-1: #c2410c; --wm-2: #ea580c; --wm-3: #f97316;
+        background: #faf6f0; color: #1c1410;
+      }
+      .ctx-dark {
+        --x-a: #f97316; --x-b: #fdba74; --rec: #f7f1e8;
+        --wm-1: #ea580c; --wm-2: #f97316; --wm-3: #fdba74;
+        background: #16120e; color: #f7f1e8;
+      }
+      .ctx-grad {
+        --x-a: #fff7ed; --x-b: #7c2d12; --rec: #7c2d12;
+        --wm-1: #7c2d12; --wm-2: #9a3412; --wm-3: #fff7ed;
+        background: linear-gradient(135deg, #ea580c, #c2410c); color: #fff7ed;
+      }
+      .ctx-mono {
+        --x-a: #c2410c; --x-b: #c2410c; --rec: #c2410c;
+        --wm-1: #c2410c; --wm-2: #c2410c; --wm-3: #c2410c;
+        background: #faf6f0; color: #c2410c;
+      }
+      .ctx-grid { background: #faf6f0; color: #1c1410; }
+
+      /* ---------- lockups + favicon strip ---------- */
+      .rows { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; align-items: stretch; }
+      .lockup {
+        display: flex; align-items: center; gap: 11px; border-radius: 16px;
+        border: 1px solid #2c2a35; padding: 20px 26px;
+      }
+      .lockup > svg { width: 34px; height: 34px; flex: none; }
+      .favis {
+        display: flex; align-items: center; gap: 18px; border-radius: 16px;
+        border: 1px solid #2c2a35; padding: 18px 22px;
+      }
+      .favis .tab {
+        display: flex; align-items: center; gap: 7px; font-size: 12px;
+        max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .favis .tab > svg, .favis .tab .wm { flex: none; }
+      .favis .tab > svg { width: 16px; height: 16px; }
+      .favis .tab.s32 > svg { width: 32px; height: 32px; }
+      .favis .tab.dark { background: #16120e; padding: 8px 10px; border-radius: 10px; color: #b8a99a; }
+      .favis .tab.light { background: #f2efe9; padding: 8px 10px; border-radius: 10px; color: #5c5348; }
+      .favis .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8f8c9d; }
+
+      /* ---------- rhythm strip ---------- */
+      .system {
+        display: flex; align-items: center; gap: 30px; margin-top: 14px; flex-wrap: wrap;
+        border-radius: 16px; border: 1px solid #2c2a35; background: #faf6f0; padding: 20px 26px;
+      }
+      .system .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8a7a68; max-width: 170px; }
+      .system .item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+      .system .item svg { width: 58px; height: 58px; }
+      .system .item small { font-size: 11px; font-weight: 700; color: #8a7a68; }
+
+      /* ---------- wordmarks ---------- */
+      .wm {
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+        font-weight: 800; letter-spacing: -0.05em; line-height: 1;
+        display: inline-flex; align-items: baseline;
+      }
+      .tile .wm { font-size: 58px; }
+      .lockup .wm { font-size: 26px; }
+      .favis .tab .wm { font-size: 16px; }
+      .lockup.ctx-light .wm, .favis .tab.light .wm { color: #1c1410; }
+      .lockup.ctx-dark .wm, .favis .tab.dark .wm { color: #f7f1e8; }
+      .wm .x { width: 0.6em; height: 0.6em; }
+
+      .foot-note { max-width: 1060px; margin: 84px auto 0; padding: 0 24px; color: #8f8c9d; font-size: 13.5px; }
+      .foot-note b { color: #e8e6ef; }
+    </style>
+  </head>
+  <body>
+    <header class="page-head">
+      <h1>raxa <span>· logo rodada 3 · o x de cinco pontos</span></h1>
+      <p>
+        A ideia: o x do "raxa" ganha um <b>quinto ponto no centro</b> — quatro + um, o <em>quincunce</em>: a face
+        "5" do dado, a marca das cinco onças nas moedas romanas (literalmente um símbolo antigo de divisão justa).
+        O do meio é o <b>momento de brilho</b> da marca — a conta, o x da questão — e pode viver animado (pop no
+        loading, pulso quando uma despesa entra). Aqui: o x novo sozinho, no wordmark, e misturado com o Talão.
+      </p>
+      <nav class="page-nav">
+        <a href="#x0">3X · o x novo no nome</a>
+        <a href="#x1">3A · X de cinco (marca)</a>
+        <a href="#x2">3B · Talão com x</a>
+        <a href="#x3">3C · Carimbo</a>
+      </nav>
+    </header>
+
+    <div id="mounts"></div>
+
+    <p class="foot-note">
+      <b>Como ler:</b> o 3X julga o destino do wordmark (quatro vs. cinco pontos no nome). O 3A é a aposta da rodada
+      — um símbolo novo, de cinco, com centro. 3B/3C testam se o talão melhora carregando o x (spoiler provável: o
+      x melhora o talão; o talão não melhora o x). Combinações seguem abertas: 3A com o espetinho como secundária,
+      o x de cinco dentro do gomo etc.
+    </p>
+
+    <script>
+      const R2 = (n) => Math.round(n * 100) / 100;
+
+      // ============ X de cinco (quincunx) — grid: center 16, mid 8 ============
+      // corners at (8,8)(24,8)(8,24)(24,24), center (16,16). Corner radius 4.6;
+      // center slightly larger (optional) = focal point guaranteed at 16px.
+      function xdots({ rc = 4.6, r0 = 4.6, a = 'var(--x-a)', b = 'var(--x-b)', pair = false } = {}) {
+        const corner = (x, y, i) => `<circle cx="${x}" cy="${y}" r="${rc}" fill="${i % 2 && pair ? 'var(--x-b)' : a}"/>`;
+        return (
+          `<svg viewBox="0 0 32 32" aria-label="x de cinco pontos">` +
+          corner(8, 8, 0) + corner(24, 8, 1) + corner(8, 24, 1) + corner(24, 24, 0) +
+          `<circle cx="16" cy="16" r="${r0}" fill="${b}"/></svg>`
+        );
+      }
+
+      // ============ Talão (receipt with perforation) ============
+      // same silhouette as round 1, redrawn symmetric on the 32 grid
+      const RECIBO = (inner = '') =>
+        `<svg viewBox="0 0 32 32" fill="none" aria-label="talão">` +
+        `<path d="M7.5 6.5a2.5 2.5 0 0 1 2.5-2.5h12a2.5 2.5 0 0 1 2.5 2.5v21.9l-2.8-2.1-2.8 2.1-2.9-2.1-2.8 2.1-2.8-2.1-2.9 2.1Z" stroke="var(--rec)" stroke-width="2.3" stroke-linejoin="round"/>` +
+        inner + `</svg>`;
+
+      // compact five-dot x inside the receipt: span 8.8, r 1.8
+      const X_INNER =
+        `<circle cx="11.7" cy="10.7" r="1.8" fill="var(--x-a)"/>` +
+        `<circle cx="20.3" cy="10.7" r="1.8" fill="var(--x-a)"/>` +
+        `<circle cx="11.7" cy="19.1" r="1.8" fill="var(--x-a)"/>` +
+        `<circle cx="20.3" cy="19.1" r="1.8" fill="var(--x-a)"/>` +
+        `<circle cx="16" cy="14.9" r="2.05" fill="var(--x-b)"/>`;
+
+      // ============ wordmark with the new x ============
+      const WM5 = `<span class="wm" aria-label="raxa">ra<svg class="x" viewBox="0 0 20 20" aria-hidden="true">
+        <circle cx="4" cy="4" r="3.35" fill="var(--wm-1,#C2410C)"/>
+        <circle cx="16" cy="4" r="3.35" fill="var(--wm-2,#EA580C)"/>
+        <circle cx="10" cy="10" r="3.35" fill="var(--wm-3,#F97316)"/>
+        <circle cx="4" cy="16" r="3.35" fill="var(--wm-2,#EA580C)"/>
+        <circle cx="16" cy="16" r="3.35" fill="var(--wm-1,#C2410C)"/>
+      </svg>a</span>`;
+      const WM4 = `<span class="wm" aria-label="raxa (rodada anterior)">ra<svg class="x" viewBox="0 0 20 18.8" aria-hidden="true">
+        <circle cx="4.1" cy="4.1" r="3.7" fill="#C2410C"/>
+        <circle cx="15.9" cy="4.1" r="3.7" fill="#EA580C"/>
+        <circle cx="4.1" cy="14.7" r="3.7" fill="#EA580C"/>
+        <circle cx="15.9" cy="14.7" r="3.7" fill="#C2410C"/>
+      </svg>a</span>`;
+
+      // ============ construction guide ============
+      function gridX() {
+        const g =
+          `<g stroke="#c2410c" fill="none" opacity="0.35" stroke-width="0.6">` +
+          `<line x1="16" y1="1.5" x2="16" y2="30.5" stroke-dasharray="1.4 1.4"/>` +
+          `<line x1="1.5" y1="16" x2="30.5" y2="16" stroke-dasharray="1.4 1.4"/>` +
+          `<line x1="6" y1="26" x2="26" y2="6"/>` +
+          `<line x1="6" y1="6" x2="26" y2="26"/>` +
+          `<circle cx="8" cy="8" r="4.6" stroke-dasharray="1.4 1.4"/>` +
+          `<circle cx="24" cy="8" r="4.6" stroke-dasharray="1.4 1.4"/>` +
+          `<circle cx="8" cy="24" r="4.6" stroke-dasharray="1.4 1.4"/>` +
+          `<circle cx="24" cy="24" r="4.6" stroke-dasharray="1.4 1.4"/>` +
+          `<circle cx="16" cy="16" r="5.4" stroke-dasharray="1.4 1.4"/></g>`;
+        return `<svg viewBox="0 0 32 32" aria-label="grid de construção">${xdots({ r0: 5.4 }).replace(/^<svg[^>]*>|<\/svg>$/g, '')}${g}</svg>`;
+      }
+
+      // ============ direction configs ============
+      const DIRS = [
+        {
+          key: 'x0', num: '3X', title: 'O x novo no nome', tag: 'wordmark · 4 → 5',
+          story: `No nome, o x de cinco fecha um quadrado perfeito entre as letras — a célula "x" fica com a mesma
+            proporção das vogais, e o <b>ponto central é o único elemento colorido de "raxa"</b> num wordmark
+            senão preto. É o lugar mais óbvio pra um "detalhe de assinatura" (D5): no rodapé, no e-mail, no
+            splash. Comparação lado a lado com os quatro pontos da rodada 1.`,
+          craft: ['Quincunce simétrico: cantos em pares diagonal-escuros, centro #F97316 — o brilho é sempre UM ponto só', 'Célula do x passa a quadrada (0.6em × 0.6em) — encaixa na altura-x do Plus Jakarta sem distorcer'],
+          grid: null,
+          subject: WM5,
+          alt: { label: 'compare · 4 pontos (rodada 1)', inner: WM4 },
+          lockups: false,
+          pro: 'Melhora o wordmark sem arriscar nada: mesmo se o símbolo sozinho não pegar, o nome fica com uma memória visual de cor.',
+          con: 'Nos tamanhos de favicon, wordmark não funciona sozinho — 3X precisa de um símbolo irmão (o próprio 3A, ou as peças do espetinho).',
+        },
+        {
+          key: 'x1', num: '3A', title: 'X de cinco', tag: 'a marca nova',
+          story: `O x promovido a símbolo: <b>quatro pontos = as pessoas; o do meio = a conta que junta todo
+            mundo</b> (ou "a sua parte", se você preferir a leitura do centro como o pedaço que sobra pra você).
+            É o "5" do dado — sorte de principiante, jogo combinado — e uma forma que a mão humana reconhece em
+            milissegundos por ser padrão de contagem. Não existe app de dinheiro com um quincunce; existiria um
+            com <em>o</em> quincunce laranja. Sistema: o centro pode acender/apagar por estado (despesa nova,
+            tudo quitado, pendência), e os cantos podem colorir por pessoa da conta.`,
+          craft: ['Cantos r 4.6 nos nós de uma malha 8/16/24 — o grid É a marca', 'Centro r 5.4: 0.8 maior que os cantos — foco legível em 16px sem depender só da cor', 'Duas diagonais guiam o olho pro centro: é uma seta pra dentro, não cinco bolinhas soltas'],
+          system: {
+            html: `<span class="lbl">Ritmos de cor (mesma geometria)</span>
+            <span class="item">${xdots({ r0: 5.4 })}<small>base · centro glow</small></span>
+            <span class="item">${xdots({ r0: 5.4, pair: true })}<small>pares em diagonal</small></span>
+            <span class="item">${xdots({ r0: 5.4, a: '#1c1410', b: '#f97316' })}<small>centro isolado</small></span>`,
+          },
+          grid: gridX(),
+          subject: xdots({ r0: 5.4 }),
+          pro: 'Simples como um favicon e "estranho" o bastante pra ser seu; conta uma história em uma frase ("a conta no meio dos amigos"); casa com o wordmark novo por construção — são o mesmo desenho.',
+          con: 'O shape nu (5 bolinhas) flerta com "face de dado" e "alvo" — a cor é o que defende; sozinho em uma cor e sem contexto, é o mais anônimo dos favoritos.',
+        },
+        {
+          key: 'x2', num: '3B', title: 'Talão com x', tag: 'a mix pedida',
+          story: `O recibo com picote (a "régua clichê" da rodada 1) virando <b>porta do x de cinco</b>: o símbolo
+            mora dentro do talão, no lugar onde mora o texto do recibo. A lógica nova: o picote já é uma linha de
+            pontos — o x é primo dele. Com o x laranja dentro, o talão deixa de ser "mais um app de recibo" e passa
+            a ser <em>o recibo da raxa</em>.`,
+          craft: ['Recibo redesenhado simétrico no mesmo grid 32 (picote: 3 vales de 2.8/2.9)', 'x interno com span de 8.8 — respeita folga de 2.4px da parede interna em todos os lados'],
+          grid: null,
+          subject: RECIBO(X_INNER),
+          pro: 'Diz "despesa" antes de abrir o app (zero ambiguidade funcional); o par recibo+x tem uma hierarquia clara: onde (recibo) + o quê (a divisão).',
+          con: 'O talão é o chão do clichê fintech — puxa a marca pra trás; em 16px picote e pontos brigam pelo mesmo pixel; vira "ícone de app de nota fiscal".',
+        },
+        {
+          key: 'x3', num: '3C', title: 'Carimbo', tag: 'mix · segunda tentativa',
+          story: `Segunda leitura da mix: em vez de caber o x <b>dentro</b> do recibo, o x é <b>carimbado por cima</b>
+            — batido na diagonal do canto, do jeito que se carimba FATO num talão de bar. O recibo fica mudo (sem
+            pontos, sem linhas: só a silhueta) e o x assume a marca. A energia muda: de "ícone" pra "ato feito".`,
+          craft: ['x de cinco rotacionado 15° e transbordando o canto do recibo — carimbo não respeita margem', 'Recibo puro contorno 2.3, sem miudezas: quem fala é o x'],
+          grid: null,
+          subject: `<svg viewBox="0 0 32 32" fill="none" aria-label="carimbo">
+            <path d="M7.5 6.5a2.5 2.5 0 0 1 2.5-2.5h12a2.5 2.5 0 0 1 2.5 2.5v21.9l-2.8-2.1-2.8 2.1-2.9-2.1-2.8 2.1-2.8-2.1-2.9 2.1Z" stroke="var(--rec)" stroke-width="2.3" stroke-linejoin="round"/>
+            <g transform="rotate(-15 21 20)">
+              <circle cx="16.2" cy="15.2" r="2.75" fill="var(--x-a)"/>
+              <circle cx="25.8" cy="15.2" r="2.75" fill="var(--x-a)"/>
+              <circle cx="16.2" cy="24.8" r="2.75" fill="var(--x-a)"/>
+              <circle cx="25.8" cy="24.8" r="2.75" fill="var(--x-a)"/>
+              <circle cx="21" cy="20" r="3.1" fill="var(--x-b)"/>
+            </g></svg>`,
+          pro: 'O mais "atitude" dos quatro — o carimbo fura a moldura, tem gesto; funciona como selo de estado no app inteiro (quitado ≠ carimbado).',
+          con: 'Duas formas competindo dentro de 32px — nos tamanhos pequenos o recibo vira mancha; precisa da versão x-sozinho (3A) como fallback de qualquer jeito.',
+        },
+      ];
+
+      // ============ render ============
+      const tile = (label, ctx, inner) => `
+        <figure class="tile">
+          <div class="box ${ctx}">${inner}</div>
+          <figcaption>${label}</figcaption>
+        </figure>`;
+
+      const tab = (inner, name, size, dark) => `
+        <span class="tab ${dark ? 'dark ctx-dark' : 'light ctx-light'} ${size === 32 ? 's32' : ''}">${inner}<span>${name}</span></span>`;
+
+      document.getElementById('mounts').innerHTML = DIRS.map((d) => {
+        const isWm = !!d.alt || d.key === 'x0';
+        const gridTiles = [
+          d.grid ? tile('grid de construção', 'ctx-grid', d.grid) : '',
+          tile('claro', 'ctx-light', d.subject),
+          tile('escuro', 'ctx-dark', d.subject),
+          tile('ícone app · borda-a-borda', 'ctx-grad', d.subject),
+          tile('uma cor (adesivo)', 'ctx-mono', d.subject),
+          d.alt ? tile(d.alt.label, 'ctx-light', d.alt.inner) : '',
+        ].join('');
+        const craft = d.craft
+          ? `<div class="craft"><b>Craft:</b><ul>${d.craft.map((c) => `<li>${c}</li>`).join('')}</ul></div>`
+          : '';
+        const system = d.system ? `<div class="system">${d.system.html}</div>` : '';
+        const lockups = d.lockups === false
+          ? `<div class="rows">
+              <div class="lockup ctx-light">${WM5}</div>
+              <div class="lockup ctx-dark">${WM5}</div>
+              <div class="favis">
+                <span class="lbl">no navegador</span>
+                ${tab(WM5, 'raxa — 16', 16, false)}
+                ${tab(WM5, 'escuro — 16', 16, true)}
+              </div>
+            </div>`
+          : `<div class="rows">
+              <div class="lockup ctx-light">${d.subject}${WM5}</div>
+              <div class="lockup ctx-dark">${d.subject}${WM5}</div>
+              <div class="favis">
+                <span class="lbl">favicon</span>
+                ${tab(d.subject, `${d.title} — 32`, 32, false)}
+                ${tab(d.subject, `${d.title} — 16`, 16, false)}
+                ${tab(d.subject, 'escuro — 16', 16, true)}
+              </div>
+            </div>`;
+        return `
+          <section class="dir" id="${d.key}">
+            <div class="dir-head">
+              <span class="dir-num">${d.num}</span>
+              <h2>${d.title}</h2>
+              <span class="tag">${d.tag}</span>
+            </div>
+            <p class="story">${d.story}</p>
+            ${craft}
+            <div class="grid">${gridTiles}</div>
+            ${lockups}
+            ${system}
+            <p class="verdict"><b class="pro">A favor:</b> ${d.pro}<br /><b class="con">Contra:</b> ${d.con}</p>
+          </section>`;
+      }).join('');
+    </script>
+  </body>
+</html>

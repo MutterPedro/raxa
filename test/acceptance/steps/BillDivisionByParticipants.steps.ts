@@ -18,7 +18,7 @@ defineFeature(feature, (test) => {
   test('Dividing a bill by participants', ({ given, when, then, and }) => {
     given('I am in the home page', async function () {
       await page.goto('http://127.0.0.1:5173/');
-      await expect(page).toHaveTitle(/Raxa/);
+      await expect(page).toHaveTitle(/raxa/);
     });
 
     and(/^I have a bill with name "(.*)"$/, async function (name: string) {

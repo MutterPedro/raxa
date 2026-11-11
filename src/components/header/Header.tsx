@@ -3,7 +3,7 @@ import NavBar from './NavBar';
 
 export default function Header() {
   return (
-    <header className="bg-primary text-secondary-color arvo-bold">
+    <header className="bg-primary text-secondary-color type-display">
       <NavBar>
         <div className="hidden lg:flex lg:gap-x-12">
           <a href="/" className="text-4xl leading-6">

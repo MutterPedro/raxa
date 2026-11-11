@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Raxa is an expense-splitting app: React 19 + TypeScript + Vite SPA, offline-first with Dexie (IndexedDB) as the primary data store and Firebase used only for auth/session. UI strings are Portuguese (e.g. the submit button is "Criar").
+Raxa is an expense-splitting app: React 19 + TypeScript + Vite SPA, offline-first with Dexie (IndexedDB) as the primary data store and Firebase used only for auth/session. UI strings are Portuguese (e.g. the submit button is "Criar"). **All code is English** — identifiers, comments, test names, docs; Portuguese appears only in user-facing UI strings (and design-page rendered copy).
 
 ## Commands
 
@@ -11,12 +11,15 @@ Raxa is an expense-splitting app: React 19 + TypeScript + Vite SPA, offline-firs
 - `npm run test:coverage` — enforces the **95% global threshold** (branches/functions/lines/statements) on `src/core/**` (the unit-testable domain layer; `src/infra` + `src/components` run only inside browsers and are covered by the BDD/integration suites). Currently at 100%. The Jest ts-jest transform sets `emitDecoratorMetadata: false` + `importHelpers: true` so transpiled decorator helpers don't count as unreachable branches.
 - `npm run test:integration` — Playwright (`test/integration/`); auto-starts `dev:host` via `webServer` config and reuses a running one locally.
 - `npm run test:bdd` — jest-cucumber acceptance tests; starts `dev:host` itself and drives headless Chromium against it.
+- `npm run test:visual` — Playwright visual goldens (`test/visual/`, own config `playwright.visual.config.ts`; 4 projects: phone/desktop × light/dark, baselines committed in `test/visual/__screenshots__/`, includes the brand-assets smoke). After an **intentional** visual change, re-approve baselines with `npm run test:visual:update` and review the golden diff — committed goldens are the desired state by definition.
+- `npm run assets` — regenerate all brand assets: `assets:svg` (`design/assets.py`, fontTools run via `uv run --with fonttools,brotli`) then `assets:png` (`design/rasterize.mjs`, renders the SVGs with the repo's Playwright Chromium). Source of truth is `design/logo-final.html`; never hand-edit `public/brand/`, favicons, PWA icons or splash PNGs.
 
-Three independent suites that don't overlap:
+Four independent suites that don't overlap:
 
 - **Unit** `test/**/*.test.ts` (excludes `test/integration/` via jest config) — run with `npm test`.
 - **Acceptance** `test/acceptance/features/*.feature` + `test/acceptance/steps/*.steps.ts` — only run via `test:bdd` (`.steps.ts` doesn't match Jest's default testMatch).
 - **Integration** `test/integration/*.test.ts` — Playwright only; Jest deliberately ignores this directory.
+- **Visual** `test/visual/*.visual.test.ts` — Playwright only via `test:visual`; Jest ignores it via `modulePathIgnorePatterns`.
 
 `test:watch` only reruns tests whose **names** contain `#unit` or `#sanity` (test-name-pattern convention — tag new unit tests with `#unit`).
 

@@ -7,7 +7,7 @@ export default function NewBillJumboButton({ handleOnClick }: NewBillJumboButton
   return (
     <button
       type="button"
-      className="bg-primary text-secondary-color align-middle arvo-bold text-center rounded-full max-h-36 text-4xl px-24 py-7"
+      className="bg-primary text-secondary-color align-middle type-display text-center rounded-full max-h-36 text-4xl px-24 py-7"
       onClick={handleOnClick}
       data-testid="new-bill-jumbo-button"
     >

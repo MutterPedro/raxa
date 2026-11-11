@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>raxa · exploração de logo — T1.2(a)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ============================================================
+         raxa — T1.2(a) logo exploration.
+         Five directions, each shown in the contexts where a logo
+         actually has to survive: light/dark surfaces, app icon,
+         one-color (sticker/carimbo), lockup with wordmark, and
+         favicon at 32px and 16px. Tangerina palette (D4).
+         ============================================================ */
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+        background: #0b0b0e;
+        color: #e8e6ef;
+        line-height: 1.5;
+        padding-bottom: 110px;
+      }
+
+      .page-head { max-width: 1060px; margin: 0 auto; padding: 56px 24px 8px; }
+      .page-head h1 { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; }
+      .page-head h1 span { opacity: 0.5; font-weight: 300; }
+      .page-head p { max-width: 680px; margin-top: 10px; color: #a5a2b3; font-size: 15px; }
+      .page-head p b { color: #e8e6ef; }
+      .page-head p em { color: #e8b98a; font-style: normal; }
+      .page-nav { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+      .page-nav a {
+        color: #e8e6ef; text-decoration: none; font-size: 13px; font-weight: 700;
+        border: 1px solid #35323f; border-radius: 999px; padding: 7px 14px;
+      }
+      .page-nav a:hover { border-color: #6b6680; }
+
+      section.dir { max-width: 1060px; margin: 84px auto 0; padding: 0 24px; }
+      .dir-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+      .dir-num {
+        font-size: 13px; font-weight: 800; letter-spacing: 0.08em;
+        border-radius: 8px; padding: 3px 10px; color: #0b0b0e; background: #f97316;
+      }
+      .dir-head h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+      .dir-head .tag { color: #a5a2b3; font-size: 14px; }
+      .dir .story { max-width: 760px; margin: 12px 0 24px; color: #c9c5d6; font-size: 14.5px; }
+      .dir .story b { color: #e8e6ef; }
+      .verdict {
+        max-width: 760px; margin-top: 16px; font-size: 13px; color: #a5a2b3;
+        border-left: 2px solid #42394f; padding-left: 14px;
+      }
+      .verdict b.pro { color: #7dd3a0; }
+      .verdict b.con { color: #fb9aa8; }
+
+      /* ---------- surfaces ---------- */
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+      figure.tile { display: flex; flex-direction: column; gap: 8px; }
+      figure.tile figcaption { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8f8c9d; }
+      .tile .box {
+        aspect-ratio: 1; border-radius: 22px; border: 1px solid #2c2a35;
+        display: grid; place-items: center; padding: 26px 22px;
+      }
+      .tile .box > svg { width: 100%; height: auto; }
+      .tile.rounded .box { border-radius: 24%; padding: 20px; }
+
+      /* mark palette — default (light) on :root, adapted per context below */
+      :root {
+        --stick: #1c1410; --piece-a: #c2410c; --piece-b: #ea580c; --piece-c: #fdba74;
+        --stem: #1c1410; --arm: #ea580c; --fruit: #c2410c; --seg: #ea580c;
+      }
+      .ctx-light { --bg: #faf6f0; --fg: #1c1410; background: #faf6f0; color: #1c1410; }
+      .ctx-dark {
+        --bg: #16120e; --fg: #f7f1e8;
+        --stick: #f7f1e8; --piece-a: #ea580c; --piece-b: #f97316; --piece-c: #fdba74;
+        --stem: #f7f1e8; --arm: #f97316; --fruit: #ea580c; --seg: #fdba74;
+        background: #16120e; color: #f7f1e8;
+      }
+      .ctx-grad {
+        --bg: #d9480f; --fg: #fff7ed;
+        --stick: #7c2d12; --piece-a: #fff7ed; --piece-b: #fed7aa; --piece-c: #7c2d12;
+        --stem: #fff7ed; --arm: #7c2d12; --fruit: #fff7ed; --seg: #7c2d12;
+        background: linear-gradient(135deg, #ea580c, #c2410c);
+        color: #fff7ed;
+      }
+      .ctx-mono {
+        --bg: #faf6f0; --fg: #c2410c;
+        --stick: #c2410c; --piece-a: #c2410c; --piece-b: #c2410c; --piece-c: #c2410c;
+        --stem: #c2410c; --arm: #c2410c; --fruit: #c2410c; --seg: #c2410c;
+        color: #c2410c; background: #faf6f0;
+      }
+
+      /* ---------- lockups + favicon strip ---------- */
+      .rows { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; align-items: stretch; }
+      .lockup {
+        display: flex; align-items: center; gap: 11px; border-radius: 16px;
+        border: 1px solid #2c2a35; padding: 20px 26px;
+      }
+      .lockup > svg { width: 34px; height: 34px; flex: none; }
+      .favis {
+        display: flex; align-items: center; gap: 18px; border-radius: 16px;
+        border: 1px solid #2c2a35; padding: 18px 22px;
+      }
+      .favis .tab {
+        display: flex; align-items: center; gap: 7px; font-size: 12px; color: #6f6c7d;
+        max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .favis .tab svg, .favis .tab .wm { flex: none; }
+      .favis .tab > svg { width: 16px; height: 16px; }
+      .favis .tab.s32 > svg { width: 32px; height: 32px; }
+      .favis .tab.dark { background: #16120e; padding: 8px 10px; border-radius: 10px; color: #b8a99a; }
+      .favis .tab.light { background: #f2efe9; padding: 8px 10px; border-radius: 10px; color: #5c5348; }
+      .favis .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8f8c9d; }
+
+      /* ---------- wordmark ---------- */
+      .wm {
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+        font-weight: 800; letter-spacing: -0.05em; color: var(--fg); line-height: 1;
+        display: inline-flex; align-items: baseline;
+      }
+      .tile .wm { font-size: 46px; }
+      .lockup .wm { font-size: 26px; }
+      .favis .tab .wm { font-size: 16px; }
+      .favis .tab.s32 .wm { font-size: 30px; }
+      .wm .x { width: 0.575em; height: 0.54em; }
+
+      .foot-note { max-width: 1060px; margin: 84px auto 0; padding: 0 24px; color: #8f8c9d; font-size: 13.5px; }
+      .foot-note b { color: #e8e6ef; }
+    </style>
+  </head>
+  <body>
+    <header class="page-head">
+      <h1>raxa <span>· exploração de logo — T1.2(a)</span></h1>
+      <p>
+        Cinco direções de verdade, cada uma testada nos lugares onde um logo tem que sobreviver: <b>claro +
+        escuro</b>, ícone de app (com o problema real do <em>borda-a-borda recortado pelo iOS</em>), <b>cor única</b>
+        (adesivo, carimbo), lockup com o nome e <b>favicon em 32px e 16px</b>. A dica de designer: comece olhando o
+        favicon de 16px — é o teste mais honesto, e onde logos "bonitinhos" morrem.
+      </p>
+      <nav class="page-nav">
+        <a href="#e">1 · Espetinho</a>
+        <a href="#t">2 · Tangerina</a>
+        <a href="#r">3 · r faísca</a>
+        <a href="#w">4 · raxa pontinho</a>
+        <a href="#ta">5 · Talão</a>
+      </nav>
+    </header>
+
+    <div id="mount-e"></div>
+    <div id="mount-t"></div>
+    <div id="mount-r"></div>
+    <div id="mount-w"></div>
+    <div id="mount-ta"></div>
+
+    <p class="foot-note" id="escolha">
+      <b>Como escolher.</b> Não precisa "escolher bonito": pode apontar um favorito, matar dois de primeira, ou
+      pedir mix (a perna do r com as peças do espetinho, a tangerina com o wordmark pontinho…). O processo depois da
+      sua escolha é: eu refino a geometria final (pixel-fit em 16/32/48, grid de construção, espaço de proteção),
+      aprovo com você, e só então gero os assets de produção — favicons, ícones PWA (incluindo maskable pra
+      escapar do recorte do Android) e splash. O talão está aqui de propósito, como régua: se um dos outros quatro
+      não bater ele em "personalidade +funcionar", é sinal de que eu errei o alvo.
+    </p>
+
+    <script>
+      // ---------- marks (32×32 grid, built for fat strokes at small sizes) ----------
+      const MARKS = {
+        e: `
+          <svg viewBox="0 0 32 32" fill="none" aria-label="espetinho">
+            <line x1="5" y1="27.5" x2="27" y2="5.5" style="stroke:var(--stick)" stroke-width="2.6" stroke-linecap="round"/>
+            <circle cx="11.5" cy="21" r="5.6" style="fill:var(--piece-a)"/>
+            <circle cx="16.8" cy="15.7" r="5.6" style="fill:var(--piece-b)"/>
+            <circle cx="22.1" cy="10.4" r="5.6" style="fill:var(--piece-c)"/>
+          </svg>`,
+        t: `
+          <svg viewBox="0 0 32 32" fill="none" aria-label="tangerina fatiada">
+            <path fill-rule="evenodd" style="fill:var(--fruit)" d="M15.5 6a12 12 0 1 1 0 24a12 12 0 1 1 0-24M15.5 18L18.6 6.4A12 12 0 0 1 27.1 14.9Z"/>
+            <path d="M15.5 18 L18.6 6.4 A12 12 0 0 1 27.1 14.9 Z" style="fill:var(--seg); stroke:var(--bg)" stroke-width="2" transform="translate(3.4,-3.4)"/>
+            <path d="M11.6 6.6 Q8.8 3.4 12.4 1.7 Q14.9 4 13 6.9 Z" style="fill:var(--fg)"/>
+          </svg>`,
+        r: `
+          <svg viewBox="0 0 32 32" fill="none" aria-label="r faísca">
+            <line x1="10.5" y1="6.6" x2="10.5" y2="25.4" style="stroke:var(--stem)" stroke-width="6.2" stroke-linecap="round"/>
+            <line x1="14.6" y1="10.4" x2="26.4" y2="3.4" style="stroke:var(--arm)" stroke-width="3.6" stroke-linecap="round"/>
+          </svg>`,
+        ta: `
+          <svg viewBox="0 0 32 32" fill="none" aria-label="talão">
+            <path d="M8 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v20.5l-2.7-2-2.65 2-2.65-2-2.65 2L8.7 24.5 8 26.5Z" style="stroke:currentColor" stroke-width="2.3" stroke-linejoin="round"/>
+            <circle cx="12.2" cy="10.6" r="1.45" style="fill:currentColor"/>
+            <circle cx="16" cy="10.6" r="1.45" style="fill:currentColor"/>
+            <circle cx="19.8" cy="10.6" r="1.45" style="fill:currentColor"/>
+            <circle cx="12.2" cy="15.4" r="1.45" style="fill:currentColor"/>
+            <circle cx="16" cy="15.4" r="1.45" style="fill:currentColor"/>
+            <path d="M12.2 20h4" style="stroke:currentColor" stroke-width="2.3" stroke-linecap="round"/>
+          </svg>`,
+      };
+
+      // ---------- wordmark (x = four dots splitting) ----------
+      const WORDMARK = `
+        <span class="wm" aria-label="raxa">ra<svg class="x" viewBox="0 0 20 18.8" aria-hidden="true">
+          <circle cx="4.1" cy="4.1" r="3.7" style="fill:var(--piece-a, #C2410C)"/>
+          <circle cx="15.9" cy="4.1" r="3.7" style="fill:var(--piece-b, #EA580C)"/>
+          <circle cx="4.1" cy="14.7" r="3.7" style="fill:var(--piece-b, #EA580C)"/>
+          <circle cx="15.9" cy="14.7" r="3.7" style="fill:var(--piece-a, #C2410C)"/>
+        </svg>a</span>`;
+
+      // ---------- per-direction config ----------
+      const DIRS = [
+        {
+          key: 'e', mount: 'mount-e', num: 'DIREÇÃO 1', title: 'Espetinho', tag: 'a casa',
+          story: `Raxa já entrega: é comida de rua no palito. <b>Três peças no mesmo espeto = gente que saiu junto
+            e divide a conta.</b> As peças têm um tamanho só, cada uma uma pessoa — e no app o ícone pode crescer com
+            a realidade: 2 peças pra duas pessoas, 4 pra quatro (uma versão dinâmica por conta, favicon vivo).
+            A diagonal dá energia sem precisar de gradiente.`,
+          pro: 'Original e defensável (ninguém tem um espetinho), amarra o nome do app, ótima leitura em 16px (diagonal + bolinhas), vira sistema (peças = participantes).',
+          con: 'Mais ilustração que "símbolo limpo"; fora do contexto de comida de rua, o palito pode levar um segundo a mais pra ser lido.',
+        },
+        {
+          key: 't', mount: 'mount-t', num: 'DIREÇÃO 2', title: 'Tangerina fatiada', tag: 'a fruta que divide',
+          story: `Uma tangerina com <b>um gomo sendo destacado — a "sua parte" sendo oferecida a alguém.</b> Amarra
+            a paleta escolhida (Tangerina) a um mundo de marca inteiro: fruta, mesa, calor, oferecer. O gesto é o
+            produto inteiro numa imagem: dividir sem brigar.`,
+          pro: 'Metáfora mais quente e generosa das cinco; funciona em uma cor; abre um mundo de ilustração (gomos, mesas, feiras) pros estados vazios e empty states.',
+          con: 'Sem o gomo destacado, vira "app de fruta/saúde" genérico — o gomo É o logo, e em 16px ele existe mas trabalha sozinho; mais delicado que o espetinho.',
+        },
+        {
+          key: 'r', mount: 'mount-r', num: 'DIREÇÃO 3', title: 'r faísca', tag: 'a letra contida',
+          story: `Um "r" minúsculo cujo <b>braço se soltou da letra e saiu pela diagonal</b> — a parte que você
+            separou da conta, sem quebrar a relação com o cabo. A perna é sóbria (segurança, banco bom), a diagonal
+            laranja é a provocação (jovem, movimento).`,
+          pro: 'O mais forte em 16px e em ícone de app; escala para sempre; neutro o bastante pra nunca cansar.',
+          con: 'Letra-mark em bold é a escolha mais comum do mundo — personalidade vem só do gesto, e o "r" de app genérico já existe aos milhares.',
+        },
+        {
+          key: 'w', mount: 'mount-w', num: 'DIREÇÃO 4', title: 'raxa pontinho', tag: 'wordmark puro',
+          story: `Sem símbolo: <b>o x vira quatro pontos</b> — quatro amigos rachando algo. Tipografia resolve tudo
+            sozinha e amadurece o produto (Pague Menos não precisa de mascote). Os pontos podem viver sua própria
+            vida: colorir por situação (quem está na conta, quem já pagou), virar loading (pontos em rotação)…`,
+          pro: 'Memoriza o NOME, não um símbolo; o x-pontinhos é pequeno mas é seu; excelente em rodapé, e-mail, splash com nome.',
+          con: 'Não sobrevive sozinho: em 16px o wordmark inteiro é ilegível (veja o teste) — precisaria de um símbolo irmão pra favicon/ícone. Por isso raramente é a resposta única.',
+        },
+        {
+          key: 'ta', mount: 'mount-ta', num: 'DIREÇÃO 5', title: 'Talão', tag: 'a régua (clichê consciente)',
+          story: `O recibo com furo de picote e picote de rasgar — <b>o símbolo mais óbvio de "despesa"
+            existente.</b> Está aqui como calibração, não como sugestão: mostra o piso do problema. Se uma das
+            outras quatro não ganhar dele em "personalidade E funcionar", eu errei o alvo.`,
+          pro: 'Ninguém erra o que é; funciona em qualquer tamanho; o picote é um detalho tático simpático.',
+          con: 'Todo app de finanças do planeta tem um recibo. Zero defensável, zero raxa. Serve só pra medir as outras.',
+        },
+      ];
+
+      // ---------- render ----------
+      const tile = (label, ctx, inner, rounded = false) => `
+        <figure class="tile${rounded ? ' rounded' : ''}">
+          <div class="box ${ctx}"${rounded ? ' style="border-radius:22.5%"' : ''}>${inner}</div>
+          <figcaption>${label}</figcaption>
+        </figure>`;
+
+      const tab = (inner, name, size, dark) => `
+        <span class="tab ${dark ? 'dark ctx-dark' : 'light ctx-light'} ${size === 32 ? 's32' : ''}">${inner}<span>${name}</span></span>`;
+
+      DIRS.forEach((d) => {
+        const isW = d.key === 'w';
+        const mark = () => MARKS[d.key];
+        const subject = isW ? WORDMARK : mark();
+        const subjectMono = isW ? WORDMARK : mark();
+
+        const grid = `
+          <div class="grid">
+            ${tile('claro', 'ctx-light', subject)}
+            ${tile('escuro', 'ctx-dark', subject)}
+            ${tile('ícone app · borda-a-borda', 'ctx-grad', subject, true)}
+            ${tile('uma cor (adesivo)', 'ctx-mono', subjectMono)}
+          </div>`;
+
+        const lockups = `
+          <div class="rows">
+            <div class="lockup ctx-light">${isW ? '' : mark()}${WORDMARK}</div>
+            <div class="lockup ctx-dark">${isW ? '' : mark()}${WORDMARK}</div>
+            <div class="favis">
+              <span class="lbl">favicon</span>
+              ${tab(isW ? WORDMARK : mark(), isW ? 'raxa — 32' : `${d.title} — 32`, 32, false)}
+              ${tab(isW ? WORDMARK : mark(), isW ? 'raxa — 16' : `${d.title} — 16`, 16, false)}
+              ${tab(isW ? WORDMARK : mark(), 'escuro — 16', 16, true)}
+            </div>
+          </div>`;
+
+        document.getElementById(d.mount).innerHTML = `
+          <section class="dir" id="${d.key}">
+            <div class="dir-head">
+              <span class="dir-num">${d.num}</span>
+              <h2>${d.title}</h2>
+              <span class="tag">${d.tag}</span>
+            </div>
+            <p class="story">${d.story}</p>
+            ${grid}
+            ${lockups}
+            <p class="verdict"><b class="pro">A favor:</b> ${d.pro}<br /><b class="con">Contra:</b> ${d.con}</p>
+          </section>`;
+      });
+    </script>
+  </body>
+</html>

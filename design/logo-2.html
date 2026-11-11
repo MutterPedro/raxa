@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>raxa · logo rodada 2 — refinando 1 e 2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ============================================================
+         raxa — T1.2(a) round 2. Refinement of directions 1
+         (Espetinho) and 2 (Tangerina) from round 1 (logo.html).
+         All geometry is computed in JS on a 32 grid with a compass:
+         fittings, constant gaps and real cuts (boolean, not
+         overlaid shapes). Each direction shows its construction
+         grid — craft is not opinion, it is measurement.
+         ============================================================ */
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+        background: #0b0b0e;
+        color: #e8e6ef;
+        line-height: 1.5;
+        padding-bottom: 110px;
+      }
+
+      .page-head { max-width: 1060px; margin: 0 auto; padding: 56px 24px 8px; }
+      .page-head h1 { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; }
+      .page-head h1 span { opacity: 0.5; font-weight: 300; }
+      .page-head p { max-width: 700px; margin-top: 10px; color: #a5a2b3; font-size: 15px; }
+      .page-head p b { color: #e8e6ef; }
+      .page-head p em { color: #e8b98a; font-style: normal; }
+      .page-nav { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+      .page-nav a {
+        color: #e8e6ef; text-decoration: none; font-size: 13px; font-weight: 700;
+        border: 1px solid #35323f; border-radius: 999px; padding: 7px 14px;
+      }
+      .page-nav a:hover { border-color: #6b6680; }
+      .page-nav a.old { border-style: dashed; color: #a5a2b3; }
+
+      section.dir { max-width: 1060px; margin: 88px auto 0; padding: 0 24px; }
+      .dir-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+      .dir-num {
+        font-size: 13px; font-weight: 800; letter-spacing: 0.08em;
+        border-radius: 8px; padding: 3px 10px; color: #0b0b0e; background: #f97316;
+      }
+      .dir-head h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+      .dir-head .tag { color: #a5a2b3; font-size: 14px; }
+      .dir .story { max-width: 780px; margin: 12px 0 8px; color: #c9c5d6; font-size: 14.5px; }
+      .dir .story b { color: #e8e6ef; }
+
+      .craft {
+        max-width: 780px; margin: 10px 0 22px; font-size: 13px; color: #a5a2b3;
+        background: #141219; border: 1px solid #2c2a35; border-radius: 12px; padding: 12px 16px;
+      }
+      .craft b { color: #f0b47e; font-weight: 700; }
+      .craft ul { margin: 6px 0 0 18px; }
+      .craft li { margin-top: 3px; }
+
+      .verdict {
+        max-width: 780px; margin-top: 16px; font-size: 13px; color: #a5a2b3;
+        border-left: 2px solid #42394f; padding-left: 14px;
+      }
+      .verdict b.pro { color: #7dd3a0; }
+      .verdict b.con { color: #fb9aa8; }
+
+      /* ---------- contexts ---------- */
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+      figure.tile { display: flex; flex-direction: column; gap: 8px; }
+      figure.tile figcaption {
+        font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8f8c9d;
+      }
+      .tile .box {
+        aspect-ratio: 1; border-radius: 22px; border: 1px solid #2c2a35;
+        display: grid; place-items: center; padding: 26px 22px;
+      }
+      .tile .box > svg { width: 100%; height: auto; }
+
+      /* mark tokens — default light on :root, overridden per context */
+      :root {
+        --bg: #faf6f0; --fruit: #c2410c; --seg: #f97316; --seg2: #fdba74; --seg3: #ffedd5;
+        --stick: #1c1410; --stem: #1c1410;
+        --piece-a: #c2410c; --piece-b: #f97316; --piece-c: #fdba74;
+        --split-l: #c2410c; --split-r: #f97316;
+      }
+      .ctx-light { --bg: #faf6f0; background: #faf6f0; color: #1c1410; }
+      .ctx-dark {
+        --bg: #16120e; --fruit: #ea580c; --seg: #fdba74; --seg2: #ffedd5; --seg3: #fff7ed;
+        --stick: #f7f1e8; --stem: #f7f1e8;
+        --piece-a: #ea580c; --piece-b: #f97316; --piece-c: #fdba74;
+        --split-l: #ea580c; --split-r: #fdba74;
+        background: #16120e; color: #f7f1e8;
+      }
+      .ctx-grad {
+        --bg: #d9480f; --fruit: #fff7ed; --seg: #7c2d12; --seg2: #b45309; --seg3: #fed7aa;
+        --stick: #7c2d12; --stem: #7c2d12;
+        --piece-a: #fff7ed; --piece-b: #fff7ed; --piece-c: #fff7ed;
+        --split-l: #fff7ed; --split-r: #7c2d12;
+        background: linear-gradient(135deg, #ea580c, #c2410c); color: #fff7ed;
+      }
+      .ctx-mono {
+        --bg: #faf6f0; --fruit: #c2410c; --seg: #c2410c; --seg2: #c2410c; --seg3: #c2410c;
+        --stick: #c2410c; --stem: #c2410c;
+        --piece-a: #c2410c; --piece-b: #c2410c; --piece-c: #c2410c;
+        --split-l: #c2410c; --split-r: #c2410c;
+        background: #faf6f0; color: #c2410c;
+      }
+      .ctx-grid { background: #faf6f0; color: #1c1410; }
+
+      /* ---------- lockups + favicon strip ---------- */
+      .rows { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; align-items: stretch; }
+      .lockup {
+        display: flex; align-items: center; gap: 11px; border-radius: 16px;
+        border: 1px solid #2c2a35; padding: 20px 26px;
+      }
+      .lockup > svg { width: 34px; height: 34px; flex: none; }
+      .favis {
+        display: flex; align-items: center; gap: 18px; border-radius: 16px;
+        border: 1px solid #2c2a35; padding: 18px 22px;
+      }
+      .favis .tab {
+        display: flex; align-items: center; gap: 7px; font-size: 12px;
+        max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .favis .tab > svg, .favis .tab .wm { flex: none; }
+      .favis .tab > svg { width: 16px; height: 16px; }
+      .favis .tab.s32 > svg { width: 32px; height: 32px; }
+      .favis .tab.dark { background: #16120e; padding: 8px 10px; border-radius: 10px; color: #b8a99a; }
+      .favis .tab.light { background: #f2efe9; padding: 8px 10px; border-radius: 10px; color: #5c5348; }
+      .favis .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8f8c9d; }
+
+      /* ---------- system strip ---------- */
+      .system {
+        display: flex; align-items: center; gap: 26px; margin-top: 14px; flex-wrap: wrap;
+        border-radius: 16px; border: 1px solid #2c2a35; background: #faf6f0; padding: 20px 26px;
+      }
+      .system .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8a7a68; max-width: 150px; }
+      .system .item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+      .system .item svg { width: 58px; height: 58px; }
+      .system .item small { font-size: 11px; font-weight: 700; color: #8a7a68; }
+
+      /* ---------- wordmark ---------- */
+      .wm {
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+        font-weight: 800; letter-spacing: -0.05em; color: var(--fg, currentColor); line-height: 1;
+        display: inline-flex; align-items: baseline;
+      }
+      .lockup .wm { font-size: 26px; }
+      .favis .tab .wm { font-size: 16px; }
+      .lockup.ctx-light .wm { color: #1c1410; }
+      .lockup.ctx-dark .wm { color: #f7f1e8; }
+      .wm .x { width: 0.575em; height: 0.54em; }
+
+      .foot-note { max-width: 1060px; margin: 84px auto 0; padding: 0 24px; color: #8f8c9d; font-size: 13.5px; }
+      .foot-note b { color: #e8e6ef; }
+    </style>
+  </head>
+  <body>
+    <header class="page-head">
+      <h1>raxa <span>· logo — rodada 2 · refinando as favoritas</span></h1>
+      <p>
+        As duas favoritas da rodada 1, cada uma em <b>três variações</b>, agora com a geometria construída de verdade:
+        compasso, folgas constantes e <em>corte real</em> (o encaixe é um boolean, não um desenho por cima do outro).
+        Cada direção abre com o <b>grid de construção</b> — o que separa um logo profissional de "fiz no paint" é
+        medição, e dá pra medir aqui. <a class="old" href="logo.html" style="color:#a5a2b3">Rodada 1 →</a>
+      </p>
+      <nav class="page-nav">
+        <a href="#a1">1A · Trio no ponto</a>
+        <a href="#b1">1B · Espetinho misto</a>
+        <a href="#c1">1C · A sua parte</a>
+        <a href="#a2">2A · Gomo no ponto</a>
+        <a href="#b2">2B · Dividida ao meio</a>
+      </nav>
+    </header>
+
+    <div id="mounts"></div>
+
+    <p class="foot-note">
+      <b>Depois da sua escolha:</b> refino final (pixel-fit em 16/32/48, clear space, versões horizontal e vertical do
+      lockup), e só então os assets de produção — favicons, ícones PWA com maskable, splash. As variações podem ser
+      combinadas livremente (ex.: o espetinho misto 1B com o sistema de peças da 1A, o gomo da 2A no lugar do x do
+      wordmark…).
+    </p>
+
+    <script>
+      // ============ geometry helpers — everything on the 32 grid ============
+      const D2R = Math.PI / 180;
+      const R2 = (n) => Math.round(n * 100) / 100;
+      const P = (cx, cy, r, a) => [R2(cx + r * Math.cos(a * D2R)), R2(cy + r * Math.sin(a * D2R))];
+      const wedge = (cx, cy, r, a1, a2) => {
+        const [x1, y1] = P(cx, cy, r, a1), [x2, y2] = P(cx, cy, r, a2);
+        return `M${cx} ${cy}L${x1} ${y1}A${r} ${r} 0 0 1 ${x2} ${y2}Z`;
+      };
+      const circ = (cx, cy, r) =>
+        `M${R2(cx - r)} ${cy}a${r} ${r} 0 1 0 ${R2(2 * r)} 0a${r} ${r} 0 1 0 ${R2(-2 * r)} 0Z`;
+
+      // ============ TANGERINA — true cutout + lifted sectors ============
+      // C and R fixed; the segments are sectors of radius R pulled along their own
+      // bisector. The body has the segment's SOCKET cut out (fill-rule evenodd),
+      // so the gap between fruit and segment is geometric: always constant.
+      function tangerina(gomos) {
+        const CX = 15.4, CY = 17.2, R = 11.4;
+        const notches = gomos.map((g) => wedge(CX, CY, R, g.a - g.w, g.a + g.w)).join('');
+        const body = `<path fill-rule="evenodd" fill="var(--fruit)" d="${circ(CX, CY, R)}${notches}"/>`;
+        const stem =
+          `<path d="M15.3 6.4 Q15.1 4.0 14.0 2.7" stroke="var(--stem)" stroke-width="2.2" stroke-linecap="round" fill="none"/>` +
+          `<path d="M14.3 3.5 Q11.0 0.4 8.8 2.1 Q10.1 5.1 14.3 3.5Z" fill="var(--stem)"/>`;
+        const wedges = gomos
+          .map((g) => {
+            const dx = R2(g.t * Math.cos(g.a * D2R)), dy = R2(g.t * Math.sin(g.a * D2R));
+            return (
+              `<path d="${wedge(CX, CY, R, g.a - g.w, g.a + g.w)}" transform="translate(${dx} ${dy})"` +
+              ` fill="var(${g.fill})" stroke="var(${g.fill})" stroke-width="1.4" stroke-linejoin="round"/>`
+            );
+          })
+          .join('');
+        return `<svg viewBox="0 0 32 32" aria-label="tangerina fatiada">${body}${stem}${wedges}</svg>`;
+      }
+      const G1 = [{ a: -52, w: 17, t: 4.9, fill: '--seg' }];
+      const G2 = [
+        { a: -50, w: 13, t: 4.6, fill: '--seg' },
+        { a: -14, w: 13, t: 3.8, fill: '--seg2' },
+      ];
+      const G3 = [
+        { a: -54, w: 11, t: 4.4, fill: '--seg' },
+        { a: -20, w: 11, t: 3.7, fill: '--seg2' },
+        { a: 14, w: 11, t: 3.0, fill: '--seg3' },
+      ];
+
+      // ============ ESPETINHO — exact 45°, constant gap ============
+      function espetinho(n, opts = {}) {
+        const { r = 4.6, gap = 1.2, ext = 2.2, sw = 2.3, mix = false } = opts;
+        const U = Math.SQRT1_2;
+        const d = 2 * r + gap;
+        const half = ((n - 1) * d) / 2;
+        const L = half + r + ext;
+        const stick = `<line x1="${R2(16 - L * U)}" y1="${R2(16 + L * U)}" x2="${R2(16 + L * U)}" y2="${R2(16 - L * U)}" stroke="var(--stick)" stroke-width="${sw}" stroke-linecap="round"/>`;
+        let pieces = '';
+        for (let i = 0; i < n; i++) {
+          const s = -half + i * d;
+          const cx = R2(16 + s * U), cy = R2(16 - s * U);
+          if (mix && i === 1 && n === 3) {
+            // the "queijo coalho": rounded square aligned with the skewer
+            pieces += `<rect x="-4.35" y="-4.35" width="8.7" height="8.7" rx="2" transform="translate(${cx} ${cy}) rotate(-45)" fill="var(--piece-b)"/>`;
+          } else {
+            pieces += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--piece-${'abc'[i % 3]})"/>`;
+          }
+        }
+        return `<svg viewBox="0 0 32 32" aria-label="espetinho">${stick}${pieces}</svg>`;
+      }
+
+      // 1C — two pieces on the short skewer + one peeling off the tip
+      function suaParte() {
+        const r = 4.6;
+        const stick = `<line x1="5.49" y1="28.51" x2="22.5" y2="11.5" stroke="var(--stick)" stroke-width="2.3" stroke-linecap="round"/>`;
+        const pieces =
+          `<circle cx="10.3" cy="23.7" r="${r}" fill="var(--piece-a)"/>` +
+          `<circle cx="17.7" cy="16.3" r="${r}" fill="var(--piece-b)"/>` +
+          `<circle cx="25.05" cy="8.95" r="${r}" fill="var(--piece-c)"/>`;
+        return `<svg viewBox="0 0 32 32" aria-label="espetinho com uma peça se descolando">${stick}${pieces}</svg>`;
+      }
+
+      // ============ 2B — fruit split in half, two hands ============
+      function metades() {
+        // diameter at 100°; each half shifted 2.1 along the normal (10°) → gap ~4.2
+        const off = [R2(2.1 * Math.cos(10 * D2R)), R2(2.1 * Math.sin(10 * D2R))];
+        const stem =
+          `<path d="M15.3 6.4 Q15.1 4.0 14.0 2.7" stroke="var(--stem)" stroke-width="2.2" stroke-linecap="round" fill="none"/>` +
+          `<path d="M14.3 3.5 Q11.0 0.4 8.8 2.1 Q10.1 5.1 14.3 3.5Z" fill="var(--stem)"/>`;
+        const left = `<g transform="translate(${-off[0]} ${-off[1]})">` +
+          `<path d="M18.01 4.58A11.6 11.6 0 1 0 13.99 27.43Z" fill="var(--split-l)"/>${stem}</g>`;
+        const right = `<path d="M13.99 27.43A11.6 11.6 0 1 0 18.01 4.58Z" transform="translate(${off[0]} ${off[1]})" fill="var(--split-r)"/>`;
+        return `<svg viewBox="0 0 32 32" aria-label="tangerina dividida ao meio">${left}${right}</svg>`;
+      }
+
+      // ============ construction guides ============
+      function gridTangerina() {
+        const CX = 15.4, CY = 17.2, R = 11.4;
+        const e1 = P(CX, CY, 17, -52 - 17), e2 = P(CX, CY, 17, -52 + 17), bis = P(CX, CY, 19, -52);
+        const g =
+          `<g stroke="#c2410c" fill="none" opacity="0.35">` +
+          `<circle cx="${CX}" cy="${CY}" r="${R}" stroke-dasharray="1.4 1.4" stroke-width="0.6"/>` +
+          `<line x1="${CX}" y1="${CY}" x2="${e1[0]}" y2="${e1[1]}" stroke-width="0.6"/>` +
+          `<line x1="${CX}" y1="${CY}" x2="${e2[0]}" y2="${e2[1]}" stroke-width="0.6"/>` +
+          `<line x1="${CX}" y1="${CY}" x2="${bis[0]}" y2="${bis[1]}" stroke-width="0.6" stroke-dasharray="1.4 1.4"/>` +
+          `<line x1="${CX - 1.6}" y1="${CY}" x2="${CX + 1.6}" y2="${CY}" stroke-width="0.8"/>` +
+          `<line x1="${CX}" y1="${CY - 1.6}" x2="${CX}" y2="${CY + 1.6}" stroke-width="0.8"/></g>`;
+        return `<svg viewBox="0 0 32 32" aria-label="grid de construção">${tangerina(G1).replace(/^<svg[^>]*>|<\/svg>$/g, '')}${g}</svg>`;
+      }
+      function gridEspetinho() {
+        const U = Math.SQRT1_2, d = 10.4;
+        let g = `<g stroke="#c2410c" fill="none" opacity="0.35" stroke-width="0.6" stroke-dasharray="1.4 1.4">`;
+        for (const s of [-d, 0, d]) {
+          g += `<circle cx="${R2(16 + s * U)}" cy="${R2(16 - s * U)}" r="4.6"/>`;
+        }
+        g += `<line x1="4" y1="28" x2="28" y2="4" stroke-width="0.6"/></g>`;
+        return `<svg viewBox="0 0 32 32" aria-label="grid de construção">${espetinho(3).replace(/^<svg[^>]*>|<\/svg>$/g, '')}${g}</svg>`;
+      }
+
+      // ============ wordmark ============
+      const WORDMARK = `<span class="wm" aria-label="raxa">ra<svg class="x" viewBox="0 0 20 18.8" aria-hidden="true">
+        <circle cx="4.1" cy="4.1" r="3.7" fill="#C2410C"/>
+        <circle cx="15.9" cy="4.1" r="3.7" fill="#EA580C"/>
+        <circle cx="4.1" cy="14.7" r="3.7" fill="#EA580C"/>
+        <circle cx="15.9" cy="14.7" r="3.7" fill="#C2410C"/>
+      </svg>a</span>`;
+
+      // ============ direction configs ============
+      const DIRS = [
+        {
+          key: 'a1', num: '1A', title: 'Espetinho · trio no ponto', tag: 'o da rodada 1, lapidado',
+          story: `Mesma alma da rodada 1, agora em grid: diagonal exata de 45°, três peças de r 4.6 com a <b>mesma
+            folga de 1.2px</b> entre si (rodada 1: elas se embricavam feito lagarta), palito com pontas redondas de
+            largo calibrado com as peças. As três cores viram uma escala — a peça de cima puxa pro claro pra dar
+            direção de leitura (de baixo pra cima = crescendo).`,
+          craft: ['Diagonal 45° exata, tudo simétrico em relação ao centro', 'Folga entre peças = 1.2px, constante (peça ≠ pessoa grudada em ninguém)', 'Palito termina 2.2px além da borda das peças — nem cortando, nem acanhado'],
+          system: { html: `<span class="lbl">O sistema: peças = gente na conta</span>
+            <span class="item">${espetinho(2)}<small>2 pessoas</small></span>
+            <span class="item">${espetinho(3)}<small>3 pessoas</small></span>
+            <span class="item">${espetinho(4, { r: 3.9 })}<small>4 pessoas</small></span>`, },
+          grid: gridEspetinho(),
+          mark: espetinho(3),
+          pro: 'Mantém a originalidade da rodada 1 e agora aguenta uma lupa; o sistema de peças dá trabalho vivo pra marca (ícone, empty states, loading).',
+          con: 'Ainda é a direção mais "ilustração"; se um dia o app sair do universo comida, o palito precisa envelhecer bem.',
+        },
+        {
+          key: 'b1', num: '1B', title: 'Espetinho misto', tag: 'queijo coalho no meio',
+          story: `Espetinho de verdade não é tudo igual: <b>duas bolinhas e um queijo coalho no meio</b> — o quadrado
+            arredondado alinhado ao palito. A forma extra cria ritmo (redondo–quadrado–redondo), dá textura de
+            street food e melhora o reconhecimento: é espetinho mesmo, não "três bolinhas numa linha". O quadrado é
+            também a melhor âncora pra 16px — forma de canto sobrevive melhor que mais uma bolinha.`,
+          craft: ['Quadrado 8.7 com raio 2 (mesma "temperatura" de canto dos botões do app)', 'Alinhado ao palito a -45°, folgas iguais às das bolinhas'],
+          grid: null,
+          mark: espetinho(3, { mix: true }),
+          pro: 'O mais "comida de verdade" dos cinco — tem piada interna (o queijo), memorável, e a forma mista destaca no mar de logos de bolinhas.',
+          con: 'Mais detalhe que 1A; em 16px o canto do quadrado arredonda e vira bolinha (o sistema de peças puras da 1A é mais "eterno").',
+        },
+        {
+          key: 'c1', num: '1C', title: 'Espetinho · a sua parte', tag: 'o gesto do produto',
+          story: `Duas peças no palito (o palito curto é proposital) e <b>uma terceira se descolando da ponta</b> — o
+            momento exato do "rachar". Conta a história do produto, não só o nome: alguém está pegando a parte dela,
+            e tá tudo bem. A peça que sai é sempre a clara (#FDBA74) — a luz da marca = quem recebe.`,
+          craft: ['Terceira peça na mesma diagonal, folga de 1.2px igual — descolando, não caindo', 'Palito termina antes da peça que sai: ela já é "de fora"'],
+          grid: null,
+          mark: suaParte(),
+          pro: 'O mais narrativo — tem tensão e gesto; no favicon, as três bolinhas na diagonal continuam legíveis; pode ser a versão "ao vivo" (a peça desliza no loading).',
+          con: 'Em 16px vira "três bolinhas + palito curto" — a história aparece menos que no tamanho grande; requer mais cuidado de ajuste fino.',
+        },
+        {
+          key: 'a2', num: '2A', title: 'Tangerina · gomo no ponto', tag: 'a correção do "paint"',
+          story: `A analogia da rodada 1 era boa; a execução era de rascunho. Agora: o gomo é um <b>setor circular
+            verdadeiro</b> (raio = raio da fruta), o encaixe dele está <b>cortado de verdade no corpo</b> (fill-rule
+            evenodd — se você imprimir, é um buraco com a forma exata do gomo), e a folga entre fruta e gomo vem da
+            geometria: o gomo é içado ao longo da própria bissetriz, então o vão é constante por construção. A folha
+            virou uma <b>vesica</b> (duas circunferências iguais) com cabo de ponta redonda — nada mais é "desenhado
+            na mão". Cor com significado: fruta = primary (C2410C), gomo = glow (F97316) — <b>o brilho é a parte que
+            você oferece</b>.`,
+          craft: ['Corte boolean real: o encaixe é buraco, não forma por cima', 'Vão fruta↔gomo constante (4.9px de içamento na bissetriz — visível até em 16px)', 'Folha = vesica exata; cabo com round cap do mesmo largo do palito (2.2)', 'Valores de cor separados: gomo F97316 sobre fruta C2410C, sem "laranja sobre laranja"'],
+          system: { html: `<span class="lbl">O sistema: gomos = o que já foi dividido</span>
+            <span class="item">${tangerina(G1)}<small>1 gomo</small></span>
+            <span class="item">${tangerina(G2)}<small>2 gomos</small></span>
+            <span class="item">${tangerina(G3)}<small>3 gomos</small></span>`, },
+          grid: gridTangerina(),
+          mark: tangerina(G1),
+          pro: 'A metáfora mais generosa agora com execução de ourivesaria; funciona em uma cor porque o vão é real; o brilho-do-gomo vira a assinatura de cor da marca inteira.',
+          con: 'O cabinho+folha segue sendo o ponto delicado em 16px — pode ser opcional no favicon (a fruta com o gomo funciona sem folha).',
+        },
+        {
+          key: 'b2', num: '2B', title: 'Tangerina · dividida ao meio', tag: 'a versão essencial',
+          story: `A fruta partida em <b>duas metades iguais, cada uma de uma cor da marca, com um vão de 4px</b> — o
+            gesto de dividir reduzido ao mínimo. É o logo mais abstrato e mais "sistema" dos cinco: duas metades,
+            duas cores, dois lados de qualquer conta. Metade escura + metade brilhante também resolve sozinho o
+            binário recebe/deve que o app vive.`,
+          craft: ['Corte a 100° (nem vertical nem horizontal — tenso na medida)', 'Cada metade recuada 2.1px na normal — o vão é o logo, e é dele que vem o nome "dividida"'],
+          grid: null,
+          mark: metades(),
+          pro: 'O mais simples de reproduzir em qualquer lugar (até em bordado); escala absurdamente bem; leitura instantânea de "dividir".',
+          con: 'Menos "fruta", mais "círculo dividido" — precisa do nome junto pra não virar símbolo genérico; perde a história quente do gomo oferecido.',
+        },
+      ];
+
+      // ============ render ============
+      const tile = (label, ctx, inner) => `
+        <figure class="tile">
+          <div class="box ${ctx}">${inner}</div>
+          <figcaption>${label}</figcaption>
+        </figure>`;
+
+      const tab = (inner, name, size, dark) => `
+        <span class="tab ${dark ? 'dark ctx-dark' : 'light ctx-light'} ${size === 32 ? 's32' : ''}">${inner}<span>${name}</span></span>`;
+
+      document.getElementById('mounts').innerHTML = DIRS.map((d) => {
+        const gridTiles = [
+          d.grid ? tile('grid de construção', 'ctx-grid', d.grid) : '',
+          tile('claro', 'ctx-light', d.mark),
+          tile('escuro', 'ctx-dark', d.mark),
+          tile('ícone app · borda-a-borda', 'ctx-grad', d.mark),
+          tile('uma cor (adesivo)', 'ctx-mono', d.mark),
+        ].join('');
+        const craft = d.craft
+          ? `<div class="craft"><b>O que mudou / o que é craft aqui:</b><ul>${d.craft.map((c) => `<li>${c}</li>`).join('')}</ul></div>`
+          : '';
+        const system = d.system
+          ? `<div class="system">${d.system.html}</div>`
+          : '';
+        return `
+          <section class="dir" id="${d.key}">
+            <div class="dir-head">
+              <span class="dir-num">${d.num}</span>
+              <h2>${d.title}</h2>
+              <span class="tag">${d.tag}</span>
+            </div>
+            <p class="story">${d.story}</p>
+            ${craft}
+            <div class="grid">${gridTiles}</div>
+            <div class="rows">
+              <div class="lockup ctx-light">${d.mark}${WORDMARK}</div>
+              <div class="lockup ctx-dark">${d.mark}${WORDMARK}</div>
+              <div class="favis">
+                <span class="lbl">favicon</span>
+                ${tab(d.mark, `${d.title.split('·')[0].trim()} — 32`, 32, false)}
+                ${tab(d.mark, `${d.title.split('·')[0].trim()} — 16`, 16, false)}
+                ${tab(d.mark, 'escuro — 16', 16, true)}
+              </div>
+            </div>
+            ${system}
+            <p class="verdict"><b class="pro">A favor:</b> ${d.pro}<br /><b class="con">Contra:</b> ${d.con}</p>
+          </section>`;
+      }).join('');
+    </script>
+  </body>
+</html>

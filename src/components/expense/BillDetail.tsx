@@ -107,7 +107,7 @@ export default function BillDetail() {
           <div className="mx-auto mt-8 grid max-w-xl divide-y divide-neutral-200 justify-center align-middle">
             <button
               type="button"
-              className="bg-primary text-secondary-color align-middle arvo-bold text-center rounded-full max-h-36 px-12 py-5 cursor-pointer"
+              className="bg-primary text-secondary-color align-middle type-display text-center rounded-full max-h-36 px-12 py-5 cursor-pointer"
               onClick={() => setShowForm(true)}
               data-testid="new-expense-button"
             >
