@@ -19,7 +19,7 @@ export class MemoryDBConnection<T extends object> implements DBConnection<T> {
     }
 
     this.items[idx] = {
-      ...this.items[id - 1],
+      ...this.items[idx],
       ...data,
       id,
     };

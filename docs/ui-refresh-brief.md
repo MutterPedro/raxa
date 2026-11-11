@@ -28,8 +28,16 @@ services only through the context hooks `useBillService`/`useUserService`, never
 2. **Short cycle.** Implement; loop with `npx jest <touched>` (+ targeted BDD scenario when one was written).
 3. **Long cycle.** `npm run lint && npm run build && npm test`; add `npm run test:bdd` whenever user flows changed;
    `test:integration` only when the card requires it.
-4. **Handoff.** Report red output → green output → short summary + changed-file list. **Never commit**; the user
-   approves and commits each task.
+4. **Handoff.** Report → short summary + changed-file list + the **verbatim output tail of every command you
+   actually ran** (RED run and each gate). **Never commit**; the user approves and commits each task.
+
+## Evidence rules (hard — violating these fails the task outright)
+
+- A report without verbatim pasted command output is treated as **not executed**. "All tests passed" as prose
+  proves nothing; the tail of the run proves everything.
+- Never claim to have run anything you didn't run. The orchestrator independently re-runs every gate; a mismatch
+  between your report and the re-run is handled as fabrication and the task is rejected without discussion.
+- If a gate cannot be run (missing env, missing browser), say exactly that and why — never paper over it.
 
 ## Test rules (what gets rejected in review)
 

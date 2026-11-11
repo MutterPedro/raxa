@@ -48,7 +48,10 @@ before the next task starts. The planner stages/commits nothing unless explicitl
 | Visual QA               | `llama/gemma-4-26b-a4b`    | —       | **Once only** in T5.1: reviews new screenshots vs intent before baselines are frozen                                       |
 
 Rules: no executor touches `src/core/**` unless its card says so. Every task returns the **red run output**, the
-green run output, and a diff summary. I review every diff; **the user approves and commits**. One task at a time (sequential branch, commit-gate between tasks).
+green run output, and a diff summary. **Executor reports are claims, not evidence**: the planner re-runs every gate
+independently before handoff, and treats report-vs-rerun mismatches as fabrication (task rejected — happened in
+T0.2). I review every diff; **the user approves and commits**. One task at a time (sequential branch, commit-gate
+between tasks).
 
 ## 3. A-TDD execution protocol (every task)
 

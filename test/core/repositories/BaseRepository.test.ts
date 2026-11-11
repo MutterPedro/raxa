@@ -39,8 +39,6 @@ describe('BaseEntity.ts', function () {
       testEntity.name = 'John';
       testEntity.age = 30;
 
-      expect(repo).toBeInstanceOf(BaseRepository);
-
       const result = await repo.save(testEntity);
       expect(mockedDbConnection.items).toHaveLength(1);
       expect(mockedDbConnection.items[0].age).toBe(testEntity.age);

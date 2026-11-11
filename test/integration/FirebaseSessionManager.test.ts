@@ -1,12 +1,13 @@
 import { test, expect } from '@playwright/test';
-import { testWithinBrowser } from './helpers';
 
 test.describe('FirebaseSessionManager', function () {
   test('it should sign up a new user #integration', async ({ page }) => {
-    const session = await testWithinBrowser(page, async () => {
+    await page.goto('http://127.0.0.1:5173/');
+
+    const result = await page.evaluate(async () => {
       try {
         const sessionManager = window.getFirebaseSessionManager();
-        const email = `test+${Math.floor(Math.random() * 1000)}@email.com`;
+        const email = `test+${crypto.randomUUID()}@email.com`;
         const password = '123456';
         const uid = await sessionManager.signUpWithPassword(email, password);
 
@@ -14,11 +15,30 @@ test.describe('FirebaseSessionManager', function () {
 
         return [uid, null];
       } catch (error) {
-        return [null, error];
+        const errorStr = String(error);
+        const codeMatch = errorStr.match(/auth\/[\w-]+/);
+        const code = codeMatch ? codeMatch[0] : 'unknown';
+        return [null, { code }];
       }
     });
 
-    expect(session).toBeDefined();
-    expect(session !== '').toBe(true);
+    const [uid, error] = result as [string | null, { code?: string } | null];
+    const FIREBASE_UNAVAILABLE = new Set([
+      'auth/api-key-not-valid',
+      'auth/invalid-api-key',
+      'auth/operation-not-allowed',
+      'auth/configuration-not-found',
+    ]);
+
+    if (uid === null && error && FIREBASE_UNAVAILABLE.has(error.code as string)) {
+      test.skip(true, `Firebase project not configured in this environment (${error.code})`);
+    }
+
+    if (uid === null) {
+      throw new Error(`Firebase sign-up failed: ${error?.code ?? 'unknown'}`);
+    }
+
+    expect(typeof uid).toBe('string');
+    expect(uid.length).toBeGreaterThan(0);
   });
 });
