@@ -37,10 +37,10 @@ test('new-expense-form', async ({ page }) => {
 
 test('login', async ({ page }) => {
   await gotoSeeded(page, '/login');
-  await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Acesse sua conta' })).toBeVisible();
   await capture(page, 'login');
 
-  await page.getByText('Precisa de uma conta? Cadastre-se').click();
-  await expect(page.getByRole('heading', { name: 'Sign Up' })).toBeVisible();
+  await page.getByRole('button', { name: 'Criar conta' }).click();
+  await expect(page.getByLabel('Confirmar senha')).toBeVisible();
   await capture(page, 'login-signup');
 });

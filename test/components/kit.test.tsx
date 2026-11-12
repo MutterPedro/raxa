@@ -38,11 +38,13 @@ describe('Button', () => {
     const { getByRole } = render(
       <>
         <Button variant="primary">Primary</Button>
+        <Button variant="secondary">Secondary</Button>
         <Button variant="ghost">Ghost</Button>
         <Button variant="danger">Danger</Button>
       </>,
     );
     expect(getByRole('button', { name: 'Primary' })).toBeInTheDocument();
+    expect(getByRole('button', { name: 'Secondary' })).toBeInTheDocument();
     expect(getByRole('button', { name: 'Ghost' })).toBeInTheDocument();
     expect(getByRole('button', { name: 'Danger' })).toBeInTheDocument();
   });
