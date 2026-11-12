@@ -27,31 +27,35 @@ export default function BillItem({ bill }: { bill: Bill }) {
   }, [billService, bill]);
 
   return (
-    <div
-      key={bill.id}
-      className="flex justify-between items-center border-b pb-4 cursor-pointer"
+    <button
+      type="button"
       onClick={() => navigate(`/bill/${bill.id}`)}
+      className="flex w-full items-center gap-4 rounded-[var(--radius-card)] bg-surface-raised p-4 text-left shadow-card transition-colors hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 active:translate-y-px dark:border dark:border-line dark:hover:bg-surface-sunken"
     >
-      <div>
-        <h2 className="text-lg font-semibold text-gray-800" data-testid={`bill-item-name-${bill.id}`}>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-semibold text-ink" data-testid={`bill-item-name-${bill.id}`}>
           {bill.name}
-        </h2>
-        <p className="text-sm text-gray-500">
-          {participants.map((p) => p.name).join(', ')} &middot; {bill.date.toLocaleDateString()}
-        </p>
-      </div>
-      <div className="flex items-center space-x-4 w-1/3">
-        <div className="flex -space-x-2">
-          {participants.map((p, index) => (
-            <Avatar key={index} user={p} size="30px" />
+        </span>
+        <span className="mt-0.5 block truncate text-sm text-ink-muted">{bill.date.toLocaleDateString('pt-BR')}</span>
+      </span>
+      <span className="flex shrink-0 items-center gap-3">
+        <span className="flex -space-x-2">
+          {participants.slice(0, 4).map((p) => (
+            <Avatar key={p.id} user={p} size="30px" />
           ))}
-        </div>
-        <div className="flex items-center text-gray-500 font-semibold w-1/2">
-          <span className="ml-2 text-sm" data-testid={`bill-total-${bill.id}`}>
-            R$ {total.toFixed(2)}
-          </span>
-        </div>
-      </div>
-    </div>
+          {participants.length > 4 && (
+            <span
+              className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-surface-sunken text-xs font-semibold text-ink-muted ring-2 ring-surface-raised"
+              aria-hidden="true"
+            >
+              +{participants.length - 4}
+            </span>
+          )}
+        </span>
+        <span className="text-base font-bold tabular-nums text-ink" data-testid={`bill-total-${bill.id}`}>
+          R$ {total.toFixed(2)}
+        </span>
+      </span>
+    </button>
   );
 }

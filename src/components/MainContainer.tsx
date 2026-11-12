@@ -6,18 +6,21 @@ import BillsList from './expense/BillsList';
 import Bill from '../core/entities/Bill';
 import NewBillFloatButton from './expense/NewBillFloatButton';
 import { useBillService } from './state/useBillService';
+import EmptyState from './common/EmptyState';
 
 export default function MainContainer() {
   const [showingForm, showForm] = useState(false);
   const billService = useBillService();
   const [bills, setBills] = useState<Bill[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(
     function () {
       billService
         .getBills()
+        .then((newBills) => setBills(newBills || []))
         .catch(console.error)
-        .then((newBills) => setBills(newBills || []));
+        .finally(() => setLoading(false));
     },
     [billService],
   );
@@ -39,15 +42,23 @@ export default function MainContainer() {
   }
 
   return (
-    <div className="container flex flex-col items-center mx-auto">
+    <div className="container mx-auto flex flex-col items-center gap-6">
       {showingForm ? (
         <NewBillForm handleSubmitBill={handleSubmitBill} handleCancel={() => showForm(!showingForm)} />
-      ) : bills.length > 0 ? (
-        <NewBillFloatButton handleOnClick={() => showForm(!showingForm)} />
+      ) : loading ? (
+        <BillsList bills={[]} isLoading />
+      ) : bills.length === 0 ? (
+        <EmptyState
+          title="Nenhuma conta ainda"
+          hint="Crie a primeira conta e chame quem está por perto — tudo funciona offline."
+          action={<NewBillJumboButton handleOnClick={() => showForm(!showingForm)} />}
+        />
       ) : (
-        <NewBillJumboButton handleOnClick={() => showForm(!showingForm)} />
+        <>
+          <NewBillFloatButton handleOnClick={() => showForm(!showingForm)} />
+          <BillsList bills={bills} />
+        </>
       )}
-      {bills.length > 0 && <BillsList bills={bills} />}
     </div>
   );
 }
