@@ -1,10 +1,10 @@
 @import 'tailwindcss';
 
-/* Dark mode is class-driven (T1.3): src/infra/theme.ts resolves preference
-   'system' via prefers-color-scheme and toggles .dark on <html>. */
+/* Dark mode is class-driven: src/infra/theme.ts resolves the 'system'
+   preference via prefers-color-scheme and toggles .dark on <html>. */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Plus Jakarta Sans variable (300-800), self-hosted — T1.2(b). The latin and
+/* Plus Jakarta Sans variable (300-800), self-hosted. The latin and
    latin-ext subsets cover pt-BR in full; the four files weigh ~102 KB together. */
 @font-face {
   font-family: 'Plus Jakarta Sans';
@@ -47,7 +47,7 @@
     U+1EF2-1EFF, U+2020, U+20A0-20C0, U+2113, U+2C60-2C7F, U+A700-107F;
 }
 
-/* Design tokens (T1.3) — palette A · Tangerina (D4), values recorded in
+/* Design tokens — palette A · Tangerina, values recorded in
    design/styleguide.html. Static scale in @theme; theme-flipped semantics as
    runtime vars mapped back through @theme inline. */
 @theme {
@@ -102,7 +102,7 @@
   --border-strong: #c9bca9;
   --danger: #b91c1c;
   --success: #15803d;
-  /* legacy hooks kept until the T1.4/T2.x restyles retire them */
+  /* legacy hooks kept until every screen sits on the token utilities */
   --color-primary: var(--color-brand-700);
   --color-secondary: var(--color-brand-200);
 }
@@ -144,8 +144,7 @@
   color: var(--color-secondary);
 }
 
-/* Display typography (surface titles): was `.arvo-bold` with the Arvo serif,
-   removed in T1.2(b). T1.3 tokenizes; for now it is the Jakarta display face. */
+/* Display typography (surface titles): the Jakarta display face, tokenized. */
 .type-display {
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-weight: 800;

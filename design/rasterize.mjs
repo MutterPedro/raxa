@@ -1,4 +1,4 @@
-// raxa — T1.2(b) rasterizes the master SVGs (design/src/, public/) into exact PNGs.
+// raxa — rasterizes the master SVGs (design/src/, public/) into exact PNGs.
 // Chromium renders the SVG as a document; the viewport defines the pixel-perfect size.
 // Usage: npm run assets:png   (run from repo root; uses the repo's @playwright/test Chromium)
 import { chromium } from '@playwright/test';

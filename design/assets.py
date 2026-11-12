@@ -1,4 +1,4 @@
-# raxa — T1.2(b) brand asset generator (source of truth: design/logo-final.html, D6)
+# raxa — brand asset generator (source of truth: design/logo-final.html)
 #
 # Emits the final SVGs under public/ and the raster-ready SVGs under design/src/;
 # PNG rasterization is done by design/rasterize.mjs (Chromium), which reads these.

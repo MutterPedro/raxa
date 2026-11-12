@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-// T1.2(b) — brand smoke: assets present in the build, self-hosted font active,
+// Brand smoke: assets present in the build, self-hosted font active,
 // no external font links in the document. App behavior is untouched here.
 
 const ASSETS = [

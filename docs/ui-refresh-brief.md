@@ -65,7 +65,9 @@ services only through the context hooks `useBillService`/`useUserService`, never
 ## House style
 
 Mirror surrounding code (naming, structure, comments only when required). **All code, comments, identifiers, and
-test names are English** — Portuguese is only for user-facing UI strings (the rendered PT-BR interface). Tailwind
-classes stay Tailwind-native (CSS-first tokens in `src/index.css` once T1.3 lands; before that, don't invent new
+test names are English** — Portuguese is only for user-facing UI strings (the rendered PT-BR interface). **Never
+reference task/phase/decision numbers (T1.3, D4, …) in code comments** — code explains what it does and why; provenance
+lives in `docs/`. Test names assert present behavior, never "does not do the old thing". Tailwind
+classes stay Tailwind-native (CSS-first tokens in `src/index.css`; before that, don't invent new
 hardcoded colors — use `--primary-color`/`--secondary-color`). Browser-driven tests select via `data-testid`; keep
 them on components they target.

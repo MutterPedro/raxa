@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Raxa is an expense-splitting app: React 19 + TypeScript + Vite SPA, offline-first with Dexie (IndexedDB) as the primary data store and Firebase used only for auth/session. UI strings are Portuguese (e.g. the submit button is "Criar"). **All code is English** — identifiers, comments, test names, docs; Portuguese appears only in user-facing UI strings (and design-page rendered copy).
+Raxa is an expense-splitting app: React 19 + TypeScript + Vite SPA, offline-first with Dexie (IndexedDB) as the primary data store and Firebase used only for auth/session. UI strings are Portuguese (e.g. the submit button is "Criar"). **All code is English** — identifiers, comments, test names, docs; Portuguese appears only in user-facing UI strings (and design-page rendered copy). Code comments never cite task/phase numbers (T1.x, D.x) — provenance lives in `docs/`.
 
 ## Commands
 

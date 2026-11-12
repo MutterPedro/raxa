@@ -16,8 +16,9 @@ export const gotoSeeded = async (page: Page, route = '/') => {
   await page.goto(route);
 };
 
-/** Captures a golden screenshot after web fonts settle, with tight diff tolerance. */
+/** Captures a golden screenshot after web fonts settle. Zero pixel budget on purpose:
+ *  a generous ~330px diff budget silently swallowed a 30px avatar letter recolor once. */
 export const capture = async (page: Page, name: string) => {
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
-  await expect(page).toHaveScreenshot(`${name}.png`, { maxDiffPixelRatio: 0.001 });
+  await expect(page).toHaveScreenshot(`${name}.png`);
 };
