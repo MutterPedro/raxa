@@ -21,24 +21,18 @@ const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense }) => {
 
   return (
     <li>
-      <div className="px-2 py-5">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">{expense.name}</h3>
-          <p className="mt-1 max-w-2xl text-sm text-gray-500">{expense.date.toLocaleString()}</p>
+      <div className="flex items-center gap-3 py-3">
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-semibold text-ink">{expense.name}</p>
+          <p className="mt-0.5 truncate text-sm text-ink-muted">{expense.date.toLocaleDateString('pt-BR')}</p>
         </div>
-        <div className="mt-4 flex items-center justify-between">
-          <div className="text-sm font-medium text-gray-500 flex -space-x-2">
-            {participants.map((p, index) => (
-              <Avatar key={index} user={p} size="30px" highlight={p.id === expense.payerId} />
+        <div className="flex shrink-0 items-center gap-3">
+          <div className="flex -space-x-2">
+            {participants.slice(0, 4).map((p) => (
+              <Avatar key={p.id} user={p} size="30px" highlight={p.id === expense.payerId} />
             ))}
           </div>
-
-          <a
-            href="#"
-            className="font-medium text-brand-700 hover:text-brand-800 dark:text-brand-300 dark:hover:text-brand-200"
-          >
-            R$ {expense.amount.toFixed(2)}
-          </a>
+          <span className="font-bold tabular-nums text-ink">R$ {expense.amount.toFixed(2)}</span>
         </div>
       </div>
     </li>

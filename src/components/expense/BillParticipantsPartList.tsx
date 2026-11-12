@@ -16,24 +16,25 @@ const BillParticipantsPartList: React.FC<BillParticipantsPartListProps> = ({ bil
   }, [billService, billId]);
 
   return (
-    <ul role="list" className="divide-y divide-gray-100">
+    <ul role="list" className="mt-1 divide-y divide-line">
       {parts.map((part) => (
-        <li className="flex justify-between gap-x-6 py-5" key={part.user.id}>
-          <div className="flex min-w-0 gap-x-4">
-            <Avatar user={part.user} />
-            <div className="min-w-0 flex-auto">
-              <p
-                className="text-sm/6 font-semibold text-gray-900"
-                data-testid={`bill-part-participant-${part.user.name}`}
-              >
-                {part.user.name}
-              </p>
-              <p className="mt-1 truncate text-xs/5 text-gray-500">{part.user.email}</p>
-            </div>
+        <li className="flex items-center gap-3 py-3" key={part.user.id}>
+          <Avatar user={part.user} size="36px" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-semibold text-ink" data-testid={`bill-part-participant-${part.user.name}`}>
+              {part.user.name}
+            </p>
+            <p className="truncate text-xs text-ink-faint">{part.user.email}</p>
           </div>
-          <div className="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
-            <p className="text-sm/6 text-gray-900 font-extrabold" data-testid={`bill-part-amount-${part.user.name}`}>
+          <div className="shrink-0 text-right">
+            <p
+              className={`font-bold tabular-nums ${part.amount < 0 ? 'text-success' : 'text-ink'}`}
+              data-testid={`bill-part-amount-${part.user.name}`}
+            >
               R$ {part.amount.toFixed(2)}
+            </p>
+            <p className="text-xs text-ink-faint">
+              {part.amount < 0 ? 'a receber' : part.amount > 0 ? 'a pagar' : 'em dia'}
             </p>
           </div>
         </li>

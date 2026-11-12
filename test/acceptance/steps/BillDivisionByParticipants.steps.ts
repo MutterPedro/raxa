@@ -9,7 +9,8 @@ defineFeature(feature, (test) => {
 
   beforeAll(async () => {
     browser = await chromium.launch({ headless: true, slowMo: 50 });
-    page = await browser.newPage();
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    page = await context.newPage();
   });
   afterAll(async () => {
     if (browser) await browser.close();
@@ -68,16 +69,19 @@ defineFeature(feature, (test) => {
     );
 
     then(/^I should get (\d+)\$ for (.+)$/, async function (amount: string, participant: string) {
+      await expect(page.getByTestId(`bill-part-amount-${participant}`)).toBeVisible();
       await expect(page.getByTestId(`bill-part-amount-${participant}`)).toHaveText('R$ ' + Number(amount).toFixed(2));
       await expect(page.getByTestId(`bill-part-participant-${participant}`)).toHaveText(participant);
     });
 
     and(/^I should get (\d+)\$ for (.+)$/, async function (amount: string, participant: string) {
+      await expect(page.getByTestId(`bill-part-amount-${participant}`)).toBeVisible();
       await expect(page.getByTestId(`bill-part-amount-${participant}`)).toHaveText('R$ ' + Number(amount).toFixed(2));
       await expect(page.getByTestId(`bill-part-participant-${participant}`)).toHaveText(participant);
     });
 
     and(/^I should get -(\d+)\$ for me$/, async function (amount: string) {
+      await expect(page.getByTestId('bill-part-amount-Eu')).toBeVisible();
       await expect(page.getByTestId('bill-part-amount-Eu')).toHaveText('R$ -' + Number(amount).toFixed(2));
       await expect(page.getByTestId('bill-part-participant-Eu')).toHaveText('Eu');
     });

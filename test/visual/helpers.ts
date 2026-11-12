@@ -17,8 +17,12 @@ export const gotoSeeded = async (page: Page, route = '/') => {
 };
 
 /** Captures a golden screenshot after web fonts settle. Zero pixel budget on purpose:
- *  a generous ~330px diff budget silently swallowed a 30px avatar letter recolor once. */
+ *  a generous ~330px diff budget silently swallowed a 30px avatar letter recolor once.
+ *  Scroll is normalized to top so a golden never depends on the viewport position a
+ *  pre-capture click left behind (a viewport-scoped shot of a short page keeps whatever
+ *  residual scroll the click on the previous, taller screen caused). */
 export const capture = async (page: Page, name: string) => {
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
   await expect(page).toHaveScreenshot(`${name}.png`);
 };

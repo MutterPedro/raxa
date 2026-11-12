@@ -7,6 +7,8 @@ import NewExpenseForm from './NewExpenseForm';
 import Expense from '../../core/entities/Expense';
 import ExpenseItem from './ExpenseItem';
 import BillParticipantsPartList from './BillParticipantsPartList';
+import Card from '../common/Card';
+import Button from '../common/Button';
 
 export default function BillDetail() {
   const { billId } = useParams();
@@ -41,80 +43,59 @@ export default function BillDetail() {
     showForm ? (
       <NewExpenseForm bill={bill} handleCancel={() => setShowForm(false)} onExpenseCreated={onExpenseCreated} />
     ) : (
-      <div className="relative w-full bg-white px-6 pt-10 pb-8 mt-8 shadow-xl ring-1 ring-gray-900/5 sm:mx-auto sm:max-w-2xl sm:rounded-lg sm:px-10">
-        <div className="mx-auto px-5">
-          <div className="flex flex-col items-center text-gray-900">
-            <h2 className="mt-5 text-center text-3xl font-bold tracking-tight md:text-5xl">{bill.name}</h2>
-            <p className="mt-3 text-lg text-neutral-500 md:text-xl">{bill.date.toLocaleString()}</p>
-          </div>
-          <div className="mx-auto mt-8 grid max-w-xl divide-y divide-neutral-200 text-gray-700">
-            <div className="py-5">
-              <details className="group">
-                <summary className="flex cursor-pointer list-none items-center justify-between font-medium">
-                  <span className="font-bold" data-testid="bill-total-span">
-                    {' '}
-                    Total R$ {total.toFixed(2)}
-                  </span>
-                  <span className="transition group-open:rotate-180">
-                    <svg
-                      fill="none"
-                      height="24"
-                      shapeRendering="geometricPrecision"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.5"
-                      viewBox="0 0 24 24"
-                      width="24"
-                    >
-                      <path d="M6 9l6 6 6-6"></path>
-                    </svg>
-                  </span>
-                </summary>
-                <div className="group-open:animate-fade-in mt-3 text-neutral-600">
-                  <ul className="bg-white overflow-hidden sm:rounded-md max-w-full mt-5">
-                    {expenses.map((expense) => (
-                      <ExpenseItem expense={expense} key={expense.id} />
-                    ))}
-                  </ul>
-                </div>
-              </details>
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-6">
+        <Card>
+          <h2 className="type-display text-2xl font-bold text-ink">{bill.name}</h2>
+          <p className="mt-1 text-sm text-ink-muted">{bill.date.toLocaleDateString('pt-BR')}</p>
+          <p className="mt-4 text-3xl font-bold tabular-nums text-ink" data-testid="bill-total-span">
+            <span className="text-sm font-medium uppercase tracking-wide text-ink-muted">Total</span> R${' '}
+            {total.toFixed(2)}
+          </p>
+        </Card>
+        <Card>
+          <details className="group" open>
+            <summary className="flex cursor-pointer list-none items-center justify-between">
+              <h3 className="type-display text-base font-semibold text-ink">Despesas</h3>
+              <svg
+                className="transition-transform group-open:rotate-180"
+                fill="none"
+                height="24"
+                shapeRendering="geometricPrecision"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.5"
+                viewBox="0 0 24 24"
+                width="24"
+                aria-hidden="true"
+              >
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </summary>
+            <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-200 group-open:grid-rows-[1fr]">
+              <div className="overflow-hidden">
+                <ul role="list" className="divide-y divide-line">
+                  {expenses.map((expense) => (
+                    <ExpenseItem expense={expense} key={expense.id} />
+                  ))}
+                </ul>
+              </div>
             </div>
-            <div className="py-5">
-              <details open className="group">
-                <summary className="flex cursor-pointer list-none items-center justify-between font-medium">
-                  <span> Divisão por participantes</span>
-                  <span className="transition group-open:rotate-180">
-                    <svg
-                      fill="none"
-                      height="24"
-                      shapeRendering="geometricPrecision"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.5"
-                      viewBox="0 0 24 24"
-                      width="24"
-                    >
-                      <path d="M6 9l6 6 6-6"></path>
-                    </svg>
-                  </span>
-                </summary>
-                <BillParticipantsPartList billId={Number(billId)} />
-              </details>
-            </div>
-          </div>
-          <div className="mx-auto mt-8 grid max-w-xl divide-y divide-neutral-200 justify-center align-middle">
-            <button
-              type="button"
-              className="bg-primary text-secondary-color align-middle type-display text-center rounded-full max-h-36 px-12 py-5 cursor-pointer"
-              onClick={() => setShowForm(true)}
-              data-testid="new-expense-button"
-            >
-              + Nova Despesa
-            </button>
-          </div>
-        </div>
+          </details>
+        </Card>
+        <Card>
+          <h3 className="type-display text-base font-semibold text-ink">Divisão por participantes</h3>
+          <BillParticipantsPartList billId={Number(billId)} />
+        </Card>
+        <Button
+          type="button"
+          size="lg"
+          onClick={() => setShowForm(true)}
+          data-testid="new-expense-button"
+          className="w-full"
+        >
+          Nova despesa
+        </Button>
       </div>
     )
   ) : (
