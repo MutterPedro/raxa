@@ -2,8 +2,15 @@ import React from 'react';
 
 const LoadingGauge: React.FC = () => {
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-      <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#005b61">
+    <div className="flex justify-center items-center h-full text-brand-700 dark:text-brand-500">
+      <svg
+        width="50"
+        height="50"
+        viewBox="0 0 50 50"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        stroke="currentColor"
+      >
         <circle cx="25" cy="25" r="20" strokeWidth="4" strokeOpacity="0.5" />
         <circle
           cx="25"

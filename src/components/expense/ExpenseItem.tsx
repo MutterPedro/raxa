@@ -33,7 +33,10 @@ const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense }) => {
             ))}
           </div>
 
-          <a href="#" className="font-medium text-secondary-primary hover:green-900">
+          <a
+            href="#"
+            className="font-medium text-brand-700 hover:text-brand-800 dark:text-brand-300 dark:hover:text-brand-200"
+          >
             R$ {expense.amount.toFixed(2)}
           </a>
         </div>

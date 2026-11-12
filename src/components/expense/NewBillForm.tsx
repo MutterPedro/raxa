@@ -21,7 +21,7 @@ export default function NewBillForm({ handleSubmitBill, handleCancel }: NewBillF
             type="text"
             name="name"
             id="name"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2 bg-white"
             placeholder="Conta de Luz"
             data-testid="new-bill-form-name-input"
           />
@@ -35,13 +35,13 @@ export default function NewBillForm({ handleSubmitBill, handleCancel }: NewBillF
             type="date"
             name="date"
             id="date"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2 bg-white"
           />
         </div>
 
         <div className="flex items-center justify-between">
           <button
-            className="bg-primary text-secondary-color hover:bg-green-900 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            className="bg-primary text-secondary-color hover:bg-green-900 font-bold py-2 px-4 rounded focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2"
             type="submit"
           >
             Criar

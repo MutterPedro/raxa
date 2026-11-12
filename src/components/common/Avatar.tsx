@@ -24,7 +24,7 @@ const Avatar: React.FC<AvatarProps> = ({ user, size = '48px', highlight = false 
 
   return (
     <div
-      className="relative rounded-full border-white border-2px flex-none flex items-center justify-center ava-group"
+      className="relative rounded-full border-white border-2 flex-none flex items-center justify-center ava-group"
       style={{ backgroundColor, width: size, height: size, borderColor, borderWidth }}
     >
       <span className="text-white text-lg">{firstLetter}</span>

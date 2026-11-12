@@ -1,6 +1,22 @@
 <!doctype html>
 <html lang="pt-BR">
   <head>
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('raxa:theme');
+          var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var mode = pref === 'dark' ? 'dark' : pref === 'light' ? 'light' : dark ? 'dark' : 'light';
+          if (mode === 'dark') {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {
+          /* ignore */
+        }
+      })();
+    </script>
     <meta charset="UTF-8" />
     <title>raxa</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />

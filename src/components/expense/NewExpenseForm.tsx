@@ -84,7 +84,7 @@ const NewExpenseForm: React.FC<NewExpenseFormProps> = ({ handleCancel, onExpense
             type="text"
             id="name"
             name="name"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2 bg-white"
           />
         </div>
         <div className="mb-4">
@@ -95,7 +95,7 @@ const NewExpenseForm: React.FC<NewExpenseFormProps> = ({ handleCancel, onExpense
             type="datetime-local"
             id="date"
             name="date"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2 bg-white"
             style={{ colorScheme: 'auto' }}
           />
         </div>
@@ -110,7 +110,7 @@ const NewExpenseForm: React.FC<NewExpenseFormProps> = ({ handleCancel, onExpense
             id="amount"
             name="amount"
             data-testid="new-expense-form-amount-input"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-white"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2 bg-white"
           />
         </div>
         <div className="mb-4 text-gray-700">
@@ -151,7 +151,7 @@ const NewExpenseForm: React.FC<NewExpenseFormProps> = ({ handleCancel, onExpense
           <button
             type="submit"
             role="button"
-            className="bg-primary text-secondary-color cursor-pointer hover:bg-green-900 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            className="bg-primary text-secondary-color cursor-pointer hover:bg-green-900 text-white font-bold py-2 px-4 rounded focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2"
           >
             Adicionar
           </button>

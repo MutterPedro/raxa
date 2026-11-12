@@ -71,7 +71,7 @@ export default function BillDetail() {
                     </svg>
                   </span>
                 </summary>
-                <div className="group-open:animate-fadeIn mt-3 text-neutral-600">
+                <div className="group-open:animate-fade-in mt-3 text-neutral-600">
                   <ul className="bg-white overflow-hidden sm:rounded-md max-w-full mt-5">
                     {expenses.map((expense) => (
                       <ExpenseItem expense={expense} key={expense.id} />

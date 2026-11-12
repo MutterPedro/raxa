@@ -17,7 +17,7 @@ const LoginForm: React.FC = () => {
               Email
             </label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2"
               id="email"
               type="email"
               placeholder="Email"
@@ -28,7 +28,7 @@ const LoginForm: React.FC = () => {
               Senha
             </label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2"
               id="password"
               type="password"
               placeholder="Senha"
@@ -41,7 +41,7 @@ const LoginForm: React.FC = () => {
                   Confirmar Senha
                 </label>
                 <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2"
                   id="confirmPassword"
                   type="password"
                   placeholder="Confirmar Senha"
@@ -52,7 +52,7 @@ const LoginForm: React.FC = () => {
                   Nome
                 </label>
                 <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2"
                   id="name"
                   placeholder="Fulano da Silva"
                 />
@@ -61,7 +61,7 @@ const LoginForm: React.FC = () => {
           )}
           <div className="flex items-center justify-between">
             <button
-              className="bg-primary text-secondary-color cursor-pointer hover:bg-green-900 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              className="bg-primary text-secondary-color cursor-pointer hover:bg-green-900 text-white font-bold py-2 px-4 rounded focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2"
               type="button"
             >
               {isSignUp ? 'Cadastrar' : 'Entrar'}
@@ -77,7 +77,7 @@ const LoginForm: React.FC = () => {
         </form>
         <div className="mt-6 text-center">
           <button
-            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2"
             type="button"
           >
             Continue com Google
