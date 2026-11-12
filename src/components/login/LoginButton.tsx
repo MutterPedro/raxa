@@ -12,15 +12,16 @@ export default function LoginButton() {
     userService.createSelf().then(setSelf).catch(console.error);
   }, [userService]);
 
-  return (
-    <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-      {self?.logged_in ? (
-        <Avatar user={self!} />
-      ) : (
-        <NavLink to="/login" end className="text-sm font-semibold leading-6">
-          Log in <span aria-hidden="true">&rarr;</span>
-        </NavLink>
-      )}
-    </div>
+  return self?.logged_in ? (
+    <Avatar user={self!} />
+  ) : (
+    <NavLink
+      to="/login"
+      end
+      data-testid="header-login-link"
+      className="px-2 py-2 text-sm font-semibold text-brand-50 hover:text-white"
+    >
+      Entrar <span aria-hidden="true">&rarr;</span>
+    </NavLink>
   );
 }
