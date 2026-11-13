@@ -9,6 +9,7 @@ import Skeleton from '../../src/components/common/Skeleton';
 import EmptyState from '../../src/components/common/EmptyState';
 import Avatar from '../../src/components/common/Avatar';
 import LoadingGauge from '../../src/components/common/LoadingGuage';
+import SelectField, { CreatableSelectField } from '../../src/components/common/SelectField';
 
 describe('Button', () => {
   it('renders label #unit', () => {
@@ -90,6 +91,81 @@ describe('Field', () => {
     const input = container.querySelector('input') as HTMLInputElement;
     const describedBy = input?.getAttribute('aria-describedby')?.split(' ') ?? [];
     expect(describedBy.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe('SelectField', () => {
+  const options = [
+    { value: '1', label: 'Ana' },
+    { value: '2', label: 'Bruno' },
+  ];
+
+  it('label is wired to the input through inputId #unit', () => {
+    render(
+      <SelectField label="Quem pagou" inputId="payer-input" options={options} value={null} onChange={jest.fn()} />,
+    );
+    expect(screen.getByLabelText('Quem pagou')).toHaveAttribute('id', 'payer-input');
+  });
+
+  it('creatable renders every selected option as a chip #unit', () => {
+    render(
+      <CreatableSelectField
+        label="Com quem?"
+        inputId="participant-input"
+        options={options}
+        value={options}
+        onChange={jest.fn()}
+        onCreateOption={jest.fn()}
+      />,
+    );
+    expect(screen.getByText('Ana')).toBeInTheDocument();
+    expect(screen.getByText('Bruno')).toBeInTheDocument();
+  });
+
+  it('keyboard selects an option and reports it #unit', () => {
+    const onChange = jest.fn();
+    render(<SelectField label="Quem pagou" inputId="payer-input" options={options} value={null} onChange={onChange} />);
+    const input = screen.getByLabelText('Quem pagou');
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ value: '1', label: 'Ana' }),
+      expect.objectContaining({ action: 'select-option' }),
+    );
+  });
+
+  it('creatable variant reports typed text through onCreateOption #unit', () => {
+    const onCreateOption = jest.fn();
+    render(
+      <CreatableSelectField
+        label="Com quem?"
+        inputId="participant-input"
+        options={options}
+        value={[]}
+        onChange={jest.fn()}
+        onCreateOption={onCreateOption}
+      />,
+    );
+    const input = screen.getByLabelText('Com quem?');
+    fireEvent.change(input, { target: { value: 'Carla' } });
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(onCreateOption).toHaveBeenCalledWith('Carla');
+  });
+
+  it('creatable create row defaults to Portuguese copy #unit', () => {
+    render(
+      <CreatableSelectField
+        label="Com quem?"
+        inputId="participant-input"
+        options={options}
+        value={[]}
+        onChange={jest.fn()}
+        onCreateOption={jest.fn()}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText('Com quem?'), { target: { value: 'Carla' } });
+    expect(screen.getByText('Adicionar "Carla"')).toBeInTheDocument();
   });
 });
 

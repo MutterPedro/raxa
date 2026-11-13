@@ -1,5 +1,5 @@
 import Bill from '../../../src/core/entities/Bill';
-import type Expense from '../../../src/core/entities/Expense';
+import Expense from '../../../src/core/entities/Expense';
 import type User from '../../../src/core/entities/User';
 import type { BillService } from '../../../src/core/services/BillService';
 
@@ -15,6 +15,12 @@ export interface BillServiceFakeOptions {
   expenses?: Expense[];
   /** Parts returned by getParticipantsParts (default: empty). */
   parts?: { amount: number; user: User }[];
+  /** Id handed out by createBill (default: 1). */
+  createdBillId?: number;
+  /** Expense returned by addExpense (default: an empty expense). */
+  createdExpense?: Expense;
+  /** When true, addExpense rejects — for asserting bills survive expense failures. */
+  addExpenseFails?: boolean;
 }
 
 // Component tests exercise a subset of BillService; the cast lets the fake stand in
@@ -28,6 +34,9 @@ export function createBillServiceFake(options: BillServiceFakeOptions = {}): Bil
     bill: defaultBill,
     expenses: defaultExpenses = [],
     parts: defaultParts = [],
+    createdBillId = 1,
+    createdExpense,
+    addExpenseFails = false,
   } = options;
 
   const defaultBillObj =
@@ -48,5 +57,17 @@ export function createBillServiceFake(options: BillServiceFakeOptions = {}): Bil
     getById: jest.fn(async () => defaultBillObj),
     getExpenses: jest.fn(async () => defaultExpenses),
     getParticipantsParts: jest.fn(async () => defaultParts),
+    createBill: jest.fn((values: { name: string; date?: Date; ownerId?: number }) => {
+      const created = new Bill();
+      created.id = createdBillId;
+      created.name = values.name;
+      created.date = values.date ?? new Date();
+      created.ownerId = values.ownerId ?? 0;
+      return Promise.resolve(created);
+    }),
+    addExpense: addExpenseFails
+      ? jest.fn(() => Promise.reject(new Error('expense creation failed')))
+      : jest.fn(async () => createdExpense ?? new Expense()),
+    deleteBill: jest.fn(async () => undefined),
   } as unknown as BillService;
 }

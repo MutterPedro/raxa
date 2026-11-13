@@ -1,7 +1,7 @@
-import { SyntheticEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import NewBillJumboButton from './expense/NewBillJumboButton';
-import NewBillForm from './expense/NewBillForm';
+import NewBillForm, { NewBillFormValues } from './expense/NewBillForm';
 import BillsList from './expense/BillsList';
 import Bill from '../core/entities/Bill';
 import NewBillFloatButton from './expense/NewBillFloatButton';
@@ -25,20 +25,36 @@ export default function MainContainer() {
     [billService],
   );
 
-  async function handleSubmitBill(event: SyntheticEvent) {
-    event.preventDefault();
+  async function handleSubmitBill(values: NewBillFormValues) {
+    try {
+      const bill = await billService.createBill({
+        name: values.name,
+        date: new Date(values.date || new Date()),
+        ownerId: 0,
+      });
 
-    const form = event.target as HTMLFormElement;
-    const formData = new FormData(form);
+      if (values.amount > 0) {
+        try {
+          await billService.addExpense(bill.id, {
+            name: values.name,
+            amount: values.amount,
+            date: new Date(values.date || Date.now()).toISOString(),
+            participantIds: values.participantIds,
+            payerId: values.payerId ?? 0,
+          });
+        } catch (expenseError) {
+          // The bill was created only to hold this expense — undo it so a failed submit
+          // leaves nothing behind; error surfacing comes with the toast flow later
+          await billService.deleteBill(bill.id);
+          throw expenseError;
+        }
+      }
 
-    const bill = await billService.createBill({
-      name: formData.get('name') as string,
-      date: new Date((formData.get('date') as string) || new Date()),
-      ownerId: 0,
-    });
-
-    setBills([...bills, bill]);
-    showForm(false);
+      setBills([...bills, bill]);
+      showForm(false);
+    } catch (billError) {
+      console.error(billError); // form stays open so the user can retry
+    }
   }
 
   return (

@@ -65,4 +65,8 @@ export abstract class BaseRepository<T extends BaseEntity, P extends object = ob
     const data = await this.dbConnection.getById(id);
     return data ? this.fromPlainObject(data) : null;
   }
+
+  async delete(id: number): Promise<void> {
+    await this.dbConnection.delete(id);
+  }
 }

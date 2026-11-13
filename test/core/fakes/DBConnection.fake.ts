@@ -42,6 +42,12 @@ export class MemoryDBConnection<T extends object> implements DBConnection<T> {
     return idx !== undefined ? this.items[idx] : undefined;
   }
 
+  async delete(id: number): Promise<void> {
+    this.items = this.items.filter((item) => item.id !== id);
+    this.indexes.clear();
+    this.items.forEach((item, idx) => this.indexes.set(item.id, idx));
+  }
+
   async list(): Promise<WithId<T>[]> {
     return this.items;
   }

@@ -45,6 +45,20 @@ describe('BillService.ts', function () {
       expect(conn.items[0].id).toBe(bill.id);
     });
 
+    it('should delete a bill #unit', async function () {
+      const conn = MemoryDBConnection.build<BillProps>();
+      const fakeRepo = BillRepositoryFake.build(conn);
+      const service = new BillService(fakeRepo, ExpenseRepositoryFake.build(), UserRepositoryFake.build());
+
+      const bill = await service.createBill({ name: 'to be undone' });
+      expect(conn.items).toHaveLength(1);
+
+      await service.deleteBill(bill.id);
+
+      expect(conn.items).toHaveLength(0);
+      expect(await service.getById(bill.id)).toBeNull();
+    });
+
     it('should add a new expense to a bill #unit', async function () {
       const conn = MemoryDBConnection.build<ExpenseProps>();
       const fakeBillRepo = BillRepositoryFake.build();
