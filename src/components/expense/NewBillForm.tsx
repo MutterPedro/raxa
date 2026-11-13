@@ -5,6 +5,7 @@ import Button from '../common/Button';
 import Card from '../common/Card';
 import Field from '../common/Field';
 import SelectField, { CreatableSelectField, type SelectOption } from '../common/SelectField';
+import { todayInputValue } from '../../core/utils/localDate';
 
 export interface NewBillFormValues {
   name: string;
@@ -27,8 +28,6 @@ const toOption = (user: { id: number; name: string }): SelectOption => ({
   value: user.id.toString(),
   label: user.name,
 });
-
-const todayLocalIso = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 
 export default function NewBillForm({ handleSubmitBill, handleCancel }: NewBillFormProps) {
   const userService = useUserService();
@@ -112,7 +111,7 @@ export default function NewBillForm({ handleSubmitBill, handleCancel }: NewBillF
             placeholder="Jantar de aniversário"
             data-testid="new-bill-form-name-input"
           />
-          <Field label="Data" type="date" name="date" id="date" defaultValue={todayLocalIso()} />
+          <Field label="Data" type="date" name="date" id="date" defaultValue={todayInputValue()} />
           <Field
             label="Valor"
             type="number"

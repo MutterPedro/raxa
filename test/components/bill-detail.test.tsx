@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 import Bill from '../../src/core/entities/Bill';
 import Expense from '../../src/core/entities/Expense';
@@ -91,5 +91,83 @@ describe('BillDetail', () => {
     renderDetail(createBillServiceFake({ bill: createBill() }));
 
     expect(await screen.findByRole('button', { name: 'Nova despesa' })).toBeInTheDocument();
+  });
+
+  it('opens the expense form with the amount focused and Adicionar disabled until it is positive #unit', async () => {
+    renderDetail(createBillServiceFake({ bill: createBill() }));
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nova despesa' }));
+
+    expect(await screen.findByTestId('new-expense-form')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Nova despesa' })).toBeInTheDocument();
+    expect(screen.getByTestId('new-expense-form-amount-input')).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Adicionar' })).toBeDisabled();
+
+    fireEvent.change(screen.getByTestId('new-expense-form-amount-input'), { target: { value: '60' } });
+    expect(screen.getByRole('button', { name: 'Adicionar' })).toBeEnabled();
+  });
+
+  it('quick adds an amount-only expense and closes the form when the extra options are hidden #unit', async () => {
+    const created = new Expense();
+    created.id = 2;
+    created.name = 'Show da Pizza';
+    created.amount = 60;
+    created.date = new Date();
+    created.payerId = 1337;
+    created.participantIds = [1337];
+    const billService = createBillServiceFake({ bill: createBill(), quickAddedExpense: created });
+    renderDetail(billService);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nova despesa' }));
+    await screen.findByTestId('new-expense-form');
+
+    fireEvent.click(screen.getByTestId('new-expense-more-toggle'));
+    expect(screen.queryByRole('group', { name: 'Mais opções' })).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByTestId('new-expense-form-amount-input'), { target: { value: '60' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Adicionar' }));
+
+    await waitFor(() => expect(billService.quickAddExpense).toHaveBeenCalledWith(1, { amount: 60 }));
+    // The form closed, the CTA is back and the total picked up the new expense.
+    expect(screen.getByRole('button', { name: 'Nova despesa' })).toBeInTheDocument();
+    expect(screen.queryByTestId('new-expense-form')).not.toBeInTheDocument();
+    expect(screen.getByTestId('bill-total-span')).toHaveTextContent('Total R$ 60.00');
+  });
+
+  it('passes the filled-in values of the open options section to the quick add #unit', async () => {
+    const billService = createBillServiceFake({ bill: createBill() });
+    renderDetail(billService);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nova despesa' }));
+
+    // The self preset lands in both selects before the user edits anything.
+    await screen.findAllByText('Eu');
+    fireEvent.change(screen.getByLabelText('Nome da despesa'), { target: { value: 'Uber' } });
+    fireEvent.change(screen.getByTestId('new-expense-form-amount-input'), { target: { value: '30' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Adicionar' }));
+
+    await waitFor(() =>
+      expect(billService.quickAddExpense).toHaveBeenCalledWith(1, {
+        amount: 30,
+        name: 'Uber',
+        date: expect.any(Date),
+        participantIds: [1337],
+        payerId: 1337,
+      }),
+    );
+  });
+
+  it('keeps the expense form open for a retry when the quick add fails #unit', async () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const billService = createBillServiceFake({ bill: createBill(), quickAddExpenseFails: true });
+    renderDetail(billService);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nova despesa' }));
+    fireEvent.change(await screen.findByTestId('new-expense-form-amount-input'), { target: { value: '10' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Adicionar' }));
+
+    await waitFor(() => expect(consoleError).toHaveBeenCalled());
+    expect(screen.getByTestId('new-expense-form')).toBeInTheDocument();
+    consoleError.mockRestore();
   });
 });

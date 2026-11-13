@@ -8,14 +8,14 @@ import Expense from '../entities/Expense';
 import { ExpenseRepository } from '../repositories/ExpenseRepository';
 import { WithId } from '../../@types/utils';
 import User from '../entities/User';
-import { UserRepository } from '../repositories/UserRepository';
+import { UserService } from './UserService';
 
 @injectable()
 export class BillService {
   constructor(
     @inject(TYPES.BillRepository) private readonly billRepo: BillRepository,
     @inject(TYPES.ExpenseRepository) private readonly expenseRepo: ExpenseRepository,
-    @inject(TYPES.UserRepository) private readonly userRepo: UserRepository,
+    @inject(TYPES.UserService) private readonly userService: UserService,
   ) {}
 
   async createBill(values: { name: string; date?: Date; ownerId?: number }): Promise<Bill> {
@@ -40,6 +40,35 @@ export class BillService {
     return this.expenseRepo.save(expense);
   }
 
+  /**
+   * Amount-first quick capture: only the amount is required, every other value falls
+   * back to a default — today, the current self as payer, all current bill participants
+   * and the bill's own name. The payer is always kept among the participants because
+   * the division math only counts participants.
+   */
+  async quickAddExpense(
+    billId: number,
+    values: { amount: number; name?: string; date?: Date; participantIds?: number[]; payerId?: number },
+  ): Promise<Expense> {
+    const date = values.date ?? new Date();
+    const payerId = values.payerId ?? (await this.userService.createSelf()).id;
+
+    const participants =
+      values.participantIds ?? (await this.getParticipants(billId)).map((participant) => participant.id);
+    const participantIds = participants.includes(payerId) ? participants : [...participants, payerId];
+
+    const bill = await this.getById(billId);
+    const name = values.name?.trim() || bill?.name || '';
+
+    return this.addExpense(billId, {
+      name,
+      amount: values.amount,
+      date: date.toISOString(),
+      participantIds,
+      payerId,
+    });
+  }
+
   async getExpenses(billId: number): Promise<Expense[]> {
     const expenses = await this.expenseRepo.filter({ billId });
     return expenses;
@@ -59,16 +88,7 @@ export class BillService {
     const expenses = await this.getExpenses(billId);
     const participantsIds = new Set(expenses.flatMap((expense) => expense.participantIds));
 
-    const userList = [];
-
-    for (const participantId of participantsIds) {
-      const user = await this.userRepo.getById(participantId);
-      if (user) {
-        userList.push(user);
-      }
-    }
-
-    return userList;
+    return this.userService.getByIds([...participantsIds]);
   }
 
   async getParticipantsParts(billId: number): Promise<{ amount: number; user: User }[]> {

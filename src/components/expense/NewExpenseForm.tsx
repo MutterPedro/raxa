@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import Select from 'react-select';
-import CreatableSelect from 'react-select/creatable';
+import React, { useEffect, useRef, useState } from 'react';
 
 import Bill from '../../core/entities/Bill';
-import { useBillService } from '../state/useBillService';
 import Expense from '../../core/entities/Expense';
+import { useBillService } from '../state/useBillService';
 import { useUserService } from '../state/useUserService';
+import Button from '../common/Button';
+import Card from '../common/Card';
+import Field from '../common/Field';
+import SelectField, { CreatableSelectField, type SelectOption } from '../common/SelectField';
+import { parseInputDate, todayInputValue } from '../../core/utils/localDate';
 
 interface NewExpenseFormProps {
   bill: Bill;
@@ -15,157 +18,162 @@ interface NewExpenseFormProps {
 
 const PLACE_HOLDER_ID = 'place_holder_id';
 
-const NewExpenseForm: React.FC<NewExpenseFormProps> = ({ handleCancel, onExpenseCreated, bill }) => {
+const toOption = (user: { id: number; name: string }): SelectOption => ({
+  value: user.id.toString(),
+  label: user.name,
+});
+
+export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }: NewExpenseFormProps) {
   const billService = useBillService();
   const userService = useUserService();
 
-  const [participants, setParticipants] = useState<{ value: string; label: string }[]>([]);
-  const [options, setOptions] = useState<{ value: string; label: string }[]>([]);
-  const [payer, setPayer] = useState<{ value: string; label: string } | null>();
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setParticipants([]);
-
-    Promise.all(
-      participants.map(async (p) => {
-        let id = Number(p.value);
-        if (p.value.startsWith(PLACE_HOLDER_ID)) {
-          const user = await userService.createUser({ name: p.label, email: '' });
-          id = user.id;
-        }
-
-        setParticipants((prev) => [...prev, { label: p.label, value: id.toString() }]);
-        return id;
-      }),
-    )
-      .then((participantIds) => {
-        const formData = new FormData(e.target as HTMLFormElement);
-        return billService.addExpense(bill.id, {
-          participantIds,
-          amount: Number(formData.get('amount')),
-          date: new Date((formData.get('date') as string) || Date.now()).toISOString(),
-          name: (formData.get('name') || `Conta dia ${new Date().toISOString()}`) as string,
-          payerId: Number(payer?.value || 0),
-        });
-      })
-      .then((expense) => {
-        onExpenseCreated(expense);
-      })
-      .catch(console.error);
-  };
+  const [amount, setAmount] = useState('');
+  const [participants, setParticipants] = useState<SelectOption[]>([]);
+  const [options, setOptions] = useState<SelectOption[]>([]);
+  const [payer, setPayer] = useState<SelectOption | null>();
+  const [showOptions, setShowOptions] = useState(true);
+  const placeholderSeq = useRef(0);
 
   useEffect(() => {
     userService
       .createSelf()
-      .then((me) => {
-        setParticipants([{ label: me.name, value: me.id.toString() }]);
-        setPayer({ label: me.name, value: me.id.toString() });
+      .then(async (me) => {
+        const self = toOption(me);
+        // Functional updates: self arrives asynchronously and must never clobber selections
+        // the user already made, only pre-fill when nothing was touched yet.
+        setParticipants((prev) => (prev.length > 0 ? prev : [self]));
+        setPayer((prev) => prev ?? self);
+        // Chained after createSelf (not parallel) so the freshly created self is always
+        // among the pickable options, and never listed twice.
+        const users = await userService.getUsers();
+        setOptions((prev) => {
+          const known = new Map([self, ...users.map(toOption), ...prev].map((option) => [option.value, option]));
+          return Array.from(known.values());
+        });
       })
       .catch(console.error);
-    userService.getUsers().then((users) => {
-      setOptions(
-        users.map((u) => ({
-          label: u.name,
-          value: u.id.toString(),
-        })),
-      );
-    });
   }, [userService]);
 
+  async function handleFormSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const amountNumber = Number(amount);
+    if (!(amountNumber > 0)) return;
+
+    try {
+      if (!showOptions) {
+        // Amount-only quick capture: the service owns every default.
+        const expense = await billService.quickAddExpense(bill.id, { amount: amountNumber });
+        onExpenseCreated(expense);
+        return;
+      }
+
+      const formData = new FormData(e.target as HTMLFormElement);
+      const name = (formData.get('name') as string).trim();
+      const date = formData.get('date') as string;
+
+      // Users typed into the creatable select only exist after we create them; the payer
+      // may reference one of those placeholders, so resolve through a shared map.
+      const placeholderIds = new Map<string, number>();
+      const participantIds: number[] = [];
+      await Promise.all(
+        participants.map(async (p) => {
+          if (p.value.startsWith(PLACE_HOLDER_ID)) {
+            const user = await userService.createUser({ name: p.label, email: '' });
+            placeholderIds.set(p.value, user.id);
+            participantIds.push(user.id);
+          } else {
+            participantIds.push(Number(p.value));
+          }
+        }),
+      );
+      let payerId: number | undefined;
+      if (payer) {
+        payerId = payer.value.startsWith(PLACE_HOLDER_ID) ? placeholderIds.get(payer.value) : Number(payer.value);
+      }
+
+      // Only forward what was actually filled; blanks fall back to the service defaults.
+      const expense = await billService.quickAddExpense(bill.id, {
+        amount: amountNumber,
+        ...(name ? { name } : {}),
+        ...(date ? { date: parseInputDate(date) } : {}),
+        ...(participantIds.length > 0 ? { participantIds } : {}),
+        ...(payerId === undefined ? {} : { payerId }),
+      });
+      onExpenseCreated(expense);
+    } catch (error) {
+      // Keep the form open for a retry; toasts are a later task.
+      console.error(error);
+    }
+  }
+
+  function createParticipant(inputValue: string) {
+    const cleaned = inputValue.trim();
+    if (!cleaned) return;
+    const placeholder = { label: cleaned, value: `${PLACE_HOLDER_ID}-${placeholderSeq.current++}` };
+    setOptions((prev) => [...prev, placeholder]);
+    setParticipants((prev) => [...prev, placeholder]);
+  }
+
   return (
-    <div className="w-full max-w-xs">
-      <form onSubmit={handleSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <div className="mb-4">
-          <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">
-            Nome:
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2 bg-white"
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="date" className="block text-gray-700 text-sm font-bold mb-2">
-            Data:
-          </label>
-          <input
-            type="datetime-local"
-            id="date"
-            name="date"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2 bg-white"
-            style={{ colorScheme: 'auto' }}
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="amount" className="block text-gray-700 text-sm font-bold mb-2">
-            Valor:
-          </label>
-          <input
+    <Card className="w-full max-w-md p-6">
+      <form data-testid="new-expense-form" onSubmit={handleFormSubmit}>
+        <h2 className="type-display text-2xl font-bold text-ink">Nova despesa</h2>
+        <div className="mt-4 flex flex-col gap-4">
+          <Field
+            label="Valor"
             type="number"
+            name="amount"
             step="0.01"
             min="0"
-            id="amount"
-            name="amount"
+            autoFocus
+            hint="O nome, a data, os participantes e quem pagou têm padrões automáticos."
             data-testid="new-expense-form-amount-input"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2 bg-white"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
           />
-        </div>
-        <div className="mb-4 text-gray-700">
-          <label htmlFor="participants" className="block text-sm font-bold mb-2">
-            Participantes:
-          </label>
-          <CreatableSelect
-            id="participants"
-            options={options}
-            className="form-control"
-            value={participants}
-            onCreateOption={(inputValue) => {
-              const cleanedName = inputValue.trim();
-              if (cleanedName) {
-                setOptions([...options, { label: inputValue, value: PLACE_HOLDER_ID + `-${options.length}` }]);
-                setParticipants([
-                  ...participants,
-                  { label: inputValue, value: PLACE_HOLDER_ID + `-${options.length}` },
-                ]);
-              }
-            }}
-            onChange={(values) => {
-              setParticipants(Array.from(values));
-            }}
-            isMulti
-            isClearable
-            isSearchable
-            inputId="new-expense-form-participant-input"
-          />
-        </div>
-        <div className="mb-4 text-gray-700">
-          <label htmlFor="payer" className="block text-sm font-bold mb-2">
-            Quem pagou:
-          </label>
-          <Select inputId="payer" value={payer} onChange={setPayer} options={participants} className="form-control" />
-        </div>
-        <div className="flex items-center justify-between my-10">
-          <button
-            type="submit"
-            role="button"
-            className="bg-primary text-secondary-color cursor-pointer hover:bg-green-900 text-white font-bold py-2 px-4 rounded focus:outline-none focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2"
+          <Button
+            type="button"
+            variant="ghost"
+            data-testid="new-expense-more-toggle"
+            aria-expanded={showOptions}
+            onClick={() => setShowOptions((prev) => !prev)}
           >
+            Mais opções
+          </Button>
+          {showOptions && (
+            <div
+              role="group"
+              aria-label="Mais opções"
+              className="flex flex-col gap-4 rounded-[var(--radius-field)] bg-surface-sunken p-4"
+            >
+              <Field label="Nome da despesa" name="name" placeholder="Opcional" />
+              <Field label="Data" type="date" name="date" defaultValue={todayInputValue()} />
+              <CreatableSelectField
+                label="Com quem?"
+                inputId="new-expense-form-participant-input"
+                options={options}
+                value={participants}
+                onCreateOption={createParticipant}
+                onChange={(values) => setParticipants(Array.from(values))}
+                isClearable
+              />
+              <SelectField
+                label="Quem pagou"
+                inputId="payer"
+                options={participants}
+                value={payer}
+                onChange={setPayer}
+              />
+            </div>
+          )}
+          <Button type="submit" size="lg" className="w-full" disabled={!(Number(amount) > 0)}>
             Adicionar
-          </button>
-          <a
-            className="inline-block align-baseline cursor-pointer font-bold text-sm text-green-800 hover:text-green-900"
-            href="#"
-            onClick={() => handleCancel()}
-          >
+          </Button>
+          <Button type="button" variant="ghost" onClick={handleCancel} className="w-full">
             Cancelar
-          </a>
+          </Button>
         </div>
       </form>
-    </div>
+    </Card>
   );
-};
-
-export default NewExpenseForm;
+}

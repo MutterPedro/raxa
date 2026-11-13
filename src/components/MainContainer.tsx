@@ -7,6 +7,7 @@ import Bill from '../core/entities/Bill';
 import NewBillFloatButton from './expense/NewBillFloatButton';
 import { useBillService } from './state/useBillService';
 import EmptyState from './common/EmptyState';
+import { parseInputDate } from '../core/utils/localDate';
 
 export default function MainContainer() {
   const [showingForm, showForm] = useState(false);
@@ -27,9 +28,10 @@ export default function MainContainer() {
 
   async function handleSubmitBill(values: NewBillFormValues) {
     try {
+      const date = values.date ? parseInputDate(values.date) : new Date();
       const bill = await billService.createBill({
         name: values.name,
-        date: new Date(values.date || new Date()),
+        date,
         ownerId: 0,
       });
 
@@ -38,7 +40,7 @@ export default function MainContainer() {
           await billService.addExpense(bill.id, {
             name: values.name,
             amount: values.amount,
-            date: new Date(values.date || Date.now()).toISOString(),
+            date: date.toISOString(),
             participantIds: values.participantIds,
             payerId: values.payerId ?? 0,
           });

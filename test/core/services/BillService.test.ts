@@ -1,5 +1,5 @@
 import casual from 'casual';
-import { BillProps, ExpenseProps, UserProps } from '../../../src/core/entities';
+import { BillProps, ExpenseProps } from '../../../src/core/entities';
 import { BillService } from '../../../src/core/services/BillService';
 import { UserService } from '../../../src/core/services/UserService';
 import { BillRepositoryFake } from '../fakes/BillRepository.fake';
@@ -7,12 +7,28 @@ import { MemoryDBConnection } from '../fakes/DBConnection.fake';
 import { ExpenseRepositoryFake } from '../fakes/ExpenseRepository.fake';
 import { UserRepositoryFake } from '../fakes/UserRepository.fake';
 
+// Every case builds the same service over fakes; only the stores a test inspects and the
+// user store it shares with its own UserService differ. Keeps constructor changes from
+// touching every case.
+function buildBillService(
+  options: {
+    billConn?: MemoryDBConnection<BillProps>;
+    expenseConn?: MemoryDBConnection<ExpenseProps>;
+    userService?: UserService;
+  } = {},
+): BillService {
+  return new BillService(
+    BillRepositoryFake.build(options.billConn),
+    ExpenseRepositoryFake.build(options.expenseConn),
+    options.userService ?? new UserService(UserRepositoryFake.build()),
+  );
+}
+
 describe('BillService.ts', function () {
   describe('Unit tests', function () {
     it('should add a new bill anonymously #unit', async function () {
       const conn = MemoryDBConnection.build<BillProps>();
-      const fakeRepo = BillRepositoryFake.build(conn);
-      const service = new BillService(fakeRepo, ExpenseRepositoryFake.build(), UserRepositoryFake.build());
+      const service = buildBillService({ billConn: conn });
 
       const name = 'test';
       const date = new Date();
@@ -29,8 +45,7 @@ describe('BillService.ts', function () {
 
     it('should add a new bill belonging to a provided user #unit', async function () {
       const conn = MemoryDBConnection.build<BillProps>();
-      const fakeRepo = BillRepositoryFake.build(conn);
-      const service = new BillService(fakeRepo, ExpenseRepositoryFake.build(), UserRepositoryFake.build());
+      const service = buildBillService({ billConn: conn });
 
       const name = 'test';
       const ownerId = 1337;
@@ -47,8 +62,7 @@ describe('BillService.ts', function () {
 
     it('should delete a bill #unit', async function () {
       const conn = MemoryDBConnection.build<BillProps>();
-      const fakeRepo = BillRepositoryFake.build(conn);
-      const service = new BillService(fakeRepo, ExpenseRepositoryFake.build(), UserRepositoryFake.build());
+      const service = buildBillService({ billConn: conn });
 
       const bill = await service.createBill({ name: 'to be undone' });
       expect(conn.items).toHaveLength(1);
@@ -61,10 +75,7 @@ describe('BillService.ts', function () {
 
     it('should add a new expense to a bill #unit', async function () {
       const conn = MemoryDBConnection.build<ExpenseProps>();
-      const fakeBillRepo = BillRepositoryFake.build();
-      const fakeExpenseRepo = ExpenseRepositoryFake.build(conn);
-      const fakeUserRepo = UserRepositoryFake.build();
-      const service = new BillService(fakeBillRepo, fakeExpenseRepo, fakeUserRepo);
+      const service = buildBillService({ expenseConn: conn });
 
       const bill = await service.createBill({ name: 'test' });
       const expense = await service.addExpense(bill.id, {
@@ -86,10 +97,7 @@ describe('BillService.ts', function () {
     });
 
     it.each<number>([120, 50])('should calculate the total of a bill #unit', async function (expenseAmount) {
-      const fakeBillRepo = BillRepositoryFake.build();
-      const fakeExpenseRepo = ExpenseRepositoryFake.build();
-      const fakeUserRepo = UserRepositoryFake.build();
-      const service = new BillService(fakeBillRepo, fakeExpenseRepo, fakeUserRepo);
+      const service = buildBillService();
 
       const bill = await service.createBill({ name: 'test' });
       await service.addExpense(bill.id, {
@@ -112,10 +120,7 @@ describe('BillService.ts', function () {
     });
 
     it('should list all the expenses of a bill #unit', async function () {
-      const fakeBillRepo = BillRepositoryFake.build();
-      const fakeExpenseRepo = ExpenseRepositoryFake.build();
-      const fakeUserRepo = UserRepositoryFake.build();
-      const service = new BillService(fakeBillRepo, fakeExpenseRepo, fakeUserRepo);
+      const service = buildBillService();
 
       const bill = await service.createBill({ name: 'test' });
       const expense = await service.addExpense(bill.id, {
@@ -144,11 +149,8 @@ describe('BillService.ts', function () {
       [casual.name, casual.name, casual.name],
       [casual.name, casual.name, casual.name, casual.name],
     ])('should list all the participants of a bill #unit', async function (...userNames: string[]) {
-      const fakeBillRepo = BillRepositoryFake.build();
-      const fakeExpenseRepo = ExpenseRepositoryFake.build();
-      const fakeUserRepo = UserRepositoryFake.build();
-      const userService = new UserService(fakeUserRepo);
-      const service = new BillService(fakeBillRepo, fakeExpenseRepo, fakeUserRepo);
+      const userService = new UserService(UserRepositoryFake.build());
+      const service = buildBillService({ userService });
 
       const userIds = (
         await Promise.all(
@@ -182,11 +184,8 @@ describe('BillService.ts', function () {
     });
 
     it('should list all the participants of a bill with their part of the total #unit', async function () {
-      const fakeBillRepo = BillRepositoryFake.build();
-      const fakeExpenseRepo = ExpenseRepositoryFake.build();
-      const fakeUserRepo = UserRepositoryFake.build();
-      const userService = new UserService(fakeUserRepo);
-      const service = new BillService(fakeBillRepo, fakeExpenseRepo, fakeUserRepo);
+      const userService = new UserService(UserRepositoryFake.build());
+      const service = buildBillService({ userService });
 
       const user1 = await userService.createUser({ name: casual.name, email: casual.email });
       const user2 = await userService.createUser({ name: casual.name, email: casual.email });
@@ -226,8 +225,7 @@ describe('BillService.ts', function () {
 
     it('should list bills using the default page and an explicit one #unit', async function () {
       const conn = MemoryDBConnection.build<BillProps>();
-      const fakeRepo = BillRepositoryFake.build(conn);
-      const service = new BillService(fakeRepo, ExpenseRepositoryFake.build(), UserRepositoryFake.build());
+      const service = buildBillService({ billConn: conn });
 
       expect(await service.getBills()).toHaveLength(0);
 
@@ -240,8 +238,7 @@ describe('BillService.ts', function () {
 
     it('should get a bill by its id #unit', async function () {
       const conn = MemoryDBConnection.build<BillProps>();
-      const fakeRepo = BillRepositoryFake.build(conn);
-      const service = new BillService(fakeRepo, ExpenseRepositoryFake.build(), UserRepositoryFake.build());
+      const service = buildBillService({ billConn: conn });
 
       const bill = await service.createBill({ name: 'a very specific bill' });
 
@@ -255,13 +252,8 @@ describe('BillService.ts', function () {
 
     it('should ignore participants that no longer exist when listing them #unit', async function () {
       const conn = MemoryDBConnection.build<BillProps>();
-      const usersConn = MemoryDBConnection.build<UserProps>();
-      const userService = new UserService(UserRepositoryFake.build(usersConn));
-      const service = new BillService(
-        BillRepositoryFake.build(conn),
-        ExpenseRepositoryFake.build(),
-        UserRepositoryFake.build(usersConn),
-      );
+      const userService = new UserService(UserRepositoryFake.build());
+      const service = buildBillService({ billConn: conn, userService });
 
       const user = await userService.createUser({ name: casual.name, email: casual.email });
       const bill = await service.createBill({ name: casual.name });
@@ -276,6 +268,101 @@ describe('BillService.ts', function () {
       const participants = await service.getParticipants(bill.id);
       expect(participants).toHaveLength(1);
       expect(participants[0].id).toBe(user.id);
+    });
+
+    it('should quick add an amount-only expense split with every current bill participant #unit', async function () {
+      const userService = new UserService(UserRepositoryFake.build());
+      const service = buildBillService({ userService });
+
+      const self = await userService.createSelf();
+      const friend = await userService.createUser({ name: casual.name, email: casual.email });
+
+      const bill = await service.createBill({ name: 'Camping' });
+      await service.addExpense(bill.id, {
+        name: casual.title,
+        amount: 40,
+        date: new Date(2026, 0, 15).toISOString(),
+        participantIds: [self.id, friend.id],
+        payerId: self.id,
+      });
+
+      const before = Date.now();
+      const expense = await service.quickAddExpense(bill.id, { amount: 60 });
+      const after = Date.now();
+
+      expect(expense.amount).toBe(60);
+      expect(expense.participantIds).toEqual([self.id, friend.id]);
+      expect(expense.payerId).toBe(self.id);
+      expect(expense.name).toBe('Camping');
+      expect(expense.date.getTime()).toBeGreaterThanOrEqual(before);
+      expect(expense.date.getTime()).toBeLessThanOrEqual(after);
+    });
+
+    it('should quick add an amount-only expense to just self when the bill has no expenses #unit', async function () {
+      const service = buildBillService();
+
+      const bill = await service.createBill({ name: 'Trip' });
+      const expense = await service.quickAddExpense(bill.id, { amount: 25 });
+
+      expect(expense.participantIds).toEqual([1337]);
+      expect(expense.payerId).toBe(1337);
+      expect(expense.name).toBe('Trip');
+    });
+
+    it('should append the payer to a quick added expense when it is not among the bill participants #unit', async function () {
+      const userService = new UserService(UserRepositoryFake.build());
+      const service = buildBillService({ userService });
+
+      const self = await userService.createSelf();
+      const friend = await userService.createUser({ name: casual.name, email: casual.email });
+      const outsider = await userService.createUser({ name: casual.name, email: casual.email });
+
+      const bill = await service.createBill({ name: 'Road trip' });
+      await service.addExpense(bill.id, {
+        name: casual.title,
+        amount: 40,
+        date: new Date(2026, 0, 15).toISOString(),
+        participantIds: [self.id, friend.id],
+        payerId: self.id,
+      });
+
+      const expense = await service.quickAddExpense(bill.id, { amount: 30, payerId: outsider.id });
+
+      expect(expense.payerId).toBe(outsider.id);
+      expect(expense.participantIds).toEqual([self.id, friend.id, outsider.id]);
+    });
+
+    it('should keep every explicitly provided value of a quick added expense #unit', async function () {
+      const userService = new UserService(UserRepositoryFake.build());
+      const service = buildBillService({ userService });
+
+      const friend = await userService.createUser({ name: casual.name, email: casual.email });
+      const bill = await service.createBill({ name: 'Concert' });
+
+      const date = new Date(2025, 4, 4, 10, 30);
+      const expense = await service.quickAddExpense(bill.id, {
+        amount: 12.5,
+        name: '  Train tickets  ',
+        date,
+        participantIds: [friend.id],
+        payerId: friend.id,
+      });
+
+      expect(expense.amount).toBe(12.5);
+      expect(expense.name).toBe('Train tickets');
+      expect(expense.date.toISOString()).toBe(date.toISOString());
+      expect(expense.participantIds).toEqual([friend.id]);
+      expect(expense.payerId).toBe(friend.id);
+    });
+
+    it('should quick add an amount-only expense with a blank name when the bill does not exist #unit', async function () {
+      const service = buildBillService();
+
+      const expense = await service.quickAddExpense(99999, { amount: 5 });
+
+      expect(expense.name).toBe('');
+      expect(expense.participantIds).toEqual([1337]);
+      expect(expense.payerId).toBe(1337);
     });
   });
 });
