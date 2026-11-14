@@ -5,6 +5,7 @@ import Bill from '../../core/entities/Bill';
 import { useBillService } from '../state/useBillService';
 import User from '../../core/entities/User';
 import Avatar from '../common/Avatar';
+import { formatCurrency, formatDate } from '../../core/utils/format';
 
 export default function BillItem({ bill }: { bill: Bill }) {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ export default function BillItem({ bill }: { bill: Bill }) {
         <span className="block truncate font-semibold text-ink" data-testid={`bill-item-name-${bill.id}`}>
           {bill.name}
         </span>
-        <span className="mt-0.5 block truncate text-sm text-ink-muted">{bill.date.toLocaleDateString('pt-BR')}</span>
+        <span className="mt-0.5 block truncate text-sm text-ink-muted">{formatDate(bill.date)}</span>
       </span>
       <span className="flex shrink-0 items-center gap-3">
         <span className="flex -space-x-2">
@@ -53,7 +54,7 @@ export default function BillItem({ bill }: { bill: Bill }) {
           )}
         </span>
         <span className="text-base font-bold tabular-nums text-ink" data-testid={`bill-total-${bill.id}`}>
-          R$ {total.toFixed(2)}
+          {formatCurrency(total)}
         </span>
       </span>
     </button>

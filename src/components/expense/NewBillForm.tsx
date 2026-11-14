@@ -104,7 +104,7 @@ export default function NewBillForm({ handleSubmitBill, handleCancel }: NewBillF
         <h2 className="type-display text-2xl font-bold text-ink">Nova conta</h2>
         <div className="mt-4 flex flex-col gap-4">
           <Field
-            label="Nome da Conta"
+            label="Nome da conta"
             required
             autoFocus
             name="name"

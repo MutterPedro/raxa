@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import User from '../../core/entities/User';
 import { useBillService } from '../state/useBillService';
 import Avatar from '../common/Avatar';
+import { formatCurrency } from '../../core/utils/format';
 
 interface BillParticipantsPartListProps {
   billId: number;
@@ -33,7 +34,7 @@ const BillParticipantsPartList: React.FC<BillParticipantsPartListProps> = ({ bil
               className={`font-bold tabular-nums ${part.amount < 0 ? 'text-success' : 'text-ink'}`}
               data-testid={`bill-part-amount-${part.user.name}`}
             >
-              R$ {part.amount.toFixed(2)}
+              {formatCurrency(part.amount)}
             </p>
             <p className="text-xs text-ink-faint">
               {part.amount < 0 ? 'a receber' : part.amount > 0 ? 'a pagar' : 'em dia'}

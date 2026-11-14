@@ -38,9 +38,9 @@ describe('BillDetail', () => {
     expect(await screen.findByText('Show da Pizza')).toBeInTheDocument();
     expect(screen.getByText('15/01/2026')).toBeInTheDocument();
     const totalSpan = await screen.findByTestId('bill-total-span');
-    expect(totalSpan).toHaveTextContent('Total R$ 150.50');
+    expect(totalSpan).toHaveTextContent('Total R$ 150,50');
     // The acceptance suite asserts toHaveText, i.e. normalized exact match.
-    expect(totalSpan.textContent?.replace(/\s+/g, ' ').trim()).toBe('Total R$ 150.50');
+    expect(totalSpan.textContent?.replace(/\s+/g, ' ').trim()).toBe('Total R$ 150,50');
   });
 
   it('renders expense rows with name, pt-BR date and amount #unit', async () => {
@@ -51,7 +51,7 @@ describe('BillDetail', () => {
     const row = (await screen.findByText('Ingressos')).closest('li');
     expect(row).not.toBeNull();
     expect(row).toHaveTextContent('15/01/2026');
-    expect(row).toHaveTextContent('R$ 120.50');
+    expect(row).toHaveTextContent('R$ 120,50');
   });
 
   it('renders division rows with amounts and owes/gets labels #unit', async () => {
@@ -62,8 +62,9 @@ describe('BillDetail', () => {
     renderDetail(createBillServiceFake({ bill: createBill(), parts }));
 
     expect(await screen.findByTestId('bill-part-participant-Ana')).toBeInTheDocument();
-    expect(screen.getByTestId('bill-part-amount-Eu')).toHaveTextContent('R$ -75.25');
-    expect(screen.getByTestId('bill-part-amount-Ana')).toHaveTextContent('R$ 75.25');
+    expect(screen.getByRole('heading', { name: 'Quem fica com quanto' })).toBeInTheDocument();
+    expect(screen.getByTestId('bill-part-amount-Eu')).toHaveTextContent('R$ -75,25');
+    expect(screen.getByTestId('bill-part-amount-Ana')).toHaveTextContent('R$ 75,25');
     expect(screen.getByText('a receber')).toBeInTheDocument();
     expect(screen.getByText('a pagar')).toBeInTheDocument();
   });
@@ -106,7 +107,7 @@ describe('BillDetail', () => {
     // The form closed, the CTA is back and the total picked up the new expense.
     expect(screen.getByRole('button', { name: 'Nova despesa' })).toBeInTheDocument();
     expect(screen.queryByTestId('new-expense-form')).not.toBeInTheDocument();
-    expect(screen.getByTestId('bill-total-span')).toHaveTextContent('Total R$ 60.00');
+    expect(screen.getByTestId('bill-total-span')).toHaveTextContent('Total R$ 60,00');
   });
 
   it('passes the filled-in values of the open options section to the quick add #unit', async () => {
@@ -162,7 +163,7 @@ describe('BillDetail', () => {
     renderDetail(billService);
 
     // The detail view remounts when the form opens/closes, so re-query the total each time.
-    expect(await screen.findByTestId('bill-total-span')).toHaveTextContent('Total R$ 50.00');
+    expect(await screen.findByTestId('bill-total-span')).toHaveTextContent('Total R$ 50,00');
 
     fireEvent.click(screen.getByRole('button', { name: 'Nova despesa' }));
     fireEvent.change(await screen.findByTestId('new-expense-form-amount-input'), { target: { value: '30' } });
@@ -171,7 +172,7 @@ describe('BillDetail', () => {
     // The expense lands right away and the toast offers to undo it
     const undo = await screen.findByRole('button', { name: 'Desfazer' });
     expect(await screen.findByText('Pizza extra')).toBeInTheDocument();
-    expect(await screen.findByTestId('bill-total-span')).toHaveTextContent('Total R$ 80.00');
+    expect(await screen.findByTestId('bill-total-span')).toHaveTextContent('Total R$ 80,00');
     // The write also leaves the on-device reassurance chip on screen
     expect(screen.getByTestId('saved-chip')).toBeInTheDocument();
 
@@ -179,7 +180,7 @@ describe('BillDetail', () => {
 
     await waitFor(() => expect(billService.deleteExpense).toHaveBeenCalledWith(2));
     await waitFor(() => expect(screen.queryByText('Pizza extra')).not.toBeInTheDocument());
-    await waitFor(() => expect(screen.getByTestId('bill-total-span')).toHaveTextContent('Total R$ 50.00'));
+    await waitFor(() => expect(screen.getByTestId('bill-total-span')).toHaveTextContent('Total R$ 50,00'));
     expect(screen.queryByRole('button', { name: 'Desfazer' })).not.toBeInTheDocument();
     // the undo is a write as well — the chip stays
     expect(screen.getByTestId('saved-chip')).toBeInTheDocument();
@@ -200,6 +201,8 @@ describe('BillDetail', () => {
     renderDetail(billService);
 
     fireEvent.click(await screen.findByRole('button', { name: 'Nova despesa' }));
+    expect(await screen.findByTestId('new-expense-form-amount-input')).toBeInTheDocument();
+    expect(screen.getByText('Só o valor já basta — o resto vem pronto, e você ajusta à vontade.')).toBeInTheDocument();
     fireEvent.change(await screen.findByTestId('new-expense-form-amount-input'), { target: { value: '30' } });
     fireEvent.click(screen.getByRole('button', { name: 'Adicionar' }));
 
@@ -228,6 +231,9 @@ describe('BillDetail', () => {
       fireEvent.click(screen.getByTestId('delete-bill-button'));
 
       expect(screen.getByRole('dialog', { name: 'Apagar conta?' })).toBeInTheDocument();
+      expect(
+        screen.getByText('Isso apaga a conta e todas as despesas de uma vez — sem como voltar atrás.'),
+      ).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Apagar' })).toBeInTheDocument();
       expect(billService.deleteBill).not.toHaveBeenCalled();
     });
@@ -242,7 +248,7 @@ describe('BillDetail', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       expect(billService.deleteBill).not.toHaveBeenCalled();
       expect(navigateMock).not.toHaveBeenCalled();
-      expect(screen.getByTestId('bill-total-span')).toHaveTextContent('Total R$ 100.00');
+      expect(screen.getByTestId('bill-total-span')).toHaveTextContent('Total R$ 100,00');
     });
 
     it('deletes the bill and returns to the bills list #unit', async () => {
@@ -268,7 +274,7 @@ describe('BillDetail', () => {
 
       expect(await screen.findByText('Não foi possível apagar a conta')).toBeInTheDocument();
       expect(navigateMock).not.toHaveBeenCalled();
-      expect(screen.getByTestId('bill-total-span')).toHaveTextContent('Total R$ 100.00');
+      expect(screen.getByTestId('bill-total-span')).toHaveTextContent('Total R$ 100,00');
       consoleError.mockRestore();
     });
   });

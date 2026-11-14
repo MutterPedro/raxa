@@ -57,7 +57,7 @@ describe('BillsList', () => {
     renderWithProviders(<BillsList bills={[createBill(1, 'Viagem')]} />, billService);
 
     expect(await screen.findByTestId('bill-item-name-1')).toHaveTextContent('Viagem');
-    await waitFor(() => expect(screen.getByTestId('bill-total-1')).toHaveTextContent('R$ 1234.56'));
+    await waitFor(() => expect(screen.getByTestId('bill-total-1')).toHaveTextContent('R$ 1.234,56'));
   });
 
   it('meta line shows the pt-BR date and participants as avatar initials #unit', async () => {

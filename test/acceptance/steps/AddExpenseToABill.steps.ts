@@ -1,6 +1,8 @@
 import { Browser, chromium, Page, expect } from '@playwright/test';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 
+import { brl } from './brl';
+
 const feature = loadFeature(__dirname + '/../features/AddExpenseToABill.feature');
 
 defineFeature(feature, (test) => {
@@ -41,7 +43,7 @@ defineFeature(feature, (test) => {
       await page.getByTestId('new-expense-button').click();
       await page.getByTestId('new-expense-form-amount-input').fill(amount);
       await page.getByRole('button', { name: 'Adicionar' }).click();
-      await expect(page.getByTestId('bill-total-span')).toHaveText(`Total R$ ${Number(amount).toFixed(2)}`);
+      await expect(page.getByTestId('bill-total-span')).toHaveText(`Total ${brl(Number(amount))}`);
       await expect(page.getByTestId('new-expense-button')).toBeVisible();
     });
 
@@ -53,7 +55,7 @@ defineFeature(feature, (test) => {
     });
 
     then(/^I should see the bill total equal to (\d+)\$$/, async function (amount: string) {
-      await expect(page.getByTestId('bill-total-span')).toHaveText(`Total R$ ${Number(amount).toFixed(2)}`);
+      await expect(page.getByTestId('bill-total-span')).toHaveText(`Total ${brl(Number(amount))}`);
     });
   });
 
@@ -103,16 +105,16 @@ defineFeature(feature, (test) => {
     });
 
     then(/^I should see the bill total equal to (\d+)\$$/, async function (amount: string) {
-      await expect(page.getByTestId('bill-total-span')).toHaveText(`Total R$ ${Number(amount).toFixed(2)}`);
+      await expect(page.getByTestId('bill-total-span')).toHaveText(`Total ${brl(Number(amount))}`);
     });
 
     and(/^I should see division rows for both "(.*)" and "(.*)"$/, async function (selfName: string, other: string) {
       // The 60$ quick add defaulted to the bill participants (both people) and to the
       // self payer, so the division stays at -50$/+50$ across the 40$ + 60$ expenses.
       await expect(page.getByTestId(`bill-part-participant-${selfName}`)).toHaveText(selfName);
-      await expect(page.getByTestId(`bill-part-amount-${selfName}`)).toHaveText('R$ -50.00');
+      await expect(page.getByTestId(`bill-part-amount-${selfName}`)).toHaveText(brl(-50));
       await expect(page.getByTestId(`bill-part-participant-${other}`)).toHaveText(other);
-      await expect(page.getByTestId(`bill-part-amount-${other}`)).toHaveText('R$ 50.00');
+      await expect(page.getByTestId(`bill-part-amount-${other}`)).toHaveText(brl(50));
     });
   });
 
@@ -144,7 +146,7 @@ defineFeature(feature, (test) => {
     then('I should see an undo affordance for the added expense', async function () {
       await expect(page.getByText('Despesa adicionada')).toBeVisible();
       await expect(page.getByRole('button', { name: 'Desfazer' })).toBeVisible();
-      await expect(page.getByTestId('bill-total-span')).toHaveText('Total R$ 25.00');
+      await expect(page.getByTestId('bill-total-span')).toHaveText('Total R$ 25,00');
     });
 
     when('I undo the added expense', async function () {
@@ -153,7 +155,7 @@ defineFeature(feature, (test) => {
     });
 
     then(/^I should see the bill total equal to (\d+)\$$/, async function (amount: string) {
-      await expect(page.getByTestId('bill-total-span')).toHaveText(`Total R$ ${Number(amount).toFixed(2)}`);
+      await expect(page.getByTestId('bill-total-span')).toHaveText(`Total ${brl(Number(amount))}`);
     });
   });
 });

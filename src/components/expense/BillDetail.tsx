@@ -12,6 +12,7 @@ import BillParticipantsPartList from './BillParticipantsPartList';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import SavedChip from '../common/SavedChip';
+import { formatCurrency, formatDate } from '../../core/utils/format';
 
 export default function BillDetail() {
   const { billId } = useParams();
@@ -95,10 +96,10 @@ export default function BillDetail() {
         {saved && <SavedChip />}
         <Card>
           <h2 className="type-display text-2xl font-bold text-ink">{bill.name}</h2>
-          <p className="mt-1 text-sm text-ink-muted">{bill.date.toLocaleDateString('pt-BR')}</p>
+          <p className="mt-1 text-sm text-ink-muted">{formatDate(bill.date)}</p>
           <p className="mt-4 text-3xl font-bold tabular-nums text-ink" data-testid="bill-total-span">
-            <span className="text-sm font-medium uppercase tracking-wide text-ink-muted">Total</span> R${' '}
-            {total.toFixed(2)}
+            <span className="text-sm font-medium uppercase tracking-wide text-ink-muted">Total</span>{' '}
+            {formatCurrency(total)}
           </p>
         </Card>
         <Card>
@@ -133,7 +134,7 @@ export default function BillDetail() {
           </details>
         </Card>
         <Card>
-          <h3 className="type-display text-base font-semibold text-ink">Divisão por participantes</h3>
+          <h3 className="type-display text-base font-semibold text-ink">Quem fica com quanto</h3>
           <BillParticipantsPartList billId={Number(billId)} refreshKey={partsRefreshKey} />
         </Card>
         <Button
@@ -155,7 +156,9 @@ export default function BillDetail() {
           Apagar conta
         </Button>
         <Modal open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)} title="Apagar conta?">
-          <p className="text-sm text-ink-muted">A conta e todas as suas despesas serão apagadas para sempre.</p>
+          <p className="text-sm text-ink-muted">
+            Isso apaga a conta e todas as despesas de uma vez — sem como voltar atrás.
+          </p>
           <div className="mt-6 flex justify-end gap-2">
             <Button type="button" variant="secondary" onClick={() => setConfirmDeleteOpen(false)}>
               Cancelar

@@ -132,7 +132,7 @@ export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }:
             step="0.01"
             min="0"
             autoFocus
-            hint="O nome, a data, os participantes e quem pagou têm padrões automáticos."
+            hint="Só o valor já basta — o resto vem pronto, e você ajusta à vontade."
             data-testid="new-expense-form-amount-input"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}

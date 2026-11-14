@@ -1,6 +1,8 @@
 import { Browser, chromium, Page, expect } from '@playwright/test';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 
+import { brl } from './brl';
+
 const feature = loadFeature(__dirname + '/../features/BillDivisionByParticipants.feature');
 
 defineFeature(feature, (test) => {
@@ -48,7 +50,7 @@ defineFeature(feature, (test) => {
         }
         await page.getByRole('button', { name: 'Adicionar' }).click();
 
-        await expect(page.getByTestId('bill-total-span')).toHaveText(`Total R$ ${Number(amount).toFixed(2)}`);
+        await expect(page.getByTestId('bill-total-span')).toHaveText(`Total ${brl(Number(amount))}`);
         await expect(page.getByTestId('new-expense-button')).toBeVisible();
       },
     );
@@ -70,19 +72,19 @@ defineFeature(feature, (test) => {
 
     then(/^I should get (\d+)\$ for (.+)$/, async function (amount: string, participant: string) {
       await expect(page.getByTestId(`bill-part-amount-${participant}`)).toBeVisible();
-      await expect(page.getByTestId(`bill-part-amount-${participant}`)).toHaveText('R$ ' + Number(amount).toFixed(2));
+      await expect(page.getByTestId(`bill-part-amount-${participant}`)).toHaveText(brl(Number(amount)));
       await expect(page.getByTestId(`bill-part-participant-${participant}`)).toHaveText(participant);
     });
 
     and(/^I should get (\d+)\$ for (.+)$/, async function (amount: string, participant: string) {
       await expect(page.getByTestId(`bill-part-amount-${participant}`)).toBeVisible();
-      await expect(page.getByTestId(`bill-part-amount-${participant}`)).toHaveText('R$ ' + Number(amount).toFixed(2));
+      await expect(page.getByTestId(`bill-part-amount-${participant}`)).toHaveText(brl(Number(amount)));
       await expect(page.getByTestId(`bill-part-participant-${participant}`)).toHaveText(participant);
     });
 
     and(/^I should get -(\d+)\$ for me$/, async function (amount: string) {
       await expect(page.getByTestId('bill-part-amount-Eu')).toBeVisible();
-      await expect(page.getByTestId('bill-part-amount-Eu')).toHaveText('R$ -' + Number(amount).toFixed(2));
+      await expect(page.getByTestId('bill-part-amount-Eu')).toHaveText(brl(-Number(amount)));
       await expect(page.getByTestId('bill-part-participant-Eu')).toHaveText('Eu');
     });
   }, 10000);
