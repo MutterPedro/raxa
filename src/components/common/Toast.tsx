@@ -100,7 +100,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <ToastContext.Provider value={value}>
       {children}
       <div
-        className="fixed inset-x-0 bottom-4 flex flex-col items-center gap-2 px-4 sm:bottom-6 sm:right-6 sm:left-auto sm:items-end z-50"
+        className="fixed inset-x-0 bottom-[calc(var(--spacing)*4+env(safe-area-inset-bottom,0px))] flex flex-col items-center gap-2 px-4 sm:bottom-[calc(var(--spacing)*6+env(safe-area-inset-bottom,0px))] sm:right-6 sm:left-auto sm:items-end z-50"
         role="status"
         aria-live="polite"
       >

@@ -7,9 +7,16 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   plugins: [
     react(),
-    // manifest filled in T1.2(b) with the brand (it was the plugin's green default,
-    // with no icons); install/offline UX still scheduled for T4.1
+    // PWA install/offline UX: branded manifest, themed theme-color metas in
+    // index.html + src/infra/theme.ts, safe-area padding, and a precache that covers
+    // the self-hosted fonts. autoUpdate so returning users get the new shell without a prompt.
     VitePWA({
+      registerType: 'autoUpdate',
+      workbox: {
+        // Default is js/css/html/ico/png/svg/webmanifest — the woff2 fonts must be
+        // precached too, otherwise the offline shell renders in a fallback font.
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,webmanifest}'],
+      },
       manifest: {
         name: 'raxa',
         short_name: 'raxa',

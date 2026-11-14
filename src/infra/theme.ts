@@ -15,6 +15,20 @@ interface ThemeStore {
   subscribe(cb: () => void): () => void;
 }
 
+export const THEME_COLOR_LIGHT = '#C2410C';
+export const THEME_COLOR_DARK = '#EA580C';
+
+function applyThemeColor(mode: ThemeMode, doc: Document) {
+  const color = mode === 'dark' ? THEME_COLOR_DARK : THEME_COLOR_LIGHT;
+  let meta = doc.querySelector<HTMLMetaElement>('head meta[name="theme-color"]:not([media])');
+  if (!meta) {
+    meta = doc.createElement('meta');
+    meta.name = 'theme-color';
+    doc.head.appendChild(meta);
+  }
+  meta.content = color;
+}
+
 function applyMode(mode: ThemeMode, doc: Document) {
   const root = doc.documentElement;
   if (mode === 'dark') {
@@ -22,6 +36,7 @@ function applyMode(mode: ThemeMode, doc: Document) {
   } else {
     root.classList.remove('dark');
   }
+  applyThemeColor(mode, doc);
 }
 
 export function createThemeStore(deps: Deps = {}): ThemeStore {
