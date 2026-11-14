@@ -102,6 +102,8 @@
   --border-strong: #c9bca9;
   --danger: #b91c1c;
   --success: #15803d;
+  --success-strong: #166534; /* AA-safe text over success-tinted chips */
+  --ring: var(--color-brand-600);
   /* legacy hooks kept until every screen sits on the token utilities */
   --color-primary: var(--color-brand-700);
   --color-secondary: var(--color-brand-200);
@@ -119,6 +121,8 @@
   --border-strong: #4a3f33;
   --danger: #f87171;
   --success: #4ade80;
+  --success-strong: #4ade80;
+  --ring: var(--color-brand-400);
   --color-primary: var(--color-brand-600);
   --color-secondary: var(--color-brand-200);
 }
@@ -134,6 +138,25 @@
   --color-line-strong: var(--border-strong);
   --color-danger: var(--danger);
   --color-success: var(--success);
+  --color-success-strong: var(--success-strong);
+  --color-ring: var(--ring);
+}
+
+/* Shared keyboard focus indicator: a ring-colored outline shown only on
+   focus-visible, with a small offset so it reads against adjacent surfaces. */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* react-select renders its own control div; mirror the focus-ring on it when the
+   inner search input takes keyboard focus (react-select styles can't express
+   :focus-visible). */
+.select__control:has(input:focus-visible) {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
 }
 
 .bg-primary {

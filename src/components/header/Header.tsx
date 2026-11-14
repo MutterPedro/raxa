@@ -4,9 +4,9 @@ import ThemeToggle from './ThemeToggle';
 
 export default function Header() {
   return (
-    <header className="bg-brand-700 dark:bg-brand-600 text-brand-200 type-display" data-testid="app-header">
+    <header className="bg-brand-700 text-brand-200 type-display" data-testid="app-header">
       <NavBar>
-        <a href="/" aria-label="raxa" className="flex items-center gap-2">
+        <a href="/" aria-label="raxa" className="flex min-h-11 items-center gap-2 focus-ring">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={26} aria-hidden="true">
             <circle cx="8" cy="8" r="4.6" className="fill-brand-300" />
             <circle cx="24" cy="8" r="4.6" className="fill-brand-300" />

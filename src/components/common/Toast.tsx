@@ -107,7 +107,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         {toasts.map((t) => (
           <div
             key={t.id}
-            className="rounded-[var(--radius-card)] bg-surface-raised text-ink shadow-card px-4 py-3 text-sm border border-line animate-fade-in motion-reduce:animate-none flex items-center justify-between"
+            className="rounded-[var(--radius-card)] bg-surface-raised text-ink shadow-card px-4 py-2 text-sm border border-line animate-fade-in motion-reduce:animate-none flex items-center justify-between"
           >
             <span>{t.message}</span>
             {t.action && (
@@ -116,12 +116,16 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                   dismiss(t.id);
                   t.action?.onClick();
                 }}
-                className="ml-3 font-semibold text-brand-700 hover:underline dark:text-brand-400"
+                className="ml-3 inline-flex min-h-11 items-center font-semibold text-brand-700 hover:underline dark:text-brand-400 focus-ring"
               >
                 {t.action.label}
               </button>
             )}
-            <button aria-label="Fechar" onClick={() => dismiss(t.id)} className="ml-2 text-ink-muted">
+            <button
+              aria-label="Fechar"
+              onClick={() => dismiss(t.id)}
+              className="ml-1 inline-flex size-11 items-center justify-center text-lg leading-none text-ink-muted focus-ring"
+            >
               ×
             </button>
           </div>

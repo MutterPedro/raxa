@@ -8,7 +8,7 @@ export default function ThemeToggle() {
       type="button"
       aria-label="Alternar tema"
       onClick={toggle}
-      className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-field)] text-brand-50 hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+      className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-field)] text-brand-50 hover:bg-brand-800 focus-ring"
     >
       {theme === 'dark' ? (
         // Sun: the target of the next click (light).

@@ -34,16 +34,13 @@ test.describe('PWA shell #integration', function () {
     expect(await metaContent(page, 'apple-mobile-web-app-status-bar-style')).toBe('black-translucent');
   });
 
-  test('themes the system UI bar in both color schemes', async function ({ page }) {
-    // The manifest (build-only) carries its own theme_color; these metas cover browser UI + iOS.
+  test('themes the system UI bar with the header brand color', async function ({ page }) {
+    // The manifest (build-only) carries its own theme_color; this meta covers browser UI + iOS.
+    // The header is brand-700 in both themes (AA for its text), so one static meta suffices.
     expect(await metaContent(page, 'theme-color')).toBe('#C2410C');
 
     await page.getByRole('button', { name: 'Alternar tema' }).click();
     await expect(page.locator('html')).toHaveClass(/dark/);
-    expect(await metaContent(page, 'theme-color')).toBe('#EA580C');
-
-    await page.getByRole('button', { name: 'Alternar tema' }).click();
-    await expect(page.locator('html')).not.toHaveClass(/dark/);
     expect(await metaContent(page, 'theme-color')).toBe('#C2410C');
   });
 

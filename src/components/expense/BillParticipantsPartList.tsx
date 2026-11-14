@@ -27,7 +27,7 @@ const BillParticipantsPartList: React.FC<BillParticipantsPartListProps> = ({ bil
             <p className="truncate font-semibold text-ink" data-testid={`bill-part-participant-${part.user.name}`}>
               {part.user.name}
             </p>
-            <p className="truncate text-xs text-ink-faint">{part.user.email}</p>
+            <p className="truncate text-xs text-ink-muted">{part.user.email}</p>
           </div>
           <div className="shrink-0 text-right">
             <p
@@ -36,7 +36,7 @@ const BillParticipantsPartList: React.FC<BillParticipantsPartListProps> = ({ bil
             >
               {formatCurrency(part.amount)}
             </p>
-            <p className="text-xs text-ink-faint">
+            <p className="text-xs text-ink-muted">
               {part.amount < 0 ? 'a receber' : part.amount > 0 ? 'a pagar' : 'em dia'}
             </p>
           </div>

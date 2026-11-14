@@ -6,7 +6,7 @@ export default function SavedChip() {
   return (
     <p
       data-testid="saved-chip"
-      className="flex w-fit items-center gap-1 rounded-full border border-success/30 bg-success/10 px-3 py-1 text-xs font-medium text-success"
+      className="flex w-fit items-center gap-1 rounded-full border border-success/30 bg-success/10 px-3 py-1 text-xs font-medium text-success-strong"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

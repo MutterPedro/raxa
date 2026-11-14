@@ -28,7 +28,7 @@ const GoogleIcon: React.FC = () => (
 );
 
 const segmentClasses = (active: boolean) =>
-  `h-9 flex-1 rounded-[calc(var(--radius-field)-4px)] text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-500 ${
+  `h-11 flex-1 rounded-[calc(var(--radius-field)-4px)] text-sm font-semibold transition-colors focus-ring ${
     active ? 'bg-surface-raised text-ink shadow-card ring-1 ring-line' : 'text-ink-muted hover:text-ink'
   }`;
 

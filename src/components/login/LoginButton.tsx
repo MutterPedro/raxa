@@ -19,7 +19,7 @@ export default function LoginButton() {
       to="/login"
       end
       data-testid="header-login-link"
-      className="px-2 py-2 text-sm font-semibold text-brand-50 hover:text-white"
+      className="inline-flex min-h-11 items-center px-2 text-sm font-semibold text-brand-50 hover:text-white focus-ring"
     >
       Entrar <span aria-hidden="true">&rarr;</span>
     </NavLink>

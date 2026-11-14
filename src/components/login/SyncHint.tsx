@@ -24,7 +24,7 @@ export default function SyncHint() {
       to="/login"
       end
       data-testid="sync-hint"
-      className="text-sm text-ink-muted underline decoration-line-strong underline-offset-4 hover:text-brand-700 dark:hover:text-brand-400"
+      className="inline-flex min-h-11 items-center text-sm text-ink-muted underline decoration-line-strong underline-offset-4 hover:text-brand-700 dark:hover:text-brand-400 focus-ring"
     >
       Faça login para sincronizar
     </NavLink>

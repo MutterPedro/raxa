@@ -14,6 +14,7 @@ export interface SelectOption {
 const selectStyles: StylesConfig<SelectOption> = {
   control: (base) => ({
     ...base,
+    minHeight: '44px',
     backgroundColor: 'var(--color-surface-raised)',
     borderColor: 'var(--color-line-strong)',
     borderRadius: 'var(--radius-field)',
@@ -83,7 +84,7 @@ const SelectField: React.FC<SelectFieldProps> = ({ label, inputId, ...rest }) =>
     <label htmlFor={inputId} className="mb-1 block text-sm font-semibold text-ink">
       {label}
     </label>
-    <Select<SelectOption, false> inputId={inputId} styles={selectStyles} {...rest} />
+    <Select<SelectOption, false> inputId={inputId} classNamePrefix="select" styles={selectStyles} {...rest} />
   </div>
 );
 
@@ -104,6 +105,7 @@ export const CreatableSelectField: React.FC<CreatableSelectFieldProps> = ({
     <CreatableSelect<SelectOption, true>
       isMulti
       inputId={inputId}
+      classNamePrefix="select"
       styles={selectStyles}
       formatCreateLabel={formatCreateLabel}
       {...rest}

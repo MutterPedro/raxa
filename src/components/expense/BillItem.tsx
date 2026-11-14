@@ -31,7 +31,7 @@ export default function BillItem({ bill }: { bill: Bill }) {
     <button
       type="button"
       onClick={() => navigate(`/bill/${bill.id}`)}
-      className="flex w-full items-center gap-4 rounded-[var(--radius-card)] bg-surface-raised p-4 text-left shadow-card transition-colors hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 active:translate-y-px dark:border dark:border-line dark:hover:bg-surface-sunken"
+      className="flex w-full items-center gap-4 rounded-[var(--radius-card)] bg-surface-raised p-4 text-left shadow-card transition-colors hover:bg-brand-50 focus-ring active:translate-y-px dark:border dark:border-line dark:hover:bg-surface-sunken"
     >
       <span className="min-w-0 flex-1">
         <span className="block truncate font-semibold text-ink" data-testid={`bill-item-name-${bill.id}`}>

@@ -142,12 +142,14 @@ export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }:
             variant="ghost"
             data-testid="new-expense-more-toggle"
             aria-expanded={showOptions}
+            aria-controls="new-expense-more-options"
             onClick={() => setShowOptions((prev) => !prev)}
           >
             Mais opções
           </Button>
           {showOptions && (
             <div
+              id="new-expense-more-options"
               role="group"
               aria-label="Mais opções"
               className="flex flex-col gap-4 rounded-[var(--radius-field)] bg-surface-sunken p-4"

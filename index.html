@@ -12,14 +12,6 @@
           } else {
             document.documentElement.classList.remove('dark');
           }
-          // An explicit preference outranks the OS scheme, so the media-based theme-color
-          // metas would paint the wrong system bar; drop them and let src/infra/theme.ts
-          // own a single media-less meta from then on.
-          if (pref === 'light' || pref === 'dark') {
-            document.querySelectorAll('head meta[name="theme-color"][media]').forEach(function (m) {
-              m.remove();
-            });
-          }
         } catch (e) {
           /* ignore */
         }

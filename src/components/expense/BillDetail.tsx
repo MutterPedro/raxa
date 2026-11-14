@@ -104,7 +104,7 @@ export default function BillDetail() {
         </Card>
         <Card>
           <details className="group" open>
-            <summary className="flex cursor-pointer list-none items-center justify-between">
+            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between focus-ring">
               <h3 className="type-display text-base font-semibold text-ink">Despesas</h3>
               <svg
                 className="transition-transform group-open:rotate-180"
