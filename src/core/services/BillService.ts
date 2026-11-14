@@ -32,7 +32,12 @@ export class BillService {
   }
 
   async deleteBill(billId: number): Promise<void> {
-    return this.billRepo.delete(billId);
+    // The expenses go with the bill: orphans would skew the totals and divisions of
+    // any bill that later reuses the id. They are deleted first so a failed cascade
+    // leaves the bill around for a retry instead of silently orphaning them.
+    const expenses = await this.expenseRepo.filter({ billId });
+    await Promise.all(expenses.map((expense) => this.expenseRepo.delete(expense.id)));
+    await this.billRepo.delete(billId);
   }
 
   async deleteExpense(expenseId: number): Promise<void> {

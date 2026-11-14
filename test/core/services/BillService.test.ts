@@ -73,6 +73,44 @@ describe('BillService.ts', function () {
       expect(await service.getById(bill.id)).toBeNull();
     });
 
+    it('should delete a bill together with all of its expenses #unit', async function () {
+      const billConn = MemoryDBConnection.build<BillProps>();
+      const expenseConn = MemoryDBConnection.build<ExpenseProps>();
+      const service = buildBillService({ billConn, expenseConn });
+
+      const bill = await service.createBill({ name: 'Camping' });
+      const other = await service.createBill({ name: 'Roadtrip' });
+      await service.addExpense(bill.id, {
+        name: 'Firewood',
+        amount: 40,
+        date: new Date(2026, 0, 15).toISOString(),
+        participantIds: [1, 2],
+        payerId: 1,
+      });
+      await service.addExpense(bill.id, {
+        name: 'Water',
+        amount: 60,
+        date: new Date(2026, 0, 15).toISOString(),
+        participantIds: [1],
+        payerId: 1,
+      });
+      const survivor = await service.addExpense(other.id, {
+        name: 'Fuel',
+        amount: 100,
+        date: new Date(2026, 0, 15).toISOString(),
+        participantIds: [1],
+        payerId: 1,
+      });
+      expect(expenseConn.items).toHaveLength(3);
+
+      await service.deleteBill(bill.id);
+
+      expect(billConn.items).toHaveLength(1);
+      expect(billConn.items[0].id).toBe(other.id);
+      expect(expenseConn.items).toHaveLength(1);
+      expect(expenseConn.items[0].id).toBe(survivor.id);
+    });
+
     it('should delete an expense #unit', async function () {
       const conn = MemoryDBConnection.build<ExpenseProps>();
       const service = buildBillService({ expenseConn: conn });

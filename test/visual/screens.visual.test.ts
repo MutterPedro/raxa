@@ -54,6 +54,13 @@ test('new-expense-form', async ({ page }) => {
   await capture(page, 'new-expense-form');
 });
 
+test('delete-bill-confirm', async ({ page }) => {
+  await gotoSeeded(page, '/bill/1');
+  await page.getByTestId('delete-bill-button').click();
+  await expect(page.getByRole('dialog', { name: 'Apagar conta?' })).toBeVisible();
+  await capture(page, 'delete-bill-confirm');
+});
+
 test('toast', async ({ page }) => {
   // Plain variant (message + close only) through the real provider via the test bridge;
   // no shipped flow emits a plain toast today, so the bridge is the only way to pin it.

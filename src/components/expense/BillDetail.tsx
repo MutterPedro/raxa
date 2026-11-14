@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router';
+import { useParams, useNavigate } from 'react-router';
 import { useBillService } from '../state/useBillService';
 import { useToast } from '../common/Toast';
+import { Modal } from '../common/Modal';
 import Bill from '../../core/entities/Bill';
 import LoadingGauge from '../common/LoadingGuage';
 import NewExpenseForm from './NewExpenseForm';
@@ -14,11 +15,13 @@ import Button from '../common/Button';
 export default function BillDetail() {
   const { billId } = useParams();
   const billService = useBillService();
+  const navigate = useNavigate();
   const { notify } = useToast();
 
   const [bill, setBill] = useState<Bill | null>(null);
   const [total, setTotal] = useState<number>(0);
   const [showForm, setShowForm] = useState<boolean>(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   // Bumped whenever the division must be refetched (expense added or undone).
   const [partsRefreshKey, setPartsRefreshKey] = useState<number>(0);
@@ -39,6 +42,19 @@ export default function BillDetail() {
 
   function refreshParts() {
     setPartsRefreshKey((key) => key + 1);
+  }
+
+  async function confirmDeleteBill() {
+    setConfirmDeleteOpen(false);
+    try {
+      await billService.deleteBill(bill?.id ?? Number(billId));
+      notify('Conta apagada');
+      navigate('/');
+    } catch (error) {
+      // The bill survived — stay on it so the user can try again.
+      console.error(error);
+      notify('Não foi possível apagar a conta');
+    }
   }
 
   function onExpenseCreated(expense: Expense) {
@@ -124,6 +140,26 @@ export default function BillDetail() {
         >
           Nova despesa
         </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => setConfirmDeleteOpen(true)}
+          data-testid="delete-bill-button"
+          className="w-full"
+        >
+          Apagar conta
+        </Button>
+        <Modal open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)} title="Apagar conta?">
+          <p className="text-sm text-ink-muted">A conta e todas as suas despesas serão apagadas para sempre.</p>
+          <div className="mt-6 flex justify-end gap-2">
+            <Button type="button" variant="secondary" onClick={() => setConfirmDeleteOpen(false)}>
+              Cancelar
+            </Button>
+            <Button type="button" variant="danger" onClick={confirmDeleteBill} data-testid="delete-bill-confirm">
+              Apagar
+            </Button>
+          </div>
+        </Modal>
       </div>
     )
   ) : (

@@ -4,6 +4,7 @@ import Bill from '../../core/entities/Bill';
 import Expense from '../../core/entities/Expense';
 import { useBillService } from '../state/useBillService';
 import { useUserService } from '../state/useUserService';
+import { useToast } from '../common/Toast';
 import Button from '../common/Button';
 import Card from '../common/Card';
 import Field from '../common/Field';
@@ -26,6 +27,7 @@ const toOption = (user: { id: number; name: string }): SelectOption => ({
 export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }: NewExpenseFormProps) {
   const billService = useBillService();
   const userService = useUserService();
+  const { notify } = useToast();
 
   const [amount, setAmount] = useState('');
   const [participants, setParticipants] = useState<SelectOption[]>([]);
@@ -33,6 +35,7 @@ export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }:
   const [payer, setPayer] = useState<SelectOption | null>();
   const [showOptions, setShowOptions] = useState(true);
   const placeholderSeq = useRef(0);
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     userService
@@ -101,8 +104,11 @@ export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }:
       });
       onExpenseCreated(expense);
     } catch (error) {
-      // Keep the form open for a retry; toasts are a later task.
+      // Keep the form open for a retry; the toast action re-submits it as it stands.
       console.error(error);
+      notify('Não foi possível adicionar a despesa', {
+        action: { label: 'Tentar novamente', onClick: () => formRef.current?.requestSubmit() },
+      });
     }
   }
 
@@ -116,7 +122,7 @@ export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }:
 
   return (
     <Card className="w-full max-w-md p-6">
-      <form data-testid="new-expense-form" onSubmit={handleFormSubmit}>
+      <form ref={formRef} data-testid="new-expense-form" onSubmit={handleFormSubmit}>
         <h2 className="type-display text-2xl font-bold text-ink">Nova despesa</h2>
         <div className="mt-4 flex flex-col gap-4">
           <Field

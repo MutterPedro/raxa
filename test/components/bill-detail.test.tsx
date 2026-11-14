@@ -11,10 +11,13 @@ import { createBillServiceFake } from '../core/fakes/BillService.fake';
 import { createUserServiceFake } from '../core/fakes/UserService.fake';
 import { createBill, createExpense, createUser } from '../factories/entities';
 
-// Mock react-router (same pattern as bills-list.test.tsx)
+// Mock react-router (same pattern as bills-list.test.tsx), with one navigate spy per
+// test file: the delete flow assertions check where the component navigates.
+const navigateMock = jest.fn();
+
 jest.mock('react-router', () => ({
   useParams: () => ({ billId: '1' }),
-  useNavigate: () => jest.fn(),
+  useNavigate: () => navigateMock,
 }));
 
 function renderDetail(billService: BillService) {
@@ -129,7 +132,7 @@ describe('BillDetail', () => {
     );
   });
 
-  it('keeps the expense form open for a retry when the quick add fails #unit', async () => {
+  it('keeps the expense form open with a retry toast when the quick add fails #unit', async () => {
     const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
     const billService = createBillServiceFake({ bill: createBill(), quickAddExpenseFails: true });
     renderDetail(billService);
@@ -138,8 +141,13 @@ describe('BillDetail', () => {
     fireEvent.change(await screen.findByTestId('new-expense-form-amount-input'), { target: { value: '10' } });
     fireEvent.click(screen.getByRole('button', { name: 'Adicionar' }));
 
-    await waitFor(() => expect(consoleError).toHaveBeenCalled());
+    // The failure is reported as a toast and the form stays open for a manual retry
+    expect(await screen.findByText('Não foi possível adicionar a despesa')).toBeInTheDocument();
     expect(screen.getByTestId('new-expense-form')).toBeInTheDocument();
+
+    // The toast action re-submits the form as it is, without the user touching it again
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+    await waitFor(() => expect(billService.quickAddExpense).toHaveBeenCalledTimes(2));
     consoleError.mockRestore();
   });
 
@@ -199,5 +207,65 @@ describe('BillDetail', () => {
     expect(screen.getByText('Pizza extra')).toBeInTheDocument();
     expect(await screen.findByText('Não foi possível desfazer')).toBeInTheDocument();
     consoleError.mockRestore();
+  });
+
+  describe('deleting a bill', () => {
+    beforeEach(() => navigateMock.mockClear());
+
+    async function renderLoadedBill(billService: BillService) {
+      renderDetail(billService);
+      await screen.findByTestId('bill-total-span');
+    }
+
+    it('asks for confirmation before deleting the bill #unit', async () => {
+      const billService = createBillServiceFake({ bill: createBill(), total: 100 });
+      await renderLoadedBill(billService);
+
+      fireEvent.click(screen.getByTestId('delete-bill-button'));
+
+      expect(screen.getByRole('dialog', { name: 'Apagar conta?' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Apagar' })).toBeInTheDocument();
+      expect(billService.deleteBill).not.toHaveBeenCalled();
+    });
+
+    it('keeps the bill when the confirmation is cancelled #unit', async () => {
+      const billService = createBillServiceFake({ bill: createBill(), total: 100 });
+      await renderLoadedBill(billService);
+
+      fireEvent.click(screen.getByTestId('delete-bill-button'));
+      fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(billService.deleteBill).not.toHaveBeenCalled();
+      expect(navigateMock).not.toHaveBeenCalled();
+      expect(screen.getByTestId('bill-total-span')).toHaveTextContent('Total R$ 100.00');
+    });
+
+    it('deletes the bill and returns to the bills list #unit', async () => {
+      const billService = createBillServiceFake({ bill: createBill(), total: 100 });
+      await renderLoadedBill(billService);
+
+      fireEvent.click(screen.getByTestId('delete-bill-button'));
+      fireEvent.click(screen.getByRole('button', { name: 'Apagar' }));
+
+      await waitFor(() => expect(billService.deleteBill).toHaveBeenCalledWith(1));
+      expect(navigateMock).toHaveBeenCalledWith('/');
+      expect(await screen.findByText('Conta apagada')).toBeInTheDocument();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('stays on the bill and reports the failure when deleting fails #unit', async () => {
+      const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+      const billService = createBillServiceFake({ bill: createBill(), total: 100, deleteBillFails: true });
+      await renderLoadedBill(billService);
+
+      fireEvent.click(screen.getByTestId('delete-bill-button'));
+      fireEvent.click(screen.getByRole('button', { name: 'Apagar' }));
+
+      expect(await screen.findByText('Não foi possível apagar a conta')).toBeInTheDocument();
+      expect(navigateMock).not.toHaveBeenCalled();
+      expect(screen.getByTestId('bill-total-span')).toHaveTextContent('Total R$ 100.00');
+      consoleError.mockRestore();
+    });
   });
 });

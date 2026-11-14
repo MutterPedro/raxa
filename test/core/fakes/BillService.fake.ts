@@ -27,6 +27,8 @@ export interface BillServiceFakeOptions {
   quickAddExpenseFails?: boolean;
   /** When true, deleteExpense rejects — for asserting undo failures are reported. */
   deleteExpenseFails?: boolean;
+  /** When true, deleteBill rejects — for asserting delete failures keep the user on the bill. */
+  deleteBillFails?: boolean;
 }
 
 // Component tests exercise a subset of BillService; the cast lets the fake stand in
@@ -46,6 +48,7 @@ export function createBillServiceFake(options: BillServiceFakeOptions = {}): Bil
     quickAddedExpense,
     quickAddExpenseFails = false,
     deleteExpenseFails = false,
+    deleteBillFails = false,
   } = options;
 
   const defaultBillObj =
@@ -80,7 +83,9 @@ export function createBillServiceFake(options: BillServiceFakeOptions = {}): Bil
     quickAddExpense: quickAddExpenseFails
       ? jest.fn(() => Promise.reject(new Error('quick add failed')))
       : jest.fn(async () => quickAddedExpense ?? new Expense()),
-    deleteBill: jest.fn(async () => undefined),
+    deleteBill: deleteBillFails
+      ? jest.fn(() => Promise.reject(new Error('delete failed')))
+      : jest.fn(async () => undefined),
     deleteExpense: deleteExpenseFails
       ? jest.fn(() => Promise.reject(new Error('delete failed')))
       : jest.fn(async () => undefined),
