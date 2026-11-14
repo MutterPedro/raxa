@@ -11,6 +11,7 @@ import BillsList from '../../src/components/expense/BillsList';
 import MainContainer from '../../src/components/MainContainer';
 import { createBillServiceFake } from '../core/fakes/BillService.fake';
 import { createUserServiceFake } from '../core/fakes/UserService.fake';
+import { createBill as createEntityBill, createUser } from '../factories/entities';
 
 // Mock react-router useNavigate so ESM doesn't break jsdom (same pattern as header.test.tsx);
 // real routing is covered by the acceptance suite.
@@ -19,23 +20,11 @@ jest.mock('react-router', () => ({
   useNavigate: () => mockNavigate,
 }));
 
-const createBill = (id: number, name: string): Bill => {
-  const bill = new Bill();
-  bill.id = id;
-  bill.name = name;
-  bill.date = new Date(2026, 10, 12);
-  bill.ownerId = 0;
-  return bill;
-};
+// Every list test uses the same anonymous travel bill; only id and name vary.
+const createBill = (id: number, name: string): Bill =>
+  createEntityBill({ id, name, date: new Date(2026, 10, 12), ownerId: 0 });
 
-const createUsers = (names: string[]): User[] =>
-  names.map((name, i) => {
-    const u = new User();
-    u.id = i + 1;
-    u.name = name;
-    u.email = `${name.toLowerCase()}@raxa.test`;
-    return u;
-  });
+const createUsers = (names: string[]): User[] => names.map((name, i) => createUser(i + 1, name));
 
 function renderWithProviders(ui: React.ReactNode, billService: BillService = createBillServiceFake()) {
   const userService: UserService = createUserServiceFake();

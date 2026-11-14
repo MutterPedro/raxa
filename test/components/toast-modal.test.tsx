@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ToastProvider, useToast } from '../../src/components/common/Toast';
 import { Modal } from '../../src/components/common/Modal';
@@ -15,7 +15,7 @@ const ToastTrigger: React.FC = () => {
 };
 
 describe('Toast system', () => {
-  test('#unit toast displays message and auto dismisses', () => {
+  test('toast displays message and auto dismisses #unit', () => {
     jest.useFakeTimers();
     render(
       <ToastProvider>
@@ -32,7 +32,7 @@ describe('Toast system', () => {
     jest.useRealTimers();
   });
 
-  test('#unit sticky toast stays until dismissed', () => {
+  test('sticky toast stays until dismissed #unit', () => {
     jest.useFakeTimers();
     const StickyTrigger: React.FC = () => {
       const { notify } = useToast();
@@ -68,7 +68,7 @@ describe('Toast system', () => {
     jest.useRealTimers();
   });
 
-  test('#unit toast queue evicts oldest when exceeding limit', () => {
+  test('toast queue evicts oldest when exceeding limit #unit', () => {
     jest.useFakeTimers();
     const MultiTrigger: React.FC = () => {
       const { notify } = useToast();
@@ -99,7 +99,86 @@ describe('Toast system', () => {
     jest.useRealTimers();
   });
 
-  test('#unit useToast outside provider throws', () => {
+  // Fires notify() with arbitrary arguments, for the action-behavior tests below.
+  const NotifyTrigger: React.FC<{
+    message: string;
+    options?: { duration?: number; action?: { label: string; onClick: () => void } };
+  }> = ({ message, options }) => {
+    const { notify } = useToast();
+    return (
+      <button onClick={() => notify(message, options)} data-testid="notify-trigger">
+        Notify
+      </button>
+    );
+  };
+
+  test('toast with an action renders the action button and fires it, dismissing the toast #unit', () => {
+    jest.useFakeTimers();
+    const onAction = jest.fn();
+    render(
+      <ToastProvider>
+        <NotifyTrigger
+          message="Despesa adicionada"
+          options={{ duration: 6000, action: { label: 'Desfazer', onClick: onAction } }}
+        />
+      </ToastProvider>,
+    );
+    fireEvent.click(screen.getByTestId('notify-trigger'));
+
+    const toast = screen.getByText('Despesa adicionada').closest('[role="status"]') as HTMLElement;
+    expect(toast).not.toBeNull();
+    fireEvent.click(within(toast).getByRole('button', { name: 'Desfazer' }));
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('Despesa adicionada')).not.toBeInTheDocument();
+
+    // Advancing past the original duration must not throw — its timer was cleared.
+    act(() => {
+      jest.advanceTimersByTime(10000);
+    });
+    jest.useRealTimers();
+  });
+
+  test('toast with an action auto-dismisses at its duration without firing the action #unit', () => {
+    jest.useFakeTimers();
+    const onAction = jest.fn();
+    render(
+      <ToastProvider>
+        <NotifyTrigger
+          message="Despesa adicionada"
+          options={{ duration: 6000, action: { label: 'Desfazer', onClick: onAction } }}
+        />
+      </ToastProvider>,
+    );
+    fireEvent.click(screen.getByTestId('notify-trigger'));
+    expect(screen.getByRole('button', { name: 'Desfazer' })).toBeInTheDocument();
+
+    act(() => {
+      jest.advanceTimersByTime(6000);
+    });
+
+    expect(screen.queryByText('Despesa adicionada')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Desfazer' })).not.toBeInTheDocument();
+    expect(onAction).not.toHaveBeenCalled();
+    jest.useRealTimers();
+  });
+
+  test('toast without an action renders only the close button #unit', () => {
+    jest.useFakeTimers();
+    render(
+      <ToastProvider>
+        <ToastTrigger />
+      </ToastProvider>,
+    );
+    fireEvent.click(screen.getByTestId('toast-trigger'));
+
+    const toast = screen.getByText('Test message').closest('[role="status"]') as HTMLElement;
+    expect(toast).not.toBeNull();
+    expect(within(toast).getAllByRole('button')).toHaveLength(1);
+    expect(within(toast).getByRole('button')).toHaveAttribute('aria-label', 'Fechar');
+    jest.useRealTimers();
+  });
+
+  test('useToast outside provider throws #unit', () => {
     const BadComponent: React.FC = () => {
       const { notify } = useToast();
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -114,7 +193,7 @@ describe('Toast system', () => {
 });
 
 describe('Modal component', () => {
-  test('#unit modal renders when open and focuses panel', () => {
+  test('modal renders when open and focuses panel #unit', () => {
     const onClose = jest.fn();
     const { rerender } = render(
       <Modal open={false} onClose={onClose} title="My Modal">
@@ -136,7 +215,7 @@ describe('Modal component', () => {
     expect(document.activeElement).toBe(dialog);
   });
 
-  test('#unit modal escape key triggers onClose', () => {
+  test('modal escape key triggers onClose #unit', () => {
     const onClose = jest.fn();
     render(
       <Modal open={true} onClose={onClose} title="Esc Test">
@@ -147,7 +226,7 @@ describe('Modal component', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  test('#unit modal backdrop click triggers onClose', () => {
+  test('modal backdrop click triggers onClose #unit', () => {
     const onClose = jest.fn();
     render(
       <Modal open={true} onClose={onClose} title="Backdrop Test">
@@ -161,7 +240,7 @@ describe('Modal component', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  test('#unit tab wraps to the first focusable at the end of the panel', () => {
+  test('tab wraps to the first focusable at the end of the panel #unit', () => {
     const onClose = jest.fn();
     render(
       <Modal open={true} onClose={onClose} title="Tab Trap">
@@ -176,7 +255,7 @@ describe('Modal component', () => {
     expect(document.activeElement).toBe(first);
   });
 
-  test('#unit shift+tab wraps to the last focusable at the start of the panel', () => {
+  test('shift+tab wraps to the last focusable at the start of the panel #unit', () => {
     const onClose = jest.fn();
     render(
       <Modal open={true} onClose={onClose} title="Tab Trap">
@@ -191,7 +270,7 @@ describe('Modal component', () => {
     expect(document.activeElement).toBe(second);
   });
 
-  test('#unit aria-labelledby points at the title element', () => {
+  test('aria-labelledby points at the title element #unit', () => {
     const onClose = jest.fn();
     render(
       <Modal open={true} onClose={onClose} title="Labelled">
@@ -204,7 +283,7 @@ describe('Modal component', () => {
     expect(document.getElementById(labelledBy as string)).toHaveTextContent('Labelled');
   });
 
-  test('#unit re-rendering with a fresh onClose does not steal focus from inside the dialog', () => {
+  test('re-rendering with a fresh onClose does not steal focus from inside the dialog #unit', () => {
     const Wrapper: React.FC<{ onClose: () => void }> = ({ onClose }) => (
       <Modal open={true} onClose={onClose} title="Churn">
         <button data-testid="inside">Inside</button>
@@ -217,7 +296,7 @@ describe('Modal component', () => {
     expect(document.activeElement).toBe(inside);
   });
 
-  test('#unit unmounting while open returns focus to the opener', () => {
+  test('unmounting while open returns focus to the opener #unit', () => {
     const Wrapper: React.FC<{ showModal: boolean }> = ({ showModal }) => (
       <div>
         <button data-testid="opener">Opener</button>
@@ -237,7 +316,7 @@ describe('Modal component', () => {
     expect(document.activeElement).toBe(opener);
   });
 
-  test('#unit modal restores focus after close', () => {
+  test('modal restores focus after close #unit', () => {
     const Wrapper: React.FC = () => {
       const [open, setOpen] = React.useState(false);
       return (

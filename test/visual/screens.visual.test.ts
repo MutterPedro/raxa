@@ -54,6 +54,25 @@ test('new-expense-form', async ({ page }) => {
   await capture(page, 'new-expense-form');
 });
 
+test('toast', async ({ page }) => {
+  // Plain variant (message + close only) through the real provider via the test bridge;
+  // no shipped flow emits a plain toast today, so the bridge is the only way to pin it.
+  await gotoSeeded(page, '/bill/1');
+  await page.evaluate(() => window.__notifyToast?.('Não foi possível desfazer', { duration: 0 }));
+  await expect(page.getByText('Não foi possível desfazer')).toBeVisible();
+  await capture(page, 'toast');
+});
+
+test('toast-undo', async ({ page }) => {
+  // Action variant in the real flow: quick add leaves the undo toast over the bill detail.
+  await gotoSeeded(page, '/bill/1');
+  await page.getByTestId('new-expense-button').click();
+  await page.getByTestId('new-expense-form-amount-input').fill('30');
+  await page.getByRole('button', { name: 'Adicionar' }).click();
+  await expect(page.getByRole('button', { name: 'Desfazer' })).toBeVisible();
+  await capture(page, 'toast-undo');
+});
+
 test('login', async ({ page }) => {
   await gotoSeeded(page, '/login');
   await expect(page.getByRole('heading', { name: 'Acesse sua conta' })).toBeVisible();

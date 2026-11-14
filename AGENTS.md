@@ -42,5 +42,5 @@ Table schemas are declared on entity classes in `src/core/entities/` via `@table
 
 - Browser-driven tests (acceptance + integration) select UI via `data-testid` (e.g. `new-bill-form-name-input`, `bill-total-1`); keep these attributes on components they target.
 - Integration tests call real infra code inside the browser through `page.evaluate`, relying on helpers exposed on `window` by `init()` (`createTable`, `doesDbExists`, `getFirebaseSessionManager`) — renaming them breaks `test/integration/`.
-- Unit tests use fakes in `test/core/fakes/*.fake.ts` (repositories, `DBConnection`, `SessionManager`), not IndexedDB/Firebase.
+- Unit tests use fakes in `test/core/fakes/*.fake.ts` (repositories, `DBConnection`, `SessionManager`), not IndexedDB/Firebase. Component tests build entities through the shared factories in `test/factories/entities.ts` (defaults mirror `BillServiceFake`'s default bill). The `#unit` tag is always a **suffix** in test names.
 - Pre-commit hook (husky + lint-staged) runs `npm run lint` on staged `.ts/.tsx` and `prettier --check`; commits fail on any warning.

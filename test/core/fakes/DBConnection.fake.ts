@@ -5,6 +5,9 @@ import { DBConnection } from '../../../src/infra/DBConnection';
 export class MemoryDBConnection<T extends object> implements DBConnection<T> {
   public items: WithId<T>[] = [];
   private indexes: Map<number, number> = new Map();
+  // Auto-increment ids are never reused, mirroring Dexie: deleting the last row
+  // must not hand its id to the next insert.
+  private nextId = 1;
 
   private constructor() {}
 
@@ -28,8 +31,12 @@ export class MemoryDBConnection<T extends object> implements DBConnection<T> {
   }
 
   async add(data: MaybeWithId<T>): Promise<WithId<T>> {
-    const id = data.id || this.items.length + 1;
+    const id = data.id || this.nextId++;
     this.items.push({ ...data, id });
+
+    if (id >= this.nextId) {
+      this.nextId = id + 1;
+    }
 
     this.indexes.set(id, this.items.length - 1);
 

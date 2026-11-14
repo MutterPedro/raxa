@@ -2,15 +2,14 @@ import 'reflect-metadata';
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
-import Bill from '../../src/core/entities/Bill';
-import Expense from '../../src/core/entities/Expense';
-import User from '../../src/core/entities/User';
 import type { BillService } from '../../src/core/services/BillService';
 import type { UserService } from '../../src/core/services/UserService';
 import { ServicesContext } from '../../src/components/state/ServicesContext';
+import { ToastProvider } from '../../src/components/common/Toast';
 import BillDetail from '../../src/components/expense/BillDetail';
 import { createBillServiceFake } from '../core/fakes/BillService.fake';
 import { createUserServiceFake } from '../core/fakes/UserService.fake';
+import { createBill, createExpense, createUser } from '../factories/entities';
 
 // Mock react-router (same pattern as bills-list.test.tsx)
 jest.mock('react-router', () => ({
@@ -18,28 +17,13 @@ jest.mock('react-router', () => ({
   useNavigate: () => jest.fn(),
 }));
 
-const createBill = (): Bill => {
-  const bill = new Bill();
-  bill.id = 1;
-  bill.name = 'Show da Pizza';
-  bill.date = new Date(2026, 0, 15);
-  bill.ownerId = 1337;
-  return bill;
-};
-
-const createUser = (id: number, name: string): User => {
-  const user = new User();
-  user.id = id;
-  user.name = name;
-  user.email = `${name.toLowerCase()}@raxa.test`;
-  return user;
-};
-
 function renderDetail(billService: BillService) {
   const userService: UserService = createUserServiceFake();
   return render(
     <ServicesContext.Provider value={{ billService, userService }}>
-      <BillDetail />
+      <ToastProvider>
+        <BillDetail />
+      </ToastProvider>
     </ServicesContext.Provider>,
   );
 }
@@ -57,13 +41,7 @@ describe('BillDetail', () => {
   });
 
   it('renders expense rows with name, pt-BR date and amount #unit', async () => {
-    const expense = new Expense();
-    expense.id = 1;
-    expense.name = 'Ingressos';
-    expense.amount = 120.5;
-    expense.date = new Date(2026, 0, 15);
-    expense.payerId = 1337;
-    expense.participantIds = [1337];
+    const expense = createExpense({ name: 'Ingressos', amount: 120.5 });
 
     renderDetail(createBillServiceFake({ bill: createBill(), expenses: [expense], total: 120.5 }));
 
@@ -108,13 +86,7 @@ describe('BillDetail', () => {
   });
 
   it('quick adds an amount-only expense and closes the form when the extra options are hidden #unit', async () => {
-    const created = new Expense();
-    created.id = 2;
-    created.name = 'Show da Pizza';
-    created.amount = 60;
-    created.date = new Date();
-    created.payerId = 1337;
-    created.participantIds = [1337];
+    const created = createExpense({ id: 2, name: 'Show da Pizza', amount: 60 });
     const billService = createBillServiceFake({ bill: createBill(), quickAddedExpense: created });
     renderDetail(billService);
 
@@ -168,6 +140,64 @@ describe('BillDetail', () => {
 
     await waitFor(() => expect(consoleError).toHaveBeenCalled());
     expect(screen.getByTestId('new-expense-form')).toBeInTheDocument();
+    consoleError.mockRestore();
+  });
+
+  it('offers Desfazer after a quick add, and undoing removes the expense and refreshes the bill #unit', async () => {
+    const created = createExpense({ id: 2, name: 'Pizza extra', amount: 30 });
+    const billService = createBillServiceFake({
+      bill: createBill(),
+      expenses: [],
+      total: 50,
+      quickAddedExpense: created,
+    });
+    renderDetail(billService);
+
+    // The detail view remounts when the form opens/closes, so re-query the total each time.
+    expect(await screen.findByTestId('bill-total-span')).toHaveTextContent('Total R$ 50.00');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Nova despesa' }));
+    fireEvent.change(await screen.findByTestId('new-expense-form-amount-input'), { target: { value: '30' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Adicionar' }));
+
+    // The expense lands right away and the toast offers to undo it
+    const undo = await screen.findByRole('button', { name: 'Desfazer' });
+    expect(await screen.findByText('Pizza extra')).toBeInTheDocument();
+    expect(await screen.findByTestId('bill-total-span')).toHaveTextContent('Total R$ 80.00');
+
+    fireEvent.click(undo);
+
+    await waitFor(() => expect(billService.deleteExpense).toHaveBeenCalledWith(2));
+    await waitFor(() => expect(screen.queryByText('Pizza extra')).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('bill-total-span')).toHaveTextContent('Total R$ 50.00'));
+    expect(screen.queryByRole('button', { name: 'Desfazer' })).not.toBeInTheDocument();
+    // division refetched on mount, after the add and after the undo
+    await waitFor(() => expect(billService.getParticipantsParts).toHaveBeenCalledTimes(3));
+  });
+
+  it('keeps the expense and reports the error when undoing fails #unit', async () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const created = createExpense({ id: 2, name: 'Pizza extra', amount: 30 });
+    const billService = createBillServiceFake({
+      bill: createBill(),
+      expenses: [],
+      total: 50,
+      quickAddedExpense: created,
+      deleteExpenseFails: true,
+    });
+    renderDetail(billService);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nova despesa' }));
+    fireEvent.change(await screen.findByTestId('new-expense-form-amount-input'), { target: { value: '30' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Adicionar' }));
+
+    const undo = await screen.findByRole('button', { name: 'Desfazer' });
+    fireEvent.click(undo);
+
+    await waitFor(() => expect(billService.deleteExpense).toHaveBeenCalledWith(2));
+    // nothing is rolled back locally when the delete fails
+    expect(screen.getByText('Pizza extra')).toBeInTheDocument();
+    expect(await screen.findByText('Não foi possível desfazer')).toBeInTheDocument();
     consoleError.mockRestore();
   });
 });

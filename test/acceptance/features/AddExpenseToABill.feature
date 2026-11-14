@@ -15,3 +15,10 @@ Feature: Add Expense to a Bill
         And I add an expense of 60$ to the bill
         Then I should see the bill total equal to 100$
         And I should see division rows for both "Eu" and "Ana"
+
+    Scenario: Undo an added expense
+        Given I start from a fresh app with an empty bill named "Pizza Night"
+        When I add an expense of 25$ to the bill
+        Then I should see an undo affordance for the added expense
+        When I undo the added expense
+        Then I should see the bill total equal to 0$

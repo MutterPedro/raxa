@@ -40,7 +40,7 @@ describe('Theme store', () => {
     document.documentElement.className = '';
   });
 
-  test('#unit default follows system preference (light)', () => {
+  test('default follows system preference (light) #unit', () => {
     const mm = createMatchMedia(false);
     const store = createThemeStore({ matchMedia: mm, storage: window.localStorage, doc: document });
     expect(store.getPreference()).toBe('system');
@@ -48,14 +48,14 @@ describe('Theme store', () => {
     expect(document.documentElement.classList.contains('dark')).toBe(false);
   });
 
-  test('#unit default follows system preference (dark)', () => {
+  test('default follows system preference (dark) #unit', () => {
     const mm = createMatchMedia(true);
     const store = createThemeStore({ matchMedia: mm, storage: window.localStorage, doc: document });
     expect(store.getSnapshot()).toBe('dark');
     expect(document.documentElement.classList.contains('dark')).toBe(true);
   });
 
-  test('#unit setPreference persists and applies class', () => {
+  test('setPreference persists and applies class #unit', () => {
     const mm = createMatchMedia(false);
     const store = createThemeStore({ matchMedia: mm, storage: window.localStorage, doc: document });
     store.setPreference('dark');
@@ -65,7 +65,7 @@ describe('Theme store', () => {
     expect(document.documentElement.classList.contains('dark')).toBe(true);
   });
 
-  test('#unit toggle flips mode and sets explicit preference', () => {
+  test('toggle flips mode and sets explicit preference #unit', () => {
     const mm = createMatchMedia(false);
     const store = createThemeStore({ matchMedia: mm, storage: window.localStorage, doc: document });
     expect(store.getSnapshot()).toBe('light');
@@ -77,7 +77,7 @@ describe('Theme store', () => {
     expect(document.documentElement.classList.contains('dark')).toBe(false);
   });
 
-  test('#unit subscriber notified on preference change and media change', () => {
+  test('subscriber notified on preference change and media change #unit', () => {
     const mm = createMatchMedia(false) as any;
     const store = createThemeStore({ matchMedia: mm, storage: window.localStorage, doc: document });
     const fn = jest.fn();
@@ -97,7 +97,7 @@ describe('Theme store', () => {
     unsub();
   });
 
-  test('#unit corrupted storage falls back to system', () => {
+  test('corrupted storage falls back to system #unit', () => {
     // simulate storage throwing on getItem
     const badStorage = {
       getItem: () => {

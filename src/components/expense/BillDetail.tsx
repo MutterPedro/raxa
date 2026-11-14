@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { useBillService } from '../state/useBillService';
+import { useToast } from '../common/Toast';
 import Bill from '../../core/entities/Bill';
 import LoadingGauge from '../common/LoadingGuage';
 import NewExpenseForm from './NewExpenseForm';
@@ -13,11 +14,14 @@ import Button from '../common/Button';
 export default function BillDetail() {
   const { billId } = useParams();
   const billService = useBillService();
+  const { notify } = useToast();
 
   const [bill, setBill] = useState<Bill | null>(null);
   const [total, setTotal] = useState<number>(0);
   const [showForm, setShowForm] = useState<boolean>(false);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  // Bumped whenever the division must be refetched (expense added or undone).
+  const [partsRefreshKey, setPartsRefreshKey] = useState<number>(0);
 
   useEffect(() => {
     billService
@@ -33,10 +37,34 @@ export default function BillDetail() {
     billService.getExpenses(Number(billId)).then((expenses) => setExpenses(expenses));
   }, [billService, billId]);
 
+  function refreshParts() {
+    setPartsRefreshKey((key) => key + 1);
+  }
+
   function onExpenseCreated(expense: Expense) {
     setShowForm(false);
-    setTotal(total + expense.amount);
-    setExpenses([...expenses, expense]);
+    setTotal((current) => current + expense.amount);
+    setExpenses((current) => [...current, expense]);
+    refreshParts();
+    notify('Despesa adicionada', {
+      duration: 6000,
+      action: {
+        label: 'Desfazer',
+        onClick: () => {
+          billService
+            .deleteExpense(expense.id)
+            .then(() => {
+              setTotal((current) => current - expense.amount);
+              setExpenses((current) => current.filter((e) => e.id !== expense.id));
+              refreshParts();
+            })
+            .catch((error) => {
+              console.error(error);
+              notify('Não foi possível desfazer');
+            });
+        },
+      },
+    });
   }
 
   return bill ? (
@@ -85,7 +113,7 @@ export default function BillDetail() {
         </Card>
         <Card>
           <h3 className="type-display text-base font-semibold text-ink">Divisão por participantes</h3>
-          <BillParticipantsPartList billId={Number(billId)} />
+          <BillParticipantsPartList billId={Number(billId)} refreshKey={partsRefreshKey} />
         </Card>
         <Button
           type="button"

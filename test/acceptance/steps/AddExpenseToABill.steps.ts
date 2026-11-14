@@ -115,4 +115,45 @@ defineFeature(feature, (test) => {
       await expect(page.getByTestId(`bill-part-amount-${other}`)).toHaveText('R$ 50.00');
     });
   });
+
+  test('Undo an added expense', ({ given, when, then }) => {
+    given(/^I start from a fresh app with an empty bill named "(.*)"$/, async function (name: string) {
+      // Own browser context: fresh IndexedDB, so this scenario starts from the empty
+      // state (jumbo button) and owns bill id 1 instead of inheriting the previous one.
+      const context = await browser.newContext();
+      page = await context.newPage();
+      await page.goto('http://127.0.0.1:5173/');
+      await expect(page).toHaveTitle(/raxa/);
+
+      await page.getByTestId('new-bill-jumbo-button').click();
+      await page.getByTestId('new-bill-form-name-input').fill(name);
+      await page.getByRole('button', { name: 'Criar' }).click();
+      await expect(page.getByTestId('bill-item-name-1')).toContainText(name);
+    });
+
+    when(/^I add an expense of (\d+)\$ to the bill$/, async function (amount: string) {
+      await page.getByTestId('bill-item-name-1').click();
+      await expect(page).toHaveURL(/\/bill\/1/);
+
+      await page.getByTestId('new-expense-button').click();
+      await page.getByTestId('new-expense-form-amount-input').fill(amount);
+      await page.getByRole('button', { name: 'Adicionar' }).click();
+      await expect(page.getByTestId('new-expense-button')).toBeVisible();
+    });
+
+    then('I should see an undo affordance for the added expense', async function () {
+      await expect(page.getByText('Despesa adicionada')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Desfazer' })).toBeVisible();
+      await expect(page.getByTestId('bill-total-span')).toHaveText('Total R$ 25.00');
+    });
+
+    when('I undo the added expense', async function () {
+      await page.getByRole('button', { name: 'Desfazer' }).click();
+      await expect(page.getByText('Despesa adicionada')).toBeHidden();
+    });
+
+    then(/^I should see the bill total equal to (\d+)\$$/, async function (amount: string) {
+      await expect(page.getByTestId('bill-total-span')).toHaveText(`Total R$ ${Number(amount).toFixed(2)}`);
+    });
+  });
 });

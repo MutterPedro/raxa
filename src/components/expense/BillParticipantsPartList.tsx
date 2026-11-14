@@ -5,15 +5,17 @@ import Avatar from '../common/Avatar';
 
 interface BillParticipantsPartListProps {
   billId: number;
+  /** Change to refetch the parts, e.g. after an expense was added or undone. */
+  refreshKey?: number;
 }
 
-const BillParticipantsPartList: React.FC<BillParticipantsPartListProps> = ({ billId }) => {
+const BillParticipantsPartList: React.FC<BillParticipantsPartListProps> = ({ billId, refreshKey = 0 }) => {
   const [parts, setParts] = useState<{ amount: number; user: User }[]>([]);
   const billService = useBillService();
 
   useEffect(() => {
     billService.getParticipantsParts(billId).then((parts) => setParts(parts));
-  }, [billService, billId]);
+  }, [billService, billId, refreshKey]);
 
   return (
     <ul role="list" className="mt-1 divide-y divide-line">

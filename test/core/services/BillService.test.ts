@@ -73,6 +73,65 @@ describe('BillService.ts', function () {
       expect(await service.getById(bill.id)).toBeNull();
     });
 
+    it('should delete an expense #unit', async function () {
+      const conn = MemoryDBConnection.build<ExpenseProps>();
+      const service = buildBillService({ expenseConn: conn });
+
+      const bill = await service.createBill({ name: 'test' });
+      const expense = await service.addExpense(bill.id, {
+        name: 'expense',
+        amount: 40,
+        date: new Date().toISOString(),
+        participantIds: [1, 2],
+        payerId: 1,
+      });
+      expect(conn.items).toHaveLength(1);
+
+      await service.deleteExpense(expense.id);
+
+      expect(conn.items).toHaveLength(0);
+      expect(await service.getExpenses(bill.id)).toHaveLength(0);
+    });
+
+    it('should undo and re-add an expense keeping the bill data consistent #unit', async function () {
+      const conn = MemoryDBConnection.build<ExpenseProps>();
+      const service = buildBillService({ expenseConn: conn });
+
+      const bill = await service.createBill({ name: 'Camping' });
+      await service.addExpense(bill.id, {
+        name: 'Firewood',
+        amount: 40,
+        date: new Date(2026, 0, 15).toISOString(),
+        participantIds: [1, 2],
+        payerId: 1,
+      });
+      const second = await service.addExpense(bill.id, {
+        name: 'Water',
+        amount: 60,
+        date: new Date(2026, 0, 15).toISOString(),
+        participantIds: [1, 2],
+        payerId: 2,
+      });
+
+      // What the toast undo does: delete the just-added expense…
+      await service.deleteExpense(second.id);
+      expect(await service.getTotal(bill.id)).toBe(40);
+
+      // …and what re-adding the very same expense does afterwards — it must land as a
+      // fresh expense, not resurrect the deleted row.
+      const reAdded = await service.addExpense(bill.id, {
+        name: 'Water',
+        amount: 60,
+        date: new Date(2026, 0, 15).toISOString(),
+        participantIds: [1, 2],
+        payerId: 2,
+      });
+
+      expect(reAdded.id).not.toBe(second.id);
+      expect(conn.items).toHaveLength(2);
+      expect(await service.getTotal(bill.id)).toBe(100);
+    });
+
     it('should add a new expense to a bill #unit', async function () {
       const conn = MemoryDBConnection.build<ExpenseProps>();
       const service = buildBillService({ expenseConn: conn });

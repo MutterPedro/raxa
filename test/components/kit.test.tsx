@@ -1,7 +1,6 @@
 import 'reflect-metadata';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import User from '../../src/core/entities/User';
 import Button from '../../src/components/common/Button';
 import Field from '../../src/components/common/Field';
 import Card from '../../src/components/common/Card';
@@ -10,6 +9,7 @@ import EmptyState from '../../src/components/common/EmptyState';
 import Avatar from '../../src/components/common/Avatar';
 import LoadingGauge from '../../src/components/common/LoadingGuage';
 import SelectField, { CreatableSelectField } from '../../src/components/common/SelectField';
+import { createUser } from '../factories/entities';
 
 describe('Button', () => {
   it('renders label #unit', () => {
@@ -208,9 +208,7 @@ describe('EmptyState', () => {
 
 describe('Avatar', () => {
   it('initials render #unit', () => {
-    const user = new User();
-    user.name = 'Alice';
-    render(<Avatar user={user} />);
+    render(<Avatar user={createUser(1, 'Alice')} />);
     expect(screen.getByText('A')).toBeInTheDocument();
   });
 });

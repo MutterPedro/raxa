@@ -1,14 +1,20 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 interface Toast {
   id: number;
   message: string;
   duration: number; // 0 = sticky
+  action?: ToastAction;
 }
 
 interface ToastContextValue {
-  notify: (message: string, options?: { duration?: number }) => void;
+  notify: (message: string, options?: { duration?: number; action?: ToastAction }) => void;
 }
 
 const MAX_VISIBLE = 4;
@@ -45,10 +51,10 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const notify = useCallback(
-    (message: string, options?: { duration?: number }) => {
+    (message: string, options?: { duration?: number; action?: ToastAction }) => {
       const duration = options?.duration ?? DEFAULT_DURATION;
       const id = ++counter.current;
-      setToasts((prev) => [...prev, { id, message, duration }].slice(-MAX_VISIBLE));
+      setToasts((prev) => [...prev, { id, message, duration, action: options?.action }].slice(-MAX_VISIBLE));
       if (duration > 0) {
         timers.current.set(
           id,
@@ -79,6 +85,15 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   }, []);
 
+  // Test-only bridge, same pattern as init.ts's __seedVisualDemo: lets the visual suite
+  // render a real toast without a flow that emits one — e.g. the plain variant.
+  useEffect(() => {
+    window.__notifyToast = notify;
+    return () => {
+      delete window.__notifyToast;
+    };
+  }, [notify]);
+
   const value = useMemo(() => ({ notify }), [notify]);
 
   return (
@@ -95,6 +110,17 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             className="rounded-[var(--radius-card)] bg-surface-raised text-ink shadow-card px-4 py-3 text-sm border border-line animate-fade-in motion-reduce:animate-none flex items-center justify-between"
           >
             <span>{t.message}</span>
+            {t.action && (
+              <button
+                onClick={() => {
+                  dismiss(t.id);
+                  t.action?.onClick();
+                }}
+                className="ml-3 font-semibold text-brand-700 hover:underline dark:text-brand-400"
+              >
+                {t.action.label}
+              </button>
+            )}
             <button aria-label="Fechar" onClick={() => dismiss(t.id)} className="ml-2 text-ink-muted">
               ×
             </button>

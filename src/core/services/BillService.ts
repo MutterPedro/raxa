@@ -35,6 +35,10 @@ export class BillService {
     return this.billRepo.delete(billId);
   }
 
+  async deleteExpense(expenseId: number): Promise<void> {
+    await this.expenseRepo.delete(expenseId);
+  }
+
   async addExpense(billId: number, expenseData: Omit<ExpenseProps, 'billId'>): Promise<Expense> {
     const expense = this.expenseRepo.fromPlainObject({ ...expenseData, billId, id: 0 });
     return this.expenseRepo.save(expense);
