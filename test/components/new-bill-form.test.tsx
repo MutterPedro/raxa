@@ -13,6 +13,12 @@ import { createUserServiceFake } from '../core/fakes/UserService.fake';
 jest.mock('react-router', () => ({
   useNavigate: () => jest.fn(),
   useParams: () => ({}),
+  // MainContainer renders SyncHint, which uses a NavLink; a plain anchor keeps it renderable.
+  NavLink: ({ to, children, ...rest }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { to: string }) => (
+    <a href={to} {...rest}>
+      {children}
+    </a>
+  ),
 }));
 
 const SPLIT_GROUP_NAME = 'Divisão da primeira despesa';

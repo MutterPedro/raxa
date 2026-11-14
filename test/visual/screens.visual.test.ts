@@ -61,6 +61,27 @@ test('delete-bill-confirm', async ({ page }) => {
   await capture(page, 'delete-bill-confirm');
 });
 
+test('saved-chip', async ({ page }) => {
+  // First write on the home screen leaves the on-device reassurance chip behind.
+  await gotoFresh(page);
+  await page.getByTestId('new-bill-jumbo-button').click();
+  await page.getByTestId('new-bill-form-name-input').fill('Rachado do jantar');
+  await page.getByRole('button', { name: 'Criar' }).click();
+  await expect(page.getByTestId('saved-chip')).toBeVisible();
+  await expect(page.getByTestId('bill-item-name-1')).toBeVisible();
+  await capture(page, 'saved-chip');
+});
+
+test('offline-banner', async ({ page }) => {
+  // Connectivity drops on the live page: the banner explains nothing else changes.
+  await gotoSeeded(page);
+  await expect(page.getByTestId('bill-item-name-1')).toBeVisible();
+  await page.context().setOffline(true);
+  await expect(page.getByTestId('offline-banner')).toBeVisible();
+  await capture(page, 'offline-banner');
+  await page.context().setOffline(false);
+});
+
 test('toast', async ({ page }) => {
   // Plain variant (message + close only) through the real provider via the test bridge;
   // no shipped flow emits a plain toast today, so the bridge is the only way to pin it.

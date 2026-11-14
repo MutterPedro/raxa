@@ -18,6 +18,12 @@ import { createBill as createEntityBill, createUser } from '../factories/entitie
 const mockNavigate = jest.fn();
 jest.mock('react-router', () => ({
   useNavigate: () => mockNavigate,
+  // MainContainer renders SyncHint, which uses a NavLink; a plain anchor keeps it renderable.
+  NavLink: ({ to, children, ...rest }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { to: string }) => (
+    <a href={to} {...rest}>
+      {children}
+    </a>
+  ),
 }));
 
 // Every list test uses the same anonymous travel bill; only id and name vary.

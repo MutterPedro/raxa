@@ -11,6 +11,7 @@ import ExpenseItem from './ExpenseItem';
 import BillParticipantsPartList from './BillParticipantsPartList';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import SavedChip from '../common/SavedChip';
 
 export default function BillDetail() {
   const { billId } = useParams();
@@ -23,6 +24,8 @@ export default function BillDetail() {
   const [showForm, setShowForm] = useState<boolean>(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  // Stays true after the first successful write on this visit — on-device reassurance.
+  const [saved, setSaved] = useState<boolean>(false);
   // Bumped whenever the division must be refetched (expense added or undone).
   const [partsRefreshKey, setPartsRefreshKey] = useState<number>(0);
 
@@ -59,6 +62,7 @@ export default function BillDetail() {
 
   function onExpenseCreated(expense: Expense) {
     setShowForm(false);
+    setSaved(true);
     setTotal((current) => current + expense.amount);
     setExpenses((current) => [...current, expense]);
     refreshParts();
@@ -88,6 +92,7 @@ export default function BillDetail() {
       <NewExpenseForm bill={bill} handleCancel={() => setShowForm(false)} onExpenseCreated={onExpenseCreated} />
     ) : (
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-6">
+        {saved && <SavedChip />}
         <Card>
           <h2 className="type-display text-2xl font-bold text-ink">{bill.name}</h2>
           <p className="mt-1 text-sm text-ink-muted">{bill.date.toLocaleDateString('pt-BR')}</p>

@@ -172,6 +172,8 @@ describe('BillDetail', () => {
     const undo = await screen.findByRole('button', { name: 'Desfazer' });
     expect(await screen.findByText('Pizza extra')).toBeInTheDocument();
     expect(await screen.findByTestId('bill-total-span')).toHaveTextContent('Total R$ 80.00');
+    // The write also leaves the on-device reassurance chip on screen
+    expect(screen.getByTestId('saved-chip')).toBeInTheDocument();
 
     fireEvent.click(undo);
 
@@ -179,6 +181,8 @@ describe('BillDetail', () => {
     await waitFor(() => expect(screen.queryByText('Pizza extra')).not.toBeInTheDocument());
     await waitFor(() => expect(screen.getByTestId('bill-total-span')).toHaveTextContent('Total R$ 50.00'));
     expect(screen.queryByRole('button', { name: 'Desfazer' })).not.toBeInTheDocument();
+    // the undo is a write as well — the chip stays
+    expect(screen.getByTestId('saved-chip')).toBeInTheDocument();
     // division refetched on mount, after the add and after the undo
     await waitFor(() => expect(billService.getParticipantsParts).toHaveBeenCalledTimes(3));
   });

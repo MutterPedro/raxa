@@ -6,6 +6,8 @@ export interface UserServiceFakeOptions {
   usersById?: Record<number, User>;
   /** Id for the user returned by createSelf (default: 1337 'Eu'). */
   selfId?: number;
+  /** logged_in of the self returned by createSelf (default: false, i.e. logged out). */
+  loggedIn?: boolean;
   /** First id handed out by createUser (default: 42). */
   nextId?: number;
 }
@@ -13,7 +15,7 @@ export interface UserServiceFakeOptions {
 // Component tests exercise a subset of UserService; the cast lets the fake stand in
 // wherever the real service type is expected.
 export function createUserServiceFake(options: UserServiceFakeOptions = {}): UserService {
-  const { users = [], usersById = {}, selfId = 1337, nextId = 42 } = options;
+  const { users = [], usersById = {}, selfId = 1337, loggedIn = false, nextId = 42 } = options;
 
   let nextIdCounter = nextId;
   return {
@@ -24,6 +26,7 @@ export function createUserServiceFake(options: UserServiceFakeOptions = {}): Use
       self.id = selfId;
       self.name = 'Eu';
       self.email = 'placeholder@email.com';
+      self.logged_in = loggedIn;
       return self;
     }),
     createUser: jest.fn(async (values: { name: string; email: string }) => {

@@ -7,6 +7,8 @@ import Bill from '../core/entities/Bill';
 import NewBillFloatButton from './expense/NewBillFloatButton';
 import { useBillService } from './state/useBillService';
 import EmptyState from './common/EmptyState';
+import SavedChip from './common/SavedChip';
+import SyncHint from './login/SyncHint';
 import { parseInputDate } from '../core/utils/localDate';
 
 export default function MainContainer() {
@@ -14,6 +16,8 @@ export default function MainContainer() {
   const billService = useBillService();
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
+  // Stays true after the first created bill on this visit — on-device reassurance.
+  const [saved, setSaved] = useState(false);
 
   useEffect(
     function () {
@@ -53,6 +57,7 @@ export default function MainContainer() {
       }
 
       setBills([...bills, bill]);
+      setSaved(true);
       showForm(false);
     } catch (billError) {
       console.error(billError); // form stays open so the user can retry
@@ -61,6 +66,12 @@ export default function MainContainer() {
 
   return (
     <div className="container mx-auto flex flex-col items-center gap-6">
+      {!showingForm && (
+        <>
+          {saved && <SavedChip />}
+          <SyncHint />
+        </>
+      )}
       {showingForm ? (
         <NewBillForm handleSubmitBill={handleSubmitBill} handleCancel={() => showForm(!showingForm)} />
       ) : loading ? (
