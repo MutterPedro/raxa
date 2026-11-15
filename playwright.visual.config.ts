@@ -13,6 +13,13 @@ export default defineConfig({
     trace: 'off',
     animations: 'disabled',
     reducedMotion: 'reduce',
+    // Cross-machine golden stability (dev box vs CI ubuntu runners): disable font
+    // hinting (otherwise glyph raster/advance widths differ per fontconfig profile)
+    // and pin sRGB so color management can't shift the palette. Goldens are
+    // recorded with this exact flag set (test:visual:update).
+    launchOptions: {
+      args: ['--font-render-hinting=none', '--force-color-profile=srgb'],
+    },
   },
   projects: [
     {
