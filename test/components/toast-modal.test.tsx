@@ -346,3 +346,157 @@ describe('Modal component', () => {
     expect(document.activeElement).toBe(outside);
   });
 });
+
+// Motion harness: with an animated environment (matchMedia present, no
+// reduction preference) dismissals play an exit animation before the node
+// leaves the DOM; without matchMedia the earlier tests pin the instant path.
+function mockMatchMedia() {
+  Object.defineProperty(window, 'matchMedia', {
+    configurable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }),
+  });
+}
+
+describe('exit animations', () => {
+  afterEach(() => delete (window as Partial<Window> & { matchMedia?: unknown }).matchMedia);
+
+  test('dismissing a toast plays the exit animation before removing it #unit', () => {
+    jest.useFakeTimers();
+    mockMatchMedia();
+    render(
+      <ToastProvider>
+        <ToastTrigger />
+      </ToastProvider>,
+    );
+    fireEvent.click(screen.getByTestId('toast-trigger'));
+    const toast = screen.getByText('Test message').parentElement as HTMLElement;
+    expect(toast).toHaveClass('animate-fade-in');
+
+    fireEvent.click(screen.getByLabelText('Fechar'));
+    // Still mounted, now animating out…
+    expect(screen.getByText('Test message')).toBeInTheDocument();
+    expect(toast).toHaveClass('animate-fade-out');
+
+    // …and gone once the exit duration elapses.
+    act(() => {
+      jest.advanceTimersByTime(200);
+    });
+    expect(screen.queryByText('Test message')).not.toBeInTheDocument();
+    jest.useRealTimers();
+  });
+
+  test('auto-dismiss also plays the exit animation #unit', () => {
+    jest.useFakeTimers();
+    mockMatchMedia();
+    render(
+      <ToastProvider>
+        <ToastTrigger />
+      </ToastProvider>,
+    );
+    fireEvent.click(screen.getByTestId('toast-trigger'));
+    act(() => {
+      jest.advanceTimersByTime(4000);
+    });
+    expect(screen.getByText('Test message')).toBeInTheDocument();
+    act(() => {
+      jest.advanceTimersByTime(200);
+    });
+    expect(screen.queryByText('Test message')).not.toBeInTheDocument();
+    jest.useRealTimers();
+  });
+
+  test('toast action fires immediately and starts the exit animation #unit', () => {
+    jest.useFakeTimers();
+    mockMatchMedia();
+    const onAction = jest.fn();
+    const ActionTrigger: React.FC = () => {
+      const { notify } = useToast();
+      return (
+        <button
+          onClick={() => notify('Despesa adicionada', { action: { label: 'Desfazer', onClick: onAction } })}
+          data-testid="action-trigger"
+        >
+          Notify
+        </button>
+      );
+    };
+    render(
+      <ToastProvider>
+        <ActionTrigger />
+      </ToastProvider>,
+    );
+    fireEvent.click(screen.getByTestId('action-trigger'));
+    fireEvent.click(screen.getByRole('button', { name: 'Desfazer' }));
+    expect(onAction).toHaveBeenCalledTimes(1);
+    // The toast lingers only for its exit animation.
+    act(() => {
+      jest.advanceTimersByTime(200);
+    });
+    expect(screen.queryByText('Despesa adicionada')).not.toBeInTheDocument();
+    jest.useRealTimers();
+  });
+
+  test('modal panel animates in while open and out after close, then unmounts #unit', () => {
+    jest.useFakeTimers();
+    mockMatchMedia();
+    const onClose = jest.fn();
+    const { rerender } = render(
+      <Modal open={true} onClose={onClose} title="Sheet">
+        <button>Inside</button>
+      </Modal>,
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveClass('animate-sheet-in');
+
+    rerender(
+      <Modal open={false} onClose={onClose} title="Sheet">
+        <button>Inside</button>
+      </Modal>,
+    );
+    // Close starts the exit: hidden from assistive tech (aria-hidden, hence
+    // { hidden: true }) and click-through, but still on screen while the
+    // animation plays.
+    const exiting = screen.getByRole('dialog', { hidden: true });
+    expect(exiting).toHaveClass('animate-sheet-out');
+    expect(exiting).toHaveAttribute('aria-hidden', 'true');
+    expect(exiting).not.toHaveAttribute('aria-modal');
+    expect(onClose).not.toHaveBeenCalled();
+
+    act(() => {
+      jest.advanceTimersByTime(250);
+    });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    jest.useRealTimers();
+  });
+
+  test('modal opened fresh after an exit is animatable again #unit', () => {
+    jest.useFakeTimers();
+    mockMatchMedia();
+    const onClose = jest.fn();
+    const { rerender } = render(
+      <Modal open={true} onClose={onClose} title="Reopen">
+        <button>Inside</button>
+      </Modal>,
+    );
+    rerender(
+      <Modal open={false} onClose={onClose} title="Reopen">
+        <button>Inside</button>
+      </Modal>,
+    );
+    act(() => {
+      jest.advanceTimersByTime(250);
+    });
+    rerender(
+      <Modal open={true} onClose={onClose} title="Reopen">
+        <button>Inside</button>
+      </Modal>,
+    );
+    expect(screen.getByRole('dialog')).toHaveClass('animate-sheet-in');
+    jest.useRealTimers();
+  });
+});

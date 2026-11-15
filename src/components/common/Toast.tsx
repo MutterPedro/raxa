@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useReducedMotion } from './useReducedMotion';
 
 export interface ToastAction {
   label: string;
@@ -19,6 +20,8 @@ interface ToastContextValue {
 
 const MAX_VISIBLE = 4;
 const DEFAULT_DURATION = 4000;
+// Must match the --animate-fade-out duration in src/index.css.
+const TOAST_EXIT_MS = 150;
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
@@ -38,17 +41,50 @@ export const useToast = (): ToastContextValue => {
  */
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [leavingIds, setLeavingIds] = useState<ReadonlySet<number>>(new Set());
   const counter = useRef(0);
   const timers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  const exitTimers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  const reducedMotion = useReducedMotion();
 
-  const dismiss = useCallback((id: number) => {
-    const timer = timers.current.get(id);
-    if (timer !== undefined) {
-      clearTimeout(timer);
-      timers.current.delete(id);
+  const removeForReal = useCallback((id: number) => {
+    const exitTimer = exitTimers.current.get(id);
+    if (exitTimer !== undefined) {
+      clearTimeout(exitTimer);
+      exitTimers.current.delete(id);
     }
     setToasts((prev) => prev.filter((t) => t.id !== id));
+    setLeavingIds((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
   }, []);
+
+  // Dismiss starts the exit animation (skipped entirely under reduced motion,
+  // where the toast leaves immediately).
+  const dismiss = useCallback(
+    (id: number) => {
+      const timer = timers.current.get(id);
+      if (timer !== undefined) {
+        clearTimeout(timer);
+        timers.current.delete(id);
+      }
+      if (reducedMotion) {
+        removeForReal(id);
+        return;
+      }
+      setLeavingIds((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
+      if (!exitTimers.current.has(id)) {
+        exitTimers.current.set(
+          id,
+          setTimeout(() => removeForReal(id), TOAST_EXIT_MS),
+        );
+      }
+    },
+    [reducedMotion, removeForReal],
+  );
 
   const notify = useCallback(
     (message: string, options?: { duration?: number; action?: ToastAction }) => {
@@ -79,9 +115,12 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // No timer outlives the provider.
   useEffect(() => {
     const map = timers.current;
+    const exitMap = exitTimers.current;
     return () => {
       for (const timer of map.values()) clearTimeout(timer);
       map.clear();
+      for (const timer of exitMap.values()) clearTimeout(timer);
+      exitMap.clear();
     };
   }, []);
 
@@ -107,7 +146,9 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         {toasts.map((t) => (
           <div
             key={t.id}
-            className="rounded-[var(--radius-card)] bg-surface-raised text-ink shadow-card px-4 py-2 text-sm border border-line animate-fade-in motion-reduce:animate-none flex items-center justify-between"
+            className={`rounded-[var(--radius-card)] bg-surface-raised text-ink shadow-card px-4 py-2 text-sm border border-line motion-reduce:animate-none flex items-center justify-between ${
+              leavingIds.has(t.id) ? 'animate-fade-out' : 'animate-fade-in'
+            }`}
           >
             <span>{t.message}</span>
             {t.action && (

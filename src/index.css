@@ -76,6 +76,37 @@
       opacity: 1;
     }
   }
+  --animate-fade-out: fade-out 0.15s ease-in both;
+  @keyframes fade-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  --animate-sheet-in: sheet-in 0.25s var(--ease-soft);
+  @keyframes sheet-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  --animate-sheet-out: sheet-out 0.2s ease-in both;
+  @keyframes sheet-out {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+  }
 }
 
 :root {
@@ -151,12 +182,38 @@
   }
 }
 
+/* Press feedback: a short tokenized lift on active for tappable rows/buttons,
+   applied alongside focus-ring. Honors prefers-reduced-motion via the global
+   rule below. */
+@utility press {
+  transition-property: transform, background-color, color, border-color, box-shadow;
+  transition-duration: 0.12s;
+  transition-timing-function: var(--ease-soft);
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
 /* react-select renders its own control div; mirror the focus-ring on it when the
    inner search input takes keyboard focus (react-select styles can't express
    :focus-visible). */
 .select__control:has(input:focus-visible) {
   outline: 2px solid var(--color-ring);
   outline-offset: 2px;
+}
+
+/* One global reduced-motion switch: every transition/animation in the app
+   collapses to an instantaneous jump, covering anything not already wrapped
+   in a motion-reduce: variant. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .bg-primary {

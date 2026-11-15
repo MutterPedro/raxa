@@ -107,7 +107,7 @@ export default function BillDetail() {
             <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between focus-ring">
               <h3 className="type-display text-base font-semibold text-ink">Despesas</h3>
               <svg
-                className="transition-transform group-open:rotate-180"
+                className="transition-transform ease-soft group-open:rotate-180"
                 fill="none"
                 height="24"
                 shapeRendering="geometricPrecision"
@@ -122,7 +122,7 @@ export default function BillDetail() {
                 <path d="M6 9l6 6 6-6"></path>
               </svg>
             </summary>
-            <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-200 group-open:grid-rows-[1fr]">
+            <div className="grid grid-rows-[0fr] transition-[grid-template-rows] ease-soft duration-200 group-open:grid-rows-[1fr]">
               <div className="overflow-hidden">
                 <ul role="list" className="divide-y divide-line">
                   {expenses.map((expense) => (
