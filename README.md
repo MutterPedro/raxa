@@ -83,6 +83,10 @@ npm run test:integration
 npm run test:visual     # golden screenshots, 4 viewports/themes
 ```
 
+GitHub Actions runs these on every push and PR (`ci.yml`, plus CodeQL and an npm
+audit gate); a green `main` deploys to https://ra-xa.com via GitHub Pages
+(`deploy.yml`). Dependabot opens weekly dependency PRs.
+
 ## Tech stack
 
 React 19 · TypeScript · Vite · Tailwind CSS v4 (CSS-first tokens) · Dexie

@@ -1,0 +1,36 @@
+# Version bumps + security-fix PRs. Security updates ("Alerts" → auto-PRs) are
+# toggled in Settings → Code security on top of this file.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: weekly
+      time: '06:00'
+      timezone: America/Sao_Paulo
+    open-pr-amount: 5
+    labels:
+      - dependencies
+    commit-message:
+      prefix: deps
+      include: scope
+    groups:
+      # Bundle patch/minor bumps into one PR per week; majors stay one-per-PR.
+      patch-and-minor:
+        patterns:
+          - '*'
+        update-types:
+          - patch
+          - minor
+
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: weekly
+      time: '06:00'
+      timezone: America/Sao_Paulo
+    labels:
+      - ci
+      - dependencies
+    commit-message:
+      prefix: ci

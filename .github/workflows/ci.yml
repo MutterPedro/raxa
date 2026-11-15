@@ -1,0 +1,139 @@
+name: CI
+
+# Runs on every push to any branch and on every PR. Deploys are gated here:
+# deploy.yml only publishes to GitHub Pages after this workflow ends green
+# on main. Keep all gates in this file.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+# The six Firebase vars src/infra/env.ts demands; the browser suites boot the real
+# dev server, so they need them at runtime (unit tests mock env and run without).
+# Values live in repo Secrets as FIREBASE_* (no VITE_ prefix).
+x-firebase-env: &firebase-env
+  VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+  VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+  VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+  VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+  VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+  VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Same suite as `npm test`, plus the 95% coverage gate on src/core/**.
+      - run: npm run test:coverage
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Vulnerability scan (fails on critical)
+        run: npm audit --audit-level=critical
+      # Non-blocking report: the remaining highs (firebase/firestore advisory ranges
+      # flag every release >= 9.15; the only "fix" is downgrading to 9.14) have no
+      # patchable version, so they are reported, not blocked. Dependabot opens PRs
+      # once upstream ships fixes; dependency-review blocks new ones per PR.
+      - name: High-severity advisory report (non-blocking)
+        run: |
+          npm audit --json > audit.json || true
+          jq '.metadata.vulnerabilities' audit.json
+
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Fails the PR if it introduces NEW vulnerable dependencies (existing ones
+      # are the audit job's report's problem, not this PR's).
+      - uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high
+
+  integration:
+    runs-on: ubuntu-latest
+    env: *firebase-env
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium firefox
+      # playwright.config.ts webServer starts dev:host itself.
+      - run: npm run test:integration
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: integration-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  bdd:
+    runs-on: ubuntu-latest
+    env: *firebase-env
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # test:bdd starts dev:host itself via concurrently.
+      - run: npm run test:bdd
+
+  visual:
+    runs-on: ubuntu-latest
+    env: *firebase-env
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:visual
+      # On diff, grab the playwright test-results dir: expected/actual/diff PNGs.
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: visual-diff
+          path: test-results/
+          retention-days: 7

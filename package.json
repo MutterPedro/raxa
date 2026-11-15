@@ -30,6 +30,10 @@
     "version:minor": "npm version minor",
     "version:major": "npm version major"
   },
+  "overrides": {
+    "brace-expansion@2": "^2.1.8",
+    "picomatch@2": "^2.3.2"
+  },
   "dependencies": {
     "dexie": "^4.4.7",
     "firebase": "^13.2.0",
