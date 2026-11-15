@@ -6,6 +6,7 @@ import { injectable } from 'inversify';
 export interface DBConnection<T extends object = object> {
   update(id: number, data: object): Promise<number>;
   add(data: object): Promise<WithId<T>>;
+  delete(id: number): Promise<void>;
   getById(id: number): Promise<WithId<T> | void>;
   list(page: number): Promise<WithId<T>[]>;
   filter(filter: Partial<T>): Promise<WithId<T>[]>;
@@ -33,6 +34,10 @@ export class IndexedDBConnection<T extends object> implements DBConnection<T> {
     const rows = await this.table.update(id, data as UpdateSpec<T>);
 
     return rows;
+  }
+
+  async delete(id: number): Promise<void> {
+    await this.table.delete(id);
   }
 
   async getById(id: number): Promise<WithId<T> | void> {

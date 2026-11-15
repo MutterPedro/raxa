@@ -1,16 +1,25 @@
 import LoginButton from '../login/LoginButton';
 import NavBar from './NavBar';
+import ThemeToggle from './ThemeToggle';
 
 export default function Header() {
   return (
-    <header className="bg-primary text-secondary-color arvo-bold">
+    <header className="bg-brand-700 text-brand-200 type-display" data-testid="app-header">
       <NavBar>
-        <div className="hidden lg:flex lg:gap-x-12">
-          <a href="/" className="text-4xl leading-6">
-            RAXA
-          </a>
+        <a href="/" aria-label="raxa" className="flex min-h-11 items-center gap-2 focus-ring">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={26} aria-hidden="true">
+            <circle cx="8" cy="8" r="4.6" className="fill-brand-300" />
+            <circle cx="24" cy="8" r="4.6" className="fill-brand-300" />
+            <circle cx="8" cy="24" r="4.6" className="fill-brand-300" />
+            <circle cx="24" cy="24" r="4.6" className="fill-brand-300" />
+            <circle cx="16" cy="16" r="5.4" className="fill-brand-50" />
+          </svg>
+          <span className="text-2xl tracking-[-0.05em] text-brand-50">raxa</span>
+        </a>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <LoginButton />
         </div>
-        <LoginButton />
       </NavBar>
     </header>
   );

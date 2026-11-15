@@ -1,53 +1,93 @@
-import { SyntheticEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import NewBillJumboButton from './expense/NewBillJumboButton';
-import NewBillForm from './expense/NewBillForm';
+import NewBillForm, { NewBillFormValues } from './expense/NewBillForm';
 import BillsList from './expense/BillsList';
 import Bill from '../core/entities/Bill';
 import NewBillFloatButton from './expense/NewBillFloatButton';
 import { useBillService } from './state/useBillService';
+import EmptyState from './common/EmptyState';
+import SavedChip from './common/SavedChip';
+import SyncHint from './login/SyncHint';
+import { parseInputDate } from '../core/utils/localDate';
 
 export default function MainContainer() {
   const [showingForm, showForm] = useState(false);
   const billService = useBillService();
   const [bills, setBills] = useState<Bill[]>([]);
+  const [loading, setLoading] = useState(true);
+  // Stays true after the first created bill on this visit — on-device reassurance.
+  const [saved, setSaved] = useState(false);
 
   useEffect(
     function () {
       billService
         .getBills()
+        .then((newBills) => setBills(newBills || []))
         .catch(console.error)
-        .then((newBills) => setBills(newBills || []));
+        .finally(() => setLoading(false));
     },
     [billService],
   );
 
-  async function handleSubmitBill(event: SyntheticEvent) {
-    event.preventDefault();
+  async function handleSubmitBill(values: NewBillFormValues) {
+    try {
+      const date = values.date ? parseInputDate(values.date) : new Date();
+      const bill = await billService.createBill({
+        name: values.name,
+        date,
+        ownerId: 0,
+      });
 
-    const form = event.target as HTMLFormElement;
-    const formData = new FormData(form);
+      if (values.amount > 0) {
+        try {
+          await billService.addExpense(bill.id, {
+            name: values.name,
+            amount: values.amount,
+            date: date.toISOString(),
+            participantIds: values.participantIds,
+            payerId: values.payerId ?? 0,
+          });
+        } catch (expenseError) {
+          // The bill was created only to hold this expense — undo it so a failed submit
+          // leaves nothing behind; error surfacing comes with the toast flow later
+          await billService.deleteBill(bill.id);
+          throw expenseError;
+        }
+      }
 
-    const bill = await billService.createBill({
-      name: formData.get('name') as string,
-      date: new Date((formData.get('date') as string) || new Date()),
-      ownerId: 0,
-    });
-
-    setBills([...bills, bill]);
-    showForm(false);
+      setBills([...bills, bill]);
+      setSaved(true);
+      showForm(false);
+    } catch (billError) {
+      console.error(billError); // form stays open so the user can retry
+    }
   }
 
   return (
-    <div className="container flex flex-col items-center mx-auto">
+    <div className="container mx-auto flex flex-col items-center gap-6">
+      {!showingForm && (
+        <>
+          {saved && <SavedChip />}
+          <SyncHint />
+        </>
+      )}
       {showingForm ? (
         <NewBillForm handleSubmitBill={handleSubmitBill} handleCancel={() => showForm(!showingForm)} />
-      ) : bills.length > 0 ? (
-        <NewBillFloatButton handleOnClick={() => showForm(!showingForm)} />
+      ) : loading ? (
+        <BillsList bills={[]} isLoading />
+      ) : bills.length === 0 ? (
+        <EmptyState
+          title="Nenhuma conta ainda"
+          hint="Crie a primeira conta e chame quem está por perto — tudo funciona offline."
+          action={<NewBillJumboButton handleOnClick={() => showForm(!showingForm)} />}
+        />
       ) : (
-        <NewBillJumboButton handleOnClick={() => showForm(!showingForm)} />
+        <>
+          <NewBillFloatButton handleOnClick={() => showForm(!showingForm)} />
+          <BillsList bills={bills} />
+        </>
       )}
-      {bills.length > 0 && <BillsList bills={bills} />}
     </div>
   );
 }

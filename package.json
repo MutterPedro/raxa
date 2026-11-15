@@ -1,7 +1,7 @@
 {
   "name": "raxa",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "engines": {
     "node": ">=22.22.1"
@@ -14,12 +14,21 @@
     "format": "prettier --write .",
     "preview": "vite preview",
     "prepare": "husky",
+    "assets": "npm run assets:svg && npm run assets:png",
+    "assets:svg": "uv run --with fonttools,brotli design/assets.py",
+    "assets:png": "node design/rasterize.mjs",
     "test": "jest",
     "cucumber": "jest --testMatch **/*.steps.ts --testEnvironment node",
     "test:bdd": "concurrently --kill-others \"npm run dev:host\" \"sleep 2 && npm run cucumber\"",
     "test:coverage": "npm run test -- --collectCoverage",
     "test:watch": "npm run test -- --watch --testNamePattern='#unit|#sanity'",
-    "test:integration": "npx playwright test"
+    "test:integration": "npx playwright test",
+    "test:visual": "playwright test --config playwright.visual.config.ts",
+    "test:visual:update": "playwright test --config playwright.visual.config.ts --update-snapshots",
+    "preversion": "npm run lint && npm run build && npm test",
+    "version:patch": "npm version patch",
+    "version:minor": "npm version minor",
+    "version:major": "npm version major"
   },
   "dependencies": {
     "dexie": "^4.4.7",
@@ -32,6 +41,7 @@
     "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^10.0.1",
     "@jest/globals": "^30.5.2",
     "@playwright/test": "^1.65.0",

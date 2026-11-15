@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Raxa · Estilo guide — propostas de paleta (T1.1)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ============================================================
+         Raxa — T1.1 palette proposals.
+         Standalone page: open in a browser (internet only for the
+         candidate font; system fallback works offline).
+         Three palettes (A/B/C), each shown in light + dark with the
+         app's real components. Colors come ONLY from the token vars
+         below — what you see is what the tokens produce.
+         ============================================================ */
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+        background: #0b0b0e;
+        color: #e8e6ef;
+        line-height: 1.5;
+        padding-bottom: 96px;
+      }
+
+      /* ---------- page chrome (neutral, not part of proposals) ---------- */
+      .page-head {
+        max-width: 1060px;
+        margin: 0 auto;
+        padding: 56px 24px 8px;
+      }
+      .page-head h1 { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; }
+      .page-head h1 span { opacity: 0.5; font-weight: 300; }
+      .page-head p { max-width: 640px; margin-top: 10px; color: #a5a2b3; font-size: 15px; }
+      .page-head p b { color: #e8e6ef; }
+      .page-nav { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+      .page-nav a {
+        color: #e8e6ef; text-decoration: none; font-size: 13px; font-weight: 700;
+        border: 1px solid #35323f; border-radius: 999px; padding: 7px 14px;
+      }
+      .page-nav a:hover { border-color: #6b6680; }
+
+      section.option { max-width: 1060px; margin: 72px auto 0; padding: 0 24px; }
+
+      .opt-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+      .opt-badge {
+        font-size: 13px; font-weight: 800; letter-spacing: 0.08em;
+        border-radius: 8px; padding: 3px 10px; color: #0b0b0e;
+      }
+      .opt-head h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+      .opt-head .vibe { color: #a5a2b3; font-size: 14px; flex-basis: 100%; margin-top: 2px; max-width: 720px; }
+
+      /* token swatch strip */
+      .tokens { display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0 26px; }
+      .token {
+        display: flex; align-items: center; gap: 8px; background: #17161c;
+        border: 1px solid #2c2a35; border-radius: 10px; padding: 6px 10px 6px 6px;
+      }
+      .token i { width: 26px; height: 26px; border-radius: 7px; display: block; border: 1px solid #ffffff22; }
+      .token b { font-size: 11px; font-weight: 700; display: block; line-height: 1.2; }
+      .token code { font-size: 10px; color: #8f8c9d; font-family: ui-monospace, monospace; }
+
+      /* ---------- phone sheets ---------- */
+      .sheets { display: flex; gap: 24px; flex-wrap: wrap; }
+      .sheet-wrap { display: flex; flex-direction: column; gap: 8px; }
+      .sheet-label { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #8f8c9d; text-transform: uppercase; }
+      .sheet {
+        width: 380px; border-radius: 28px; border: 1px solid var(--border);
+        background: var(--bg); color: var(--ink); overflow: hidden;
+        box-shadow: 0 24px 60px -24px #00000099;
+      }
+
+      /* ============ PALETTE TOKENS ============ */
+      /* A — Tangerina */
+      .a-light {
+        --bg: #faf6f0; --surface: #ffffff; --surface2: #f5ede3;
+        --ink: #1c1410; --muted: #6b5d52; --border: #eadfd2;
+        --primary: #c2410c; --primary-hover: #9a3412; --on-primary: #ffffff;
+        --glow: #ea580c; --glow-soft: #ffedd5;
+        --pos: #166534; --pos-bg: #dcfce7; --neg: #be123c; --neg-bg: #ffe4e6;
+        --toast: #1c1410; --toast-ink: #faf6f0;
+      }
+      .a-dark {
+        --bg: #16120e; --surface: #211b15; --surface2: #2b241c;
+        --ink: #f7f1e8; --muted: #b8a99a; --border: #3a322a;
+        --primary: #f97316; --primary-hover: #fb8c3a; --on-primary: #1c1410;
+        --glow: #f97316; --glow-soft: #3b2413;
+        --pos: #4ade80; --pos-bg: #14321c; --neg: #fb7185; --neg-bg: #3b1622;
+        --toast: #f7f1e8; --toast-ink: #16120e;
+      }
+      /* B — Elétrica */
+      .b-light {
+        --bg: #f7f6fc; --surface: #ffffff; --surface2: #eeecf8;
+        --ink: #16121f; --muted: #5d5570; --border: #e4e0f0;
+        --primary: #7c3aed; --primary-hover: #6d28d9; --on-primary: #ffffff;
+        --glow: #db2777; --glow-soft: #fdf0f6;
+        --pos: #047857; --pos-bg: #d1fae5; --neg: #be123c; --neg-bg: #ffe4e6;
+        --toast: #16121f; --toast-ink: #f7f6fc;
+      }
+      .b-dark {
+        --bg: #100e17; --surface: #1a1626; --surface2: #241f34;
+        --ink: #f2effa; --muted: #a49bbf; --border: #322b47;
+        --primary: #a78bfa; --primary-hover: #bda6fb; --on-primary: #1a103c;
+        --glow: #22d3ee; --glow-soft: #14303a;
+        --pos: #34d399; --pos-bg: #123528; --neg: #fb7185; --neg-bg: #3a1524;
+        --toast: #f2effa; --toast-ink: #100e17;
+      }
+      /* C — Clorofila */
+      .c-light {
+        --bg: #f6f8f2; --surface: #ffffff; --surface2: #eaf0e2;
+        --ink: #121a15; --muted: #5a6b5e; --border: #dde6d3;
+        --primary: #0f766e; --primary-hover: #115e59; --on-primary: #ffffff;
+        --glow: #65a30d; --glow-soft: #ecfccb;
+        --pos: #047857; --pos-bg: #d7f5e3; --neg: #be123c; --neg-bg: #ffe0e6;
+        --toast: #121a15; --toast-ink: #f6f8f2;
+      }
+      .c-dark {
+        --bg: #0e1310; --surface: #17201b; --surface2: #1f2b24;
+        --ink: #ecf4ec; --muted: #9db3a2; --border: #2c3b31;
+        --primary: #2dd4bf; --primary-hover: #5eead4; --on-primary: #06251f;
+        --glow: #bef264; --glow-soft: #1c2b16;
+        --pos: #4ade80; --pos-bg: #12301f; --neg: #fb7185; --neg-bg: #3a1520;
+        --toast: #ecf4ec; --toast-ink: #0e1310;
+      }
+
+      /* ---------- components (token-driven, identical per sheet) ---------- */
+      .appbar { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 10px; }
+      .brand { display: flex; align-items: center; gap: 9px; }
+      .brand svg { display: block; }
+      .wordmark { font-size: 19px; font-weight: 800; letter-spacing: -0.04em; }
+      .avatar {
+        width: 34px; height: 34px; border-radius: 999px; background: var(--surface2);
+        color: var(--ink); display: grid; place-items: center; font-size: 13px; font-weight: 800;
+      }
+
+      .body { padding: 8px 20px 22px; display: flex; flex-direction: column; gap: 18px; }
+
+      .greeting { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+      .greeting small { display: block; font-size: 13px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-top: 1px; }
+
+      .seg { display: flex; background: var(--surface2); border-radius: 12px; padding: 3px; gap: 2px; }
+      .seg span { flex: 1; text-align: center; font-size: 13px; font-weight: 700; padding: 7px 0; border-radius: 9px; color: var(--muted); }
+      .seg span.on { background: var(--primary); color: var(--on-primary); }
+
+      .balance-card {
+        background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 16px;
+      }
+      .chips { display: flex; gap: 8px; }
+      .chip { font-size: 13px; font-weight: 800; border-radius: 999px; padding: 7px 12px; }
+      .chip.pos { background: var(--pos-bg); color: var(--pos); }
+      .chip.neg { background: var(--neg-bg); color: var(--neg); }
+      .chip.zero { background: var(--surface2); color: var(--muted); }
+      .balance-line { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
+      .balance-line .who { font-size: 14px; font-weight: 600; }
+      .balance-line .amt { font-size: 15px; font-weight: 800; color: var(--pos); }
+      .balance-line .amt.neg { color: var(--neg); }
+
+      .sec-title { font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+
+      .bill-row {
+        display: flex; align-items: center; gap: 12px; background: var(--surface);
+        border: 1px solid var(--border); border-radius: 16px; padding: 13px 14px; margin-bottom: 8px;
+      }
+      .bill-row:last-child { margin-bottom: 0; }
+      .bill-icon {
+        width: 38px; height: 38px; border-radius: 12px; background: var(--glow-soft); color: var(--glow);
+        display: grid; place-items: center; font-size: 17px; font-weight: 800; flex: none;
+      }
+      .bill-info { flex: 1; min-width: 0; }
+      .bill-name { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+      .bill-meta { font-size: 12px; color: var(--muted); margin-top: 1px; }
+      .bill-total { font-size: 15px; font-weight: 800; }
+      .badge {
+        font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+        color: var(--on-primary); background: var(--primary); border-radius: 6px; padding: 2px 6px; margin-left: 6px;
+      }
+
+      .field { margin-bottom: 12px; }
+      .field label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 5px; }
+      .field .input {
+        display: flex; align-items: center; gap: 8px; background: var(--surface); color: var(--ink);
+        border: 1.5px solid var(--border); border-radius: 12px; padding: 11px 13px; font-size: 15px; font-weight: 500;
+      }
+      .field .input .ph { color: var(--muted); font-weight: 500; }
+      .field .input.focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--glow-soft); }
+      .field .prefix { color: var(--muted); font-weight: 700; font-size: 14px; }
+      .chips-input { display: flex; gap: 6px; flex-wrap: wrap; }
+      .chip-input { font-size: 13px; font-weight: 700; background: var(--surface2); color: var(--ink); border-radius: 999px; padding: 6px 11px; }
+      .chip-input.me { background: var(--glow-soft); color: var(--glow); }
+
+      .buttons { display: flex; flex-direction: column; gap: 10px; }
+      .btn-row { display: flex; gap: 10px; }
+      .btn {
+        flex: 1; text-align: center; font-size: 14px; font-weight: 800; border-radius: 12px; padding: 12px 10px;
+      }
+      .btn.primary { background: var(--primary); color: var(--on-primary); }
+      .btn.primary.hover { background: var(--primary-hover); }
+      .btn.secondary { background: var(--surface2); color: var(--ink); }
+      .btn.ghost { border: 1.5px solid var(--border); color: var(--ink); background: transparent; }
+      .btn.danger { background: var(--neg-bg); color: var(--neg); }
+
+      .toast {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        background: var(--toast); color: var(--toast-ink); border-radius: 14px; padding: 13px 15px;
+        font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px -10px #0006;
+      }
+      .toast b { font-weight: 800; color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+
+      .type-row { display: flex; align-items: baseline; gap: 10px; color: var(--ink); }
+      .type-row small { font-size: 11px; color: var(--muted); font-family: ui-monospace, monospace; white-space: nowrap; }
+      .t32 { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; }
+      .t20 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+      .t15 { font-size: 15px; font-weight: 500; }
+      .t13 { font-size: 13px; font-weight: 500; color: var(--muted); }
+
+      .foot-note { max-width: 1060px; margin: 72px auto 0; padding: 0 24px; color: #8f8c9d; font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <header class="page-head">
+      <h1>raxa <span>· propostas de paleta — T1.1</span></h1>
+      <p>
+        Três direções, cada uma em claro + escuro com os componentes reais do app (cartões de conta, saldos,
+        formulário, botões, toast). Todas passam em <b>WCAG AA</b> nos pares de texto principais (razões anotadas
+        nos tokens). Tipografia candidata para todas: <b>Plus Jakarta Sans</b> (variável, bold, self-hosted em
+        T1.2 — aqui via Google Fonts).
+      </p>
+      <nav class="page-nav">
+        <a href="#a">A · Tangerina</a>
+        <a href="#b">B · Elétrica</a>
+        <a href="#c">C · Clorofila</a>
+      </nav>
+    </header>
+
+    <!-- ============================ A · TANGERINA ============================ -->
+    <section class="option" id="a">
+      <div class="opt-head">
+        <span class="opt-badge" style="background: #f97316">OPÇÃO A</span>
+        <h2>Tangerina</h2>
+        <span class="vibe">
+          Quente, apetitosa, direta. Laranja queimado como cor de trabalho (AA sobre branco 5.2:1), tangerina viva
+          como brilho (foco, ícones, destaques). Combina com a comida e a bagunça boa de dividir conta de show.
+        </span>
+      </div>
+      <div class="tokens">
+        <div class="token"><i style="background:#c2410c"></i><span><b>primary</b><code>#C2410C</code></span></div>
+        <div class="token"><i style="background:#ea580c"></i><span><b>glow</b><code>#EA580C</code></span></div>
+        <div class="token"><i style="background:#faf6f0"></i><span><b>bg · claro</b><code>#FAF6F0</code></span></div>
+        <div class="token"><i style="background:#16120e"></i><span><b>bg · escuro</b><code>#16120E</code></span></div>
+        <div class="token"><i style="background:#166534"></i><span><b>recebe</b><code>#166534</code></span></div>
+        <div class="token"><i style="background:#be123c"></i><span><b>deve</b><code>#BE123C</code></span></div>
+      </div>
+      <div class="sheets">
+        <div class="sheet-wrap">
+          <span class="sheet-label">Claro</span>
+          <div class="sheet a-light" data-sheet></div>
+        </div>
+        <div class="sheet-wrap">
+          <span class="sheet-label">Escuro</span>
+          <div class="sheet a-dark" data-sheet></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ B · ELÉTRICA ============================ -->
+    <section class="option" id="b">
+      <div class="opt-head">
+        <span class="opt-badge" style="background: #a78bfa">OPÇÃO B</span>
+        <h2>Elétrica</h2>
+        <span class="vibe">
+          Violeta digital com acento ciano/rosa. A mais "app novo" das três: fundo levemente arroxeados, contraste
+          alto, primário 5.7:1 (claro) e 6.5:1 (escuro) com o texto do botão. Jovem sem ser infantil.
+        </span>
+      </div>
+      <div class="tokens">
+        <div class="token"><i style="background:#7c3aed"></i><span><b>primary</b><code>#7C3AED</code></span></div>
+        <div class="token"><i style="background:#22d3ee"></i><span><b>glow · escuro</b><code>#22D3EE</code></span></div>
+        <div class="token"><i style="background:#db2777"></i><span><b>glow · claro</b><code>#DB2777</code></span></div>
+        <div class="token"><i style="background:#f7f6fc"></i><span><b>bg · claro</b><code>#F7F6FC</code></span></div>
+        <div class="token"><i style="background:#100e17"></i><span><b>bg · escuro</b><code>#100E17</code></span></div>
+        <div class="token"><i style="background:#047857"></i><span><b>recebe</b><code>#047857</code></span></div>
+        <div class="token"><i style="background:#be123c"></i><span><b>deve</b><code>#BE123C</code></span></div>
+      </div>
+      <div class="sheets">
+        <div class="sheet-wrap">
+          <span class="sheet-label">Claro</span>
+          <div class="sheet b-light" data-sheet></div>
+        </div>
+        <div class="sheet-wrap">
+          <span class="sheet-label">Escuro</span>
+          <div class="sheet b-dark" data-sheet></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ C · CLOROFILA ============================ -->
+    <section class="option" id="c">
+      <div class="opt-head">
+        <span class="opt-badge" style="background: #2dd4bf">OPÇÃO C</span>
+        <h2>Clorofila</h2>
+        <span class="vibe">
+          Verde-teal maduro com limão ácido de acento — herdeira moderna do teal antigo (#005b61), mas viva.
+          Papel levemente esverdeado no claro, quase-tinta no escuro. Transmite "ficou quieto, resolveu" —
+          combina com o tom offline-first.
+        </span>
+      </div>
+      <div class="tokens">
+        <div class="token"><i style="background:#0f766e"></i><span><b>primary</b><code>#0F766E</code></span></div>
+        <div class="token"><i style="background:#bef264"></i><span><b>glow</b><code>#BEF264</code></span></div>
+        <div class="token"><i style="background:#f6f8f2"></i><span><b>bg · claro</b><code>#F6F8F2</code></span></div>
+        <div class="token"><i style="background:#0e1310"></i><span><b>bg · escuro</b><code>#0E1310</code></span></div>
+        <div class="token"><i style="background:#047857"></i><span><b>recebe</b><code>#047857</code></span></div>
+        <div class="token"><i style="background:#be123c"></i><span><b>deve</b><code>#BE123C</code></span></div>
+      </div>
+      <div class="sheets">
+        <div class="sheet-wrap">
+          <span class="sheet-label">Claro</span>
+          <div class="sheet c-light" data-sheet></div>
+        </div>
+        <div class="sheet-wrap">
+          <span class="sheet-label">Escuro</span>
+          <div class="sheet c-dark" data-sheet></div>
+        </div>
+      </div>
+    </section>
+
+    <p class="foot-note">
+      Notas — as cores semânticas (recebe/deve) mudam de tom, nunca de significado, entre as opções. No escuro, os
+      botões primários usam texto escuro sobre cor viva (contraste 6.1–8.7:1) para manter o peso visual. O anel de
+      foco usa o token "glow" com halo suave. Se nenhuma das três fechar, o caminho é mixar (ex.: A + glow da C) —
+      tokens são independentes.
+    </p>
+
+    <script>
+      // One component sheet, cloned into all six palettes — the components are
+      // identical everywhere; only tokens differ. (Kept as a template so the
+      // markup never drifts between sheets.)
+      const MARK = `
+        <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+          <rect x="1" y="1" width="24" height="24" rx="7" fill="var(--primary)"/>
+          <path d="M13 1 L25 1 A6.5 6.5 0 0 1 25 25 L13 25 Z" fill="var(--on-primary)" opacity="0.14"/>
+          <path d="M8 17 L13 8 L18 17" stroke="var(--on-primary)" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 14 H16" stroke="var(--on-primary)" stroke-width="2.6" stroke-linecap="round"/>
+        </svg>`;
+
+      const SHEET = `
+        <header class="appbar">
+          <span class="brand">${MARK}<span class="wordmark">raxa</span></span>
+          <span class="avatar">EU</span>
+        </header>
+        <div class="body">
+          <div class="greeting">Oi, Eu 👋<small>3 contas ativas · tudo certo por aqui</small></div>
+
+          <nav class="seg" aria-hidden="true">
+            <span class="on">Contas</span><span>Atividades</span><span>Perfil</span>
+          </nav>
+
+          <div class="balance-card">
+            <div class="chips">
+              <span class="chip pos">Você recebe R$ 80,25</span>
+              <span class="chip neg">Deve R$ 10,00</span>
+            </div>
+            <div class="balance-line"><span class="who">Ana</span><span class="amt">+ R$ 75,25</span></div>
+            <div class="balance-line"><span class="who">Beto</span><span class="amt neg">− R$ 10,00</span></div>
+            <div class="balance-line"><span class="who">Ju</span><span class="amt">+ R$ 5,00</span></div>
+          </div>
+
+          <div>
+            <div class="sec-title">Contas recentes</div>
+            <div class="bill-row">
+              <span class="bill-icon">🎸</span>
+              <span class="bill-info">
+                <div class="bill-name">Show da Pizza<span class="badge">hoje</span></div>
+                <div class="bill-meta">3 pessoas · 2 despesas</div>
+              </span>
+              <span class="bill-total">R$ 150,50</span>
+            </div>
+            <div class="bill-row">
+              <span class="bill-icon">🍖</span>
+              <span class="bill-info">
+                <div class="bill-name">Churrasco de domingo</div>
+                <div class="bill-meta">5 pessoas · 8 despesas</div>
+              </span>
+              <span class="bill-total">R$ 412,30</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="sec-title">Nova despesa</div>
+            <div class="balance-card">
+              <div class="field">
+                <label>Nome</label>
+                <div class="input focus"><span>Ingressos</span></div>
+              </div>
+              <div class="field">
+                <label>Quanto?</label>
+                <div class="input"><span class="prefix">R$</span><span class="ph">0,00</span></div>
+              </div>
+              <div class="field" style="margin-bottom: 0">
+                <label>Quem participa?</label>
+                <div class="chips-input">
+                  <span class="chip-input me">Eu</span><span class="chip-input">Ana</span><span class="chip-input">Beto</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="buttons">
+            <div class="btn-row">
+              <span class="btn primary">Adicionar</span>
+              <span class="btn primary hover">Adicionar (hover)</span>
+            </div>
+            <div class="btn-row">
+              <span class="btn secondary">Cancelar</span>
+              <span class="btn ghost">Continuar sem salvar</span>
+            </div>
+            <div class="btn-row"><span class="btn danger">Apagar conta</span></div>
+          </div>
+
+          <div class="toast">Despesa adicionada 🎉 <b>Desfazer</b></div>
+          <div class="toast" style="opacity:.55">Só offline — nada é perdido, sincroniza quando conectar</div>
+
+          <div>
+            <div class="sec-title">Tipografia (Plus Jakarta Sans)</div>
+            <div class="type-row t32"><span>R$ 1.234,56</span><small>800 · -3% · números</small></div>
+            <div class="type-row t20"><span>Churrasco de domingo</span><small>700 · título</small></div>
+            <div class="type-row t15"><span>Cada um paga a sua parte, sem planilha.</span><small>500 · corpo</small></div>
+            <div class="type-row t13"><span>3 pessoas · 8 despesas · 15/01/2026</span><small>500 · meta/muted</small></div>
+          </div>
+        </div>`;
+
+      document.querySelectorAll('[data-sheet]').forEach((el) => (el.innerHTML = SHEET));
+    </script>
+  </body>
+</html>

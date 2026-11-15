@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Raxa is an expense-splitting app: React 19 + TypeScript + Vite SPA, offline-first with Dexie (IndexedDB) as the primary data store and Firebase used only for auth/session. UI strings are Portuguese (e.g. the submit button is "Criar").
+Raxa is an expense-splitting app: React 19 + TypeScript + Vite SPA, offline-first with Dexie (IndexedDB) as the primary data store and Firebase used only for auth/session. UI strings are Portuguese (e.g. the submit button is "Criar"). **All code is English** — identifiers, comments, test names, docs; Portuguese appears only in user-facing UI strings (and design-page rendered copy). Code comments never cite task/phase numbers (T1.x, D.x) — provenance lives in `docs/`.
 
 ## Commands
 
@@ -11,12 +11,15 @@ Raxa is an expense-splitting app: React 19 + TypeScript + Vite SPA, offline-firs
 - `npm run test:coverage` — enforces the **95% global threshold** (branches/functions/lines/statements) on `src/core/**` (the unit-testable domain layer; `src/infra` + `src/components` run only inside browsers and are covered by the BDD/integration suites). Currently at 100%. The Jest ts-jest transform sets `emitDecoratorMetadata: false` + `importHelpers: true` so transpiled decorator helpers don't count as unreachable branches.
 - `npm run test:integration` — Playwright (`test/integration/`); auto-starts `dev:host` via `webServer` config and reuses a running one locally.
 - `npm run test:bdd` — jest-cucumber acceptance tests; starts `dev:host` itself and drives headless Chromium against it.
+- `npm run test:visual` — Playwright visual goldens (`test/visual/`, own config `playwright.visual.config.ts`; 4 projects: phone/desktop × light/dark, baselines committed in `test/visual/__screenshots__/`, includes the brand-assets smoke). After an **intentional** visual change, re-approve baselines with `npm run test:visual:update` and review the golden diff — committed goldens are the desired state by definition.
+- `npm run assets` — regenerate all brand assets: `assets:svg` (`design/assets.py`, fontTools run via `uv run --with fonttools,brotli`) then `assets:png` (`design/rasterize.mjs`, renders the SVGs with the repo's Playwright Chromium). Source of truth is `design/logo-final.html`; never hand-edit `public/brand/`, favicons, PWA icons or splash PNGs.
 
-Three independent suites that don't overlap:
+Four independent suites that don't overlap:
 
 - **Unit** `test/**/*.test.ts` (excludes `test/integration/` via jest config) — run with `npm test`.
 - **Acceptance** `test/acceptance/features/*.feature` + `test/acceptance/steps/*.steps.ts` — only run via `test:bdd` (`.steps.ts` doesn't match Jest's default testMatch).
 - **Integration** `test/integration/*.test.ts` — Playwright only; Jest deliberately ignores this directory.
+- **Visual** `test/visual/*.visual.test.ts` — Playwright only via `test:visual`; Jest ignores it via `modulePathIgnorePatterns`.
 
 `test:watch` only reruns tests whose **names** contain `#unit` or `#sanity` (test-name-pattern convention — tag new unit tests with `#unit`).
 
@@ -30,6 +33,7 @@ Requires `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PR
 - `src/infra/` — adapters: `DBConnection.ts` (Dexie), `firebase.ts`, `SessionManager.ts`, `di.ts` (inversify `TYPES` symbols), `inversify.config.ts` (root container/factories), `init.ts` (app bootstrap + test-only `window.*` helpers).
 - `src/components/` — React UI. Services reach components via `ServicesProvider` context + `useBillService` / `useUserService` hooks, not by importing the container directly.
 - DI uses inversify with decorators (`experimentalDecorators`); `reflect-metadata` must be imported before anything else (see `src/main.tsx` and `test/setup.ts`).
+- Theming is token-driven from `src/index.css` (`@theme`, `focus-ring`/`press` utilities, reduced-motion floors) — see `docs/design-tokens.md` before adding colors, radii or animations; brand assets regenerate only via `npm run assets`.
 
 ## DB schema gotcha (decorator-driven migrations)
 
@@ -37,7 +41,7 @@ Table schemas are declared on entity classes in `src/core/entities/` via `@table
 
 ## Testing gotchas
 
-- Browser-driven tests (acceptance + integration) select UI via `data-testid` (e.g. `new-bill-form-name-input`, `bill-total-1`); keep these attributes on components they target.
+- Browser-driven tests (acceptance + integration) select UI via `data-testid` (e.g. `new-bill-form-name-input`, `bill-total-1`); keep these attributes on components they target. Full inventory, owners and dependent suites: `docs/testid-map.md`.
 - Integration tests call real infra code inside the browser through `page.evaluate`, relying on helpers exposed on `window` by `init()` (`createTable`, `doesDbExists`, `getFirebaseSessionManager`) — renaming them breaks `test/integration/`.
-- Unit tests use fakes in `test/core/fakes/*.fake.ts` (repositories, `DBConnection`, `SessionManager`), not IndexedDB/Firebase.
+- Unit tests use fakes in `test/core/fakes/*.fake.ts` (repositories, `DBConnection`, `SessionManager`), not IndexedDB/Firebase. Component tests build entities through the shared factories in `test/factories/entities.ts` (defaults mirror `BillServiceFake`'s default bill). The `#unit` tag is always a **suffix** in test names.
 - Pre-commit hook (husky + lint-staged) runs `npm run lint` on staged `.ts/.tsx` and `prettier --check`; commits fail on any warning.

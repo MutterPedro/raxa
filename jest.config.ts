@@ -32,7 +32,7 @@ const config: Config = {
   maxWorkers: 1,
   maxConcurrency: 1,
   reporters: ['default'],
-  modulePathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/test/integration'],
+  modulePathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/test/integration', '<rootDir>/test/visual'],
 };
 
 export default config;

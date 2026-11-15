@@ -7,3 +7,18 @@ Feature: Add Expense to a Bill
         When I add an expense of 50$ to the bill
         And I add another expense of 100$ to the bill
         Then I should see the bill total equal to 150$
+
+    Scenario: Quick add expense by amount only
+        Given I start from a fresh app with a bill named "Rachidinho" that has a first expense of 40$ split with "Ana"
+        When I open the expense form
+        And I hide the extra expense options
+        And I add an expense of 60$ to the bill
+        Then I should see the bill total equal to 100$
+        And I should see division rows for both "Eu" and "Ana"
+
+    Scenario: Undo an added expense
+        Given I start from a fresh app with an empty bill named "Pizza Night"
+        When I add an expense of 25$ to the bill
+        Then I should see an undo affordance for the added expense
+        When I undo the added expense
+        Then I should see the bill total equal to 0$

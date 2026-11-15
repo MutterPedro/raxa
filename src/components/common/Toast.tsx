@@ -1,0 +1,177 @@
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useReducedMotion } from './useReducedMotion';
+
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
+interface Toast {
+  id: number;
+  message: string;
+  duration: number; // 0 = sticky
+  action?: ToastAction;
+}
+
+interface ToastContextValue {
+  notify: (message: string, options?: { duration?: number; action?: ToastAction }) => void;
+}
+
+const MAX_VISIBLE = 4;
+const DEFAULT_DURATION = 4000;
+// Must match the --animate-fade-out duration in src/index.css.
+const TOAST_EXIT_MS = 150;
+
+const ToastContext = createContext<ToastContextValue | null>(null);
+
+export const useToast = (): ToastContextValue => {
+  const ctx = useContext(ToastContext);
+  if (!ctx) {
+    throw new Error('useToast must be used within a ToastProvider');
+  }
+  return ctx;
+};
+
+/**
+ * Renders a persistent status live region (present before any toast appears,
+ * so screen readers announce newcomers) plus the queue itself: newest last,
+ * capped at MAX_VISIBLE with oldest evicted, each toast auto-dismissing after
+ * its duration unless that duration is 0 (sticky).
+ */
+export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [leavingIds, setLeavingIds] = useState<ReadonlySet<number>>(new Set());
+  const counter = useRef(0);
+  const timers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  const exitTimers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  const reducedMotion = useReducedMotion();
+
+  const removeForReal = useCallback((id: number) => {
+    const exitTimer = exitTimers.current.get(id);
+    if (exitTimer !== undefined) {
+      clearTimeout(exitTimer);
+      exitTimers.current.delete(id);
+    }
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+    setLeavingIds((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }, []);
+
+  // Dismiss starts the exit animation (skipped entirely under reduced motion,
+  // where the toast leaves immediately).
+  const dismiss = useCallback(
+    (id: number) => {
+      const timer = timers.current.get(id);
+      if (timer !== undefined) {
+        clearTimeout(timer);
+        timers.current.delete(id);
+      }
+      if (reducedMotion) {
+        removeForReal(id);
+        return;
+      }
+      setLeavingIds((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
+      if (!exitTimers.current.has(id)) {
+        exitTimers.current.set(
+          id,
+          setTimeout(() => removeForReal(id), TOAST_EXIT_MS),
+        );
+      }
+    },
+    [reducedMotion, removeForReal],
+  );
+
+  const notify = useCallback(
+    (message: string, options?: { duration?: number; action?: ToastAction }) => {
+      const duration = options?.duration ?? DEFAULT_DURATION;
+      const id = ++counter.current;
+      setToasts((prev) => [...prev, { id, message, duration, action: options?.action }].slice(-MAX_VISIBLE));
+      if (duration > 0) {
+        timers.current.set(
+          id,
+          setTimeout(() => dismiss(id), duration),
+        );
+      }
+    },
+    [dismiss],
+  );
+
+  // Clear timers of toasts that left the queue (evicted or dismissed).
+  useEffect(() => {
+    const alive = new Set(toasts.map((t) => t.id));
+    for (const [id, timer] of timers.current) {
+      if (!alive.has(id)) {
+        clearTimeout(timer);
+        timers.current.delete(id);
+      }
+    }
+  }, [toasts]);
+
+  // No timer outlives the provider.
+  useEffect(() => {
+    const map = timers.current;
+    const exitMap = exitTimers.current;
+    return () => {
+      for (const timer of map.values()) clearTimeout(timer);
+      map.clear();
+      for (const timer of exitMap.values()) clearTimeout(timer);
+      exitMap.clear();
+    };
+  }, []);
+
+  // Test-only bridge, same pattern as init.ts's __seedVisualDemo: lets the visual suite
+  // render a real toast without a flow that emits one — e.g. the plain variant.
+  useEffect(() => {
+    window.__notifyToast = notify;
+    return () => {
+      delete window.__notifyToast;
+    };
+  }, [notify]);
+
+  const value = useMemo(() => ({ notify }), [notify]);
+
+  return (
+    <ToastContext.Provider value={value}>
+      {children}
+      <div
+        className="fixed inset-x-0 bottom-[calc(var(--spacing)*4+env(safe-area-inset-bottom,0px))] flex flex-col items-center gap-2 px-4 sm:bottom-[calc(var(--spacing)*6+env(safe-area-inset-bottom,0px))] sm:right-6 sm:left-auto sm:items-end z-50"
+        role="status"
+        aria-live="polite"
+      >
+        {toasts.map((t) => (
+          <div
+            key={t.id}
+            className={`rounded-[var(--radius-card)] bg-surface-raised text-ink shadow-card px-4 py-2 text-sm border border-line motion-reduce:animate-none flex items-center justify-between ${
+              leavingIds.has(t.id) ? 'animate-fade-out' : 'animate-fade-in'
+            }`}
+          >
+            <span>{t.message}</span>
+            {t.action && (
+              <button
+                onClick={() => {
+                  dismiss(t.id);
+                  t.action?.onClick();
+                }}
+                className="ml-3 inline-flex min-h-11 items-center font-semibold text-brand-700 hover:underline dark:text-brand-400 focus-ring"
+              >
+                {t.action.label}
+              </button>
+            )}
+            <button
+              aria-label="Fechar"
+              onClick={() => dismiss(t.id)}
+              className="ml-1 inline-flex size-11 items-center justify-center text-lg leading-none text-ink-muted focus-ring"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+    </ToastContext.Provider>
+  );
+};
