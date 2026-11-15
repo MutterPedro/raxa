@@ -1,0 +1,40 @@
+# Changelog
+
+All notable changes to this project are documented here.
+
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
+project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.1.0] - 2026-11-15
+
+First public release — a fully offline-capable expense-splitting PWA with a refreshed
+design system.
+
+### Added
+
+- **Bills & expenses** — create bills with participants, quick-add expenses (amount-only
+  with sensible defaults, `Mais opções` for the rest), per-participant division
+  ("Quem fica com quanto"), undo for added expenses, delete-bill with confirmation
+  modal and expense cascade.
+- **Offline first** — all data lives in the browser (IndexedDB via Dexie); a
+  non-intrusive offline banner and a "Guardado no seu aparelho" chip make the local
+  promise visible. Firebase is used only for the (optional) session; sign-in is never
+  required to use the app.
+- **Installable PWA** — manifest, generated icon set, service worker, iOS splash
+  screens and safe-area padding.
+- **Design system** — Tangerina brand tokens, light/dark/system theme (FOUC-guarded),
+  shared component kit (buttons, fields, cards, modal, toast), tokenized motion with
+  full `prefers-reduced-motion` support.
+- **Accessibility** — AA contrast in both themes, visible focus rings, ≥44 px tap
+  targets, screen-reader-friendly dialogs/toasts, automated axe-core + tap-target
+  audits in the visual suite.
+- **Quality gates** — four test suites (Jest unit, jest-cucumber acceptance, Playwright
+  integration, Playwright visual goldens), 100% coverage on the domain layer, a11y
+  smoke, pre-commit lint.
+- **pt-BR everywhere it counts** — user-facing strings in Brazilian Portuguese with
+  native currency/date formatting (`R$ 1.234,56`, `15/01/2026`).
+
+[unreleased]: https://github.com/MutterPedro/raxa/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/MutterPedro/raxa/releases/tag/v0.1.0

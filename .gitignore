@@ -33,3 +33,4 @@ coverage
 /playwright/.cache/
 
 .env*
+!.env.example
