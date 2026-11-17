@@ -24,7 +24,7 @@ export default function LoginButton() {
       Entrar
       {/* Inline SVG instead of '→' text: U+2192 is outside the Plus Jakarta Sans
           subsets, so a text arrow renders from a system fallback font and differs
-          per OS (this broke 48/92 visual goldens on CI). */}
+          per OS. */}
       <svg
         aria-hidden="true"
         viewBox="0 0 24 24"
