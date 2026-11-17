@@ -7,6 +7,17 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Test-only helpers (`window.createTable`, `doesDbExists`, `getFirebaseSessionManager`,
+  `__seedVisualDemo`, `__notifyToast`) are now exposed exclusively in dev builds and are
+  stripped from production bundles.
+
+### Fixed
+
+- The "Quem fica com quanto" division shows skeleton rows while loading instead of an
+  empty gap that pops into content.
+
 ## [0.1.0] - 2026-11-15
 
 First public release — a fully offline-capable expense-splitting PWA with a refreshed

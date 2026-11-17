@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { IS_PROD } from '../../infra/env';
 import { useReducedMotion } from './useReducedMotion';
 
 export interface ToastAction {
@@ -124,9 +125,12 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   }, []);
 
-  // Test-only bridge, same pattern as init.ts's __seedVisualDemo: lets the visual suite
-  // render a real toast without a flow that emits one — e.g. the plain variant.
+  // Test-only bridge, same pattern as init.ts's test helpers: lets the visual suite
+  // render a real toast without a flow that emits one — e.g. the plain variant. Gated on
+  // IS_PROD (not import.meta directly) because ts-jest keeps `import.meta` in its CJS
+  // output, which would break any unit suite importing Toast; src/infra/env mocks cleanly.
   useEffect(() => {
+    if (IS_PROD) return;
     window.__notifyToast = notify;
     return () => {
       delete window.__notifyToast;

@@ -12,12 +12,13 @@ export function init(): void {
   const userService = userServiceFactory();
   userService.createSelf().catch(console.error);
 
-  // infra test helpers
-  window.createTable = createTable;
-  window.doesDbExists = doesDbExists;
-  window.getFirebaseSessionManager = getFirebaseSessionManager;
-
+  // Test-only helpers, exposed exclusively in dev builds: `test/integration/` (via
+  // `page.evaluate`) and the visual suite drive them through the dev server, and the
+  // static `import.meta.env.DEV` check lets production bundles drop the functions.
   if (import.meta.env.DEV) {
+    window.createTable = createTable;
+    window.doesDbExists = doesDbExists;
+    window.getFirebaseSessionManager = getFirebaseSessionManager;
     window.__seedVisualDemo = seedVisualDemo;
   }
 }
