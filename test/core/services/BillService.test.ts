@@ -461,5 +461,124 @@ describe('BillService.ts', function () {
       expect(expense.participantIds).toEqual([1337]);
       expect(expense.payerId).toBe(1337);
     });
+
+    it('should update the name and date of a bill #unit', async function () {
+      const conn = MemoryDBConnection.build<BillProps>();
+      const service = buildBillService({ billConn: conn });
+
+      const bill = await service.createBill({ name: 'old name' });
+      const newDate = new Date(2026, 5, 21);
+
+      const updated = await service.updateBill(bill.id, { name: 'new name', date: newDate });
+
+      expect(updated!.name).toBe('new name');
+      expect(updated!.date.toISOString()).toBe(newDate.toISOString());
+      expect(conn.items).toHaveLength(1);
+      expect(conn.items[0].name).toBe('new name');
+    });
+
+    it('should keep the untouched values when partially updating a bill #unit', async function () {
+      const service = buildBillService();
+
+      const bill = await service.createBill({ name: 'old name', ownerId: 1337 });
+      const updated = await service.updateBill(bill.id, { name: 'new name' });
+
+      expect(updated!.name).toBe('new name');
+      expect(updated!.ownerId).toBe(1337);
+      expect(updated!.date.toISOString()).toBe(bill.date.toISOString());
+    });
+
+    it('should return null when updating a bill that does not exist #unit', async function () {
+      const service = buildBillService();
+
+      expect(await service.updateBill(99999, { name: 'ghost' })).toBeNull();
+    });
+
+    it('should keep the name when updating only the date of a bill #unit', async function () {
+      const service = buildBillService();
+
+      const bill = await service.createBill({ name: 'keep me' });
+      const newDate = new Date(2026, 8, 1);
+
+      const updated = await service.updateBill(bill.id, { date: newDate });
+
+      expect(updated!.name).toBe('keep me');
+      expect(updated!.date.toISOString()).toBe(newDate.toISOString());
+    });
+
+    it('should update an expense #unit', async function () {
+      const conn = MemoryDBConnection.build<ExpenseProps>();
+      const service = buildBillService({ expenseConn: conn });
+
+      const bill = await service.createBill({ name: 'test' });
+      const expense = await service.addExpense(bill.id, {
+        name: 'expense',
+        amount: 40,
+        date: new Date(2026, 0, 10).toISOString(),
+        participantIds: [1, 2],
+        payerId: 1,
+      });
+      const newDate = new Date(2026, 0, 20);
+
+      const updated = await service.updateExpense(expense.id, {
+        name: 'renamed',
+        amount: 60,
+        date: newDate,
+        participantIds: [1, 2, 3],
+        payerId: 2,
+      });
+
+      expect(updated!.name).toBe('renamed');
+      expect(updated!.amount).toBe(60);
+      expect(updated!.date.toISOString()).toBe(newDate.toISOString());
+      expect(updated!.participantIds).toEqual([1, 2, 3]);
+      expect(updated!.payerId).toBe(2);
+      expect(conn.items).toHaveLength(1);
+      expect(conn.items[0].amount).toBe(60);
+    });
+
+    it('should append the payer to an updated expense when it is not among the participants #unit', async function () {
+      const service = buildBillService();
+
+      const bill = await service.createBill({ name: 'test' });
+      const expense = await service.addExpense(bill.id, {
+        name: 'expense',
+        amount: 40,
+        date: new Date().toISOString(),
+        participantIds: [1, 2],
+        payerId: 1,
+      });
+
+      const updated = await service.updateExpense(expense.id, { participantIds: [2, 3], payerId: 1 });
+
+      expect(updated!.participantIds).toEqual([2, 3, 1]);
+    });
+
+    it('should return null when updating an expense that does not exist #unit', async function () {
+      const service = buildBillService();
+
+      expect(await service.updateExpense(99999, { amount: 5 })).toBeNull();
+    });
+
+    it('should keep every other value when updating only the amount of an expense #unit', async function () {
+      const service = buildBillService();
+
+      const bill = await service.createBill({ name: 'test' });
+      const expense = await service.addExpense(bill.id, {
+        name: 'expense',
+        amount: 40,
+        date: new Date(2026, 0, 10).toISOString(),
+        participantIds: [1, 2],
+        payerId: 1,
+      });
+
+      const updated = await service.updateExpense(expense.id, { amount: 80 });
+
+      expect(updated!.amount).toBe(80);
+      expect(updated!.name).toBe('expense');
+      expect(updated!.date.toISOString()).toBe(expense.date.toISOString());
+      expect(updated!.participantIds).toEqual([1, 2]);
+      expect(updated!.payerId).toBe(1);
+    });
   });
 });

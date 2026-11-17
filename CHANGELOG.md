@@ -7,6 +7,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Edit bills and expenses** — an `Editar` button on the bill card opens an inline form
+  for name and date, and a pencil on each expense row opens a fully prefilled edit form
+  (name, amount, date, participants, payer). The payer is always kept among the
+  participants when saving, so the division math stays consistent.
+
 ### Changed
 
 - Test-only helpers (`window.createTable`, `doesDbExists`, `getFirebaseSessionManager`,

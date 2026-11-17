@@ -1,6 +1,11 @@
 /** Today's local calendar date as a `yyyy-mm-dd` value for `<input type="date">`. */
 export function todayInputValue(): string {
-  return new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  return toDateInputValue(new Date());
+}
+
+/** The local calendar date of `date` as a `yyyy-mm-dd` value for `<input type="date">`. */
+export function toDateInputValue(date: Date): string {
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
 
 /**

@@ -1,4 +1,4 @@
-import { parseInputDate, todayInputValue } from '../../../src/core/utils/localDate';
+import { parseInputDate, toDateInputValue, todayInputValue } from '../../../src/core/utils/localDate';
 
 describe('localDate.ts', function () {
   const originalTz = process.env.TZ;
@@ -28,5 +28,14 @@ describe('localDate.ts', function () {
     jest.useFakeTimers({ now: new Date('2026-02-01T02:30:00Z') });
 
     expect(todayInputValue()).toBe('2026-01-31');
+  });
+
+  it('formats an arbitrary date as its local calendar day #unit', function () {
+    process.env.TZ = 'America/Sao_Paulo';
+
+    // America/Sao_Paulo is a permanent UTC-3: 01:00Z is still 22:00 on Jan 31 locally,
+    // while 21:00Z is already 18:00 on Feb 1.
+    expect(toDateInputValue(new Date('2026-02-01T01:00:00Z'))).toBe('2026-01-31');
+    expect(toDateInputValue(new Date('2026-02-01T21:00:00Z'))).toBe('2026-02-01');
   });
 });

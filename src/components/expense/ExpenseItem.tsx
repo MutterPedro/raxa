@@ -7,9 +7,10 @@ import { formatCurrency, formatDate } from '../../core/utils/format';
 
 interface ExpenseItemProps {
   expense: Expense;
+  onEdit?: (expense: Expense) => void;
 }
 
-const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense }) => {
+const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense, onEdit }) => {
   const [participants, setParticipants] = useState<User[]>([]);
   const userService = useUserService();
 
@@ -34,6 +35,28 @@ const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense }) => {
             ))}
           </div>
           <span className="font-bold tabular-nums text-ink">{formatCurrency(expense.amount)}</span>
+          {onEdit && (
+            <button
+              type="button"
+              aria-label={`Editar despesa ${expense.name}`}
+              data-testid={`edit-expense-${expense.id}-button`}
+              onClick={() => onEdit(expense)}
+              className="press inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-field)] text-ink-muted hover:text-ink focus-ring"
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4"
+              >
+                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
     </li>

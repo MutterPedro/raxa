@@ -19,7 +19,11 @@
          areas, states and what NOT to do. Paper page: shipping
          a brand means shipping with the manual open.
          ============================================================ */
-      * { box-sizing: border-box; margin: 0; padding: 0; }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
       body {
         font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
@@ -29,172 +33,573 @@
         padding-bottom: 120px;
       }
 
-      .page-head { max-width: 1060px; margin: 0 auto; padding: 60px 24px 8px; }
-      .page-head h1 { font-size: 36px; font-weight: 800; letter-spacing: -0.03em; }
-      .page-head h1 span { opacity: 0.45; font-weight: 300; }
-      .page-head p { max-width: 700px; margin-top: 10px; color: #6e6156; font-size: 15px; }
-      .page-head p b { color: #1c1410; }
-      .page-head p em { color: #c2410c; font-style: normal; }
+      .page-head {
+        max-width: 1060px;
+        margin: 0 auto;
+        padding: 60px 24px 8px;
+      }
+      .page-head h1 {
+        font-size: 36px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+      }
+      .page-head h1 span {
+        opacity: 0.45;
+        font-weight: 300;
+      }
+      .page-head p {
+        max-width: 700px;
+        margin-top: 10px;
+        color: #6e6156;
+        font-size: 15px;
+      }
+      .page-head p b {
+        color: #1c1410;
+      }
+      .page-head p em {
+        color: #c2410c;
+        font-style: normal;
+      }
       .chip {
-        display: inline-block; margin-top: 14px; font-size: 12px; font-weight: 800;
-        letter-spacing: 0.08em; text-transform: uppercase; color: #faf6f0;
-        background: #c2410c; border-radius: 999px; padding: 6px 14px;
+        display: inline-block;
+        margin-top: 14px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #faf6f0;
+        background: #c2410c;
+        border-radius: 999px;
+        padding: 6px 14px;
       }
-      .page-nav { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+      .page-nav {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+      }
       .page-nav a {
-        color: #1c1410; text-decoration: none; font-size: 13px; font-weight: 700;
-        border: 1px solid #ddd2c4; border-radius: 999px; padding: 7px 14px; background: #fff;
+        color: #1c1410;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid #ddd2c4;
+        border-radius: 999px;
+        padding: 7px 14px;
+        background: #fff;
       }
-      .page-nav a:hover { border-color: #c2410c; color: #c2410c; }
+      .page-nav a:hover {
+        border-color: #c2410c;
+        color: #c2410c;
+      }
 
-      section.spec { max-width: 1060px; margin: 84px auto 0; padding: 0 24px; }
-      .spec-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
-      .spec-head .n {
-        font-size: 13px; font-weight: 800; letter-spacing: 0.08em;
-        border-radius: 8px; padding: 3px 10px; color: #faf6f0; background: #1c1410;
+      section.spec {
+        max-width: 1060px;
+        margin: 84px auto 0;
+        padding: 0 24px;
       }
-      .spec-head h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
-      .spec > .lede { max-width: 780px; margin: 12px 0 20px; color: #6e6156; font-size: 14.5px; }
-      .spec > .lede b { color: #1c1410; }
+      .spec-head {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .spec-head .n {
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        border-radius: 8px;
+        padding: 3px 10px;
+        color: #faf6f0;
+        background: #1c1410;
+      }
+      .spec-head h2 {
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      .spec > .lede {
+        max-width: 780px;
+        margin: 12px 0 20px;
+        color: #6e6156;
+        font-size: 14.5px;
+      }
+      .spec > .lede b {
+        color: #1c1410;
+      }
 
       /* ---------- hero ---------- */
       .hero {
-        max-width: 1060px; margin: 34px auto 0; padding: 0 24px;
-        display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px;
+        max-width: 1060px;
+        margin: 34px auto 0;
+        padding: 0 24px;
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 12px;
       }
       .hero .stage {
-        border: 1px solid #e5dbcd; border-radius: 24px; background: #fff;
-        display: grid; place-items: center; padding: 56px 40px;
+        border: 1px solid #e5dbcd;
+        border-radius: 24px;
+        background: #fff;
+        display: grid;
+        place-items: center;
+        padding: 56px 40px;
       }
-      .hero .stage.dark { background: #16120e; border-color: #16120e; }
-      .hero .stage svg.big { width: 190px; height: auto; }
-      .hero .meta { border: 1px solid #e5dbcd; border-radius: 24px; background: #fff; padding: 26px 28px; font-size: 13.5px; color: #6e6156; }
-      .hero .meta h3 { font-size: 14px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #c2410c; margin-bottom: 12px; }
-      .hero .meta dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; }
-      .hero .meta dt { font-weight: 700; color: #1c1410; }
-      .hero .meta dd { color: #6e6156; }
-      .hero .meta code { background: #f6efe6; border-radius: 6px; padding: 1px 6px; font-size: 12px; }
+      .hero .stage.dark {
+        background: #16120e;
+        border-color: #16120e;
+      }
+      .hero .stage svg.big {
+        width: 190px;
+        height: auto;
+      }
+      .hero .meta {
+        border: 1px solid #e5dbcd;
+        border-radius: 24px;
+        background: #fff;
+        padding: 26px 28px;
+        font-size: 13.5px;
+        color: #6e6156;
+      }
+      .hero .meta h3 {
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #c2410c;
+        margin-bottom: 12px;
+      }
+      .hero .meta dl {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 6px 18px;
+      }
+      .hero .meta dt {
+        font-weight: 700;
+        color: #1c1410;
+      }
+      .hero .meta dd {
+        color: #6e6156;
+      }
+      .hero .meta code {
+        background: #f6efe6;
+        border-radius: 6px;
+        padding: 1px 6px;
+        font-size: 12px;
+      }
 
       /* ---------- grids of tiles ---------- */
-      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
-      figure.tile { display: flex; flex-direction: column; gap: 8px; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 12px;
+      }
+      figure.tile {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
       figure.tile figcaption {
-        font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9a8b7a;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #9a8b7a;
       }
       /* default backdrops — simple rules (0,1,0) BEFORE the ctx-* classes,
          which win them by order (same specificity) */
-      .box, .lock, .st { background: #fffdfb; }
-      .tile .box {
-        aspect-ratio: 1; border-radius: 22px; border: 1px solid #e5dbcd;
-        display: grid; place-items: center; padding: 26px 22px;
+      .box,
+      .lock,
+      .st {
+        background: #fffdfb;
       }
-      .tile .box > svg { width: 100%; height: auto; }
-      .tile .box.wide { aspect-ratio: auto; padding: 30px; }
+      .tile .box {
+        aspect-ratio: 1;
+        border-radius: 22px;
+        border: 1px solid #e5dbcd;
+        display: grid;
+        place-items: center;
+        padding: 26px 22px;
+      }
+      .tile .box > svg {
+        width: 100%;
+        height: auto;
+      }
+      .tile .box.wide {
+        aspect-ratio: auto;
+        padding: 30px;
+      }
 
       /* ---------- contexts (corners --a, center --b, text --ink, cell --w1/2/3) ---------- */
-      .ctx-cream { background: #faf6f0; color: #1c1410; --a: #c2410c; --b: #f97316; --ink: #1c1410; --w1: #c2410c; --w2: #ea580c; --w3: #f97316; }
-      .ctx-dark { background: #16120e; color: #f7f1e8; --a: #f97316; --b: #fdba74; --ink: #f7f1e8; --w1: #ea580c; --w2: #f97316; --w3: #fdba74; }
-      .ctx-tile { background: #c2410c; color: #faf6f0; --a: #fdba74; --b: #faf6f0; --ink: #faf6f0; --w1: #fdba74; --w2: #fdba74; --w3: #faf6f0; }
-      .ctx-ink { background: #faf6f0; color: #1c1410; --a: #1c1410; --b: #1c1410; --ink: #1c1410; --w1: #1c1410; --w2: #1c1410; --w3: #1c1410; }
-      .ctx-knock { background: #1c1410; color: #faf6f0; --a: #faf6f0; --b: #faf6f0; --ink: #faf6f0; --w1: #faf6f0; --w2: #faf6f0; --w3: #faf6f0; }
-      .ctx-guide { background: #fffdf9; --a: #c2410c; --b: #f97316; --ink: #1c1410; --w1: #c2410c; --w2: #ea580c; --w3: #f97316; }
+      .ctx-cream {
+        background: #faf6f0;
+        color: #1c1410;
+        --a: #c2410c;
+        --b: #f97316;
+        --ink: #1c1410;
+        --w1: #c2410c;
+        --w2: #ea580c;
+        --w3: #f97316;
+      }
+      .ctx-dark {
+        background: #16120e;
+        color: #f7f1e8;
+        --a: #f97316;
+        --b: #fdba74;
+        --ink: #f7f1e8;
+        --w1: #ea580c;
+        --w2: #f97316;
+        --w3: #fdba74;
+      }
+      .ctx-tile {
+        background: #c2410c;
+        color: #faf6f0;
+        --a: #fdba74;
+        --b: #faf6f0;
+        --ink: #faf6f0;
+        --w1: #fdba74;
+        --w2: #fdba74;
+        --w3: #faf6f0;
+      }
+      .ctx-ink {
+        background: #faf6f0;
+        color: #1c1410;
+        --a: #1c1410;
+        --b: #1c1410;
+        --ink: #1c1410;
+        --w1: #1c1410;
+        --w2: #1c1410;
+        --w3: #1c1410;
+      }
+      .ctx-knock {
+        background: #1c1410;
+        color: #faf6f0;
+        --a: #faf6f0;
+        --b: #faf6f0;
+        --ink: #faf6f0;
+        --w1: #faf6f0;
+        --w2: #faf6f0;
+        --w3: #faf6f0;
+      }
+      .ctx-guide {
+        background: #fffdf9;
+        --a: #c2410c;
+        --b: #f97316;
+        --ink: #1c1410;
+        --w1: #c2410c;
+        --w2: #ea580c;
+        --w3: #f97316;
+      }
 
       /* ---------- wordmark ---------- */
       .wm {
         font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
-        font-weight: 800; letter-spacing: -0.05em; line-height: 1; color: var(--ink, currentColor);
-        display: inline-flex; align-items: baseline; white-space: nowrap;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+        line-height: 1;
+        color: var(--ink, currentColor);
+        display: inline-flex;
+        align-items: baseline;
+        white-space: nowrap;
       }
-      .wm .x { width: 0.6em; height: 0.6em; }
-      .tile .wm { font-size: 58px; }
-      .hero .wm { font-size: 44px; }
+      .wm .x {
+        width: 0.6em;
+        height: 0.6em;
+      }
+      .tile .wm {
+        font-size: 58px;
+      }
+      .hero .wm {
+        font-size: 44px;
+      }
 
       /* ---------- tables ---------- */
-      table.tab { border-collapse: collapse; width: 100%; max-width: 780px; font-size: 13.5px; background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #e5dbcd; }
-      table.tab th, table.tab td { text-align: left; padding: 10px 16px; border-bottom: 1px solid #efe7db; }
-      table.tab th { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #9a8b7a; background: #fbf7f0; }
-      table.tab tr:last-child td { border-bottom: none; }
-      table.tab td code, .mono { font-family: ui-monospace, 'Cascadia Mono', monospace; font-size: 12.5px; background: #f6efe6; border-radius: 6px; padding: 1px 6px; }
-      .sw { display: inline-block; width: 12px; height: 12px; border-radius: 4px; vertical-align: -1px; border: 1px solid rgba(0,0,0,0.12); margin-right: 6px; }
+      table.tab {
+        border-collapse: collapse;
+        width: 100%;
+        max-width: 780px;
+        font-size: 13.5px;
+        background: #fff;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid #e5dbcd;
+      }
+      table.tab th,
+      table.tab td {
+        text-align: left;
+        padding: 10px 16px;
+        border-bottom: 1px solid #efe7db;
+      }
+      table.tab th {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #9a8b7a;
+        background: #fbf7f0;
+      }
+      table.tab tr:last-child td {
+        border-bottom: none;
+      }
+      table.tab td code,
+      .mono {
+        font-family: ui-monospace, 'Cascadia Mono', monospace;
+        font-size: 12.5px;
+        background: #f6efe6;
+        border-radius: 6px;
+        padding: 1px 6px;
+      }
+      .sw {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 4px;
+        vertical-align: -1px;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        margin-right: 6px;
+      }
 
       /* ---------- lockup rows ---------- */
-      .lockrow { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
-      .lock {
-        border: 1px solid #e5dbcd; border-radius: 20px;
-        display: flex; align-items: center; gap: 11px; padding: 26px 32px;
+      .lockrow {
+        display: flex;
+        gap: 12px;
+        margin-top: 12px;
+        flex-wrap: wrap;
       }
-      .lock.col { flex-direction: column; gap: 10px; padding: 30px 36px; }
-      .lock > svg { flex: none; }
-      .lock .wm { font-size: 26px; }
-      .lock .cap { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9a8b7a; margin-top: 10px; }
-      .lockwrap { display: flex; flex-direction: column; }
-      .lockwrap .cap { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9a8b7a; margin-top: 8px; }
+      .lock {
+        border: 1px solid #e5dbcd;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 26px 32px;
+      }
+      .lock.col {
+        flex-direction: column;
+        gap: 10px;
+        padding: 30px 36px;
+      }
+      .lock > svg {
+        flex: none;
+      }
+      .lock .wm {
+        font-size: 26px;
+      }
+      .lock .cap {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #9a8b7a;
+        margin-top: 10px;
+      }
+      .lockwrap {
+        display: flex;
+        flex-direction: column;
+      }
+      .lockwrap .cap {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #9a8b7a;
+        margin-top: 8px;
+      }
 
       /* ---------- favicon / browser mock ---------- */
       .favis {
-        display: flex; align-items: center; gap: 18px; border-radius: 16px;
-        border: 1px solid #e5dbcd; background: #fff; padding: 18px 22px; flex-wrap: wrap;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        border-radius: 16px;
+        border: 1px solid #e5dbcd;
+        background: #fff;
+        padding: 18px 22px;
+        flex-wrap: wrap;
       }
-      .favis .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9a8b7a; }
-      .favis .tab { display: flex; align-items: center; gap: 7px; font-size: 12px; white-space: nowrap; }
-      .favis .tab svg { flex: none; width: 16px; height: 16px; }
-      .favis .tab.s32 svg { width: 32px; height: 32px; }
-      .favis .tab.dark { background: #16120e; padding: 8px 10px; border-radius: 10px; color: #b8a99a; }
-      .favis .tab.light { background: #f2efe9; padding: 8px 10px; border-radius: 10px; color: #5c5348; }
+      .favis .lbl {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #9a8b7a;
+      }
+      .favis .tab {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .favis .tab svg {
+        flex: none;
+        width: 16px;
+        height: 16px;
+      }
+      .favis .tab.s32 svg {
+        width: 32px;
+        height: 32px;
+      }
+      .favis .tab.dark {
+        background: #16120e;
+        padding: 8px 10px;
+        border-radius: 10px;
+        color: #b8a99a;
+      }
+      .favis .tab.light {
+        background: #f2efe9;
+        padding: 8px 10px;
+        border-radius: 10px;
+        color: #5c5348;
+      }
 
       /* ---------- pixel-fit row ---------- */
-      .pxrow { display: flex; align-items: flex-end; gap: 34px; flex-wrap: wrap; background: #fff; border: 1px solid #e5dbcd; border-radius: 20px; padding: 30px 34px; }
-      .pxrow .item { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-      .pxrow .item small { font-size: 11px; font-weight: 700; color: #9a8b7a; }
-      .pxrow .item .lbl2 { font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #c2410c; }
+      .pxrow {
+        display: flex;
+        align-items: flex-end;
+        gap: 34px;
+        flex-wrap: wrap;
+        background: #fff;
+        border: 1px solid #e5dbcd;
+        border-radius: 20px;
+        padding: 30px 34px;
+      }
+      .pxrow .item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+      .pxrow .item small {
+        font-size: 11px;
+        font-weight: 700;
+        color: #9a8b7a;
+      }
+      .pxrow .item .lbl2 {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #c2410c;
+      }
 
       /* ---------- states ---------- */
-      .states { display: flex; gap: 12px; flex-wrap: wrap; }
-      .states .st { border: 1px solid #e5dbcd; border-radius: 20px; padding: 22px 24px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; min-width: 168px; }
-      .states .st svg { width: 64px; height: 64px; }
-      .states .st b { font-size: 13px; font-weight: 800; }
-      .states .st small { font-size: 11.5px; color: #9a8b7a; text-align: center; }
-      .pulse-halo { transform-box: view-box; transform-origin: 16px 16px; animation: halo 1.8s ease-out infinite; }
+      .states {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .states .st {
+        border: 1px solid #e5dbcd;
+        border-radius: 20px;
+        padding: 22px 24px 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        min-width: 168px;
+      }
+      .states .st svg {
+        width: 64px;
+        height: 64px;
+      }
+      .states .st b {
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .states .st small {
+        font-size: 11.5px;
+        color: #9a8b7a;
+        text-align: center;
+      }
+      .pulse-halo {
+        transform-box: view-box;
+        transform-origin: 16px 16px;
+        animation: halo 1.8s ease-out infinite;
+      }
       @keyframes halo {
-        0% { transform: scale(0.7); opacity: 0.5; }
-        70% { transform: scale(1.55); opacity: 0; }
-        100% { transform: scale(1.55); opacity: 0; }
+        0% {
+          transform: scale(0.7);
+          opacity: 0.5;
+        }
+        70% {
+          transform: scale(1.55);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1.55);
+          opacity: 0;
+        }
       }
 
       /* ---------- don'ts ---------- */
-      .tile .box.bad { border-style: dashed; border-color: #d9b8ac; }
-      .tile .box .no {
-        position: absolute; inset: 0; pointer-events: none;
+      .tile .box.bad {
+        border-style: dashed;
+        border-color: #d9b8ac;
       }
-      .tile .box.bad { position: relative; }
+      .tile .box .no {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      .tile .box.bad {
+        position: relative;
+      }
       .tile .box.bad::after {
-        content: ''; position: absolute; inset: 12%;
-        background:
-          linear-gradient(45deg, transparent 47.4%, #c0392b 47.4%, #c0392b 52.6%, transparent 52.6%);
-        opacity: 0.8; border-radius: 12px;
+        content: '';
+        position: absolute;
+        inset: 12%;
+        background: linear-gradient(45deg, transparent 47.4%, #c0392b 47.4%, #c0392b 52.6%, transparent 52.6%);
+        opacity: 0.8;
+        border-radius: 12px;
       }
 
       .note {
-        max-width: 780px; margin: 14px 0 0; font-size: 13px; color: #6e6156;
-        background: #fff; border: 1px solid #e5dbcd; border-radius: 12px; padding: 12px 16px;
+        max-width: 780px;
+        margin: 14px 0 0;
+        font-size: 13px;
+        color: #6e6156;
+        background: #fff;
+        border: 1px solid #e5dbcd;
+        border-radius: 12px;
+        padding: 12px 16px;
       }
-      .note b { color: #c2410c; font-weight: 700; }
-      .note ul { margin: 6px 0 0 18px; }
-      .note li { margin-top: 3px; }
+      .note b {
+        color: #c2410c;
+        font-weight: 700;
+      }
+      .note ul {
+        margin: 6px 0 0 18px;
+      }
+      .note li {
+        margin-top: 3px;
+      }
 
-      .foot-note { max-width: 1060px; margin: 84px auto 0; padding: 0 24px; color: #9a8b7a; font-size: 13.5px; }
-      .foot-note b { color: #1c1410; }
+      .foot-note {
+        max-width: 1060px;
+        margin: 84px auto 0;
+        padding: 0 24px;
+        color: #9a8b7a;
+        font-size: 13.5px;
+      }
+      .foot-note b {
+        color: #1c1410;
+      }
 
-      @media (max-width: 760px) { .hero { grid-template-columns: 1fr; } }
+      @media (max-width: 760px) {
+        .hero {
+          grid-template-columns: 1fr;
+        }
+      }
     </style>
   </head>
   <body>
     <header class="page-head">
       <h1>raxa <span>· X de cinco — especificação final</span></h1>
       <p>
-        A marca escolhida (D6): <em>quatro pontos = as pessoas; o do meio = a conta que junta todo mundo</em>.
-        Esta folha é a <b>fonte de verdade</b> para os assets de produção — geometria, cores por contexto, lockups,
-        ícones, respiro, estados e os "não usar". Tudo no grid 32; nada aqui é opinião, é cota.
+        A marca escolhida (D6): <em>quatro pontos = as pessoas; o do meio = a conta que junta todo mundo</em>. Esta
+        folha é a <b>fonte de verdade</b> para os assets de produção — geometria, cores por contexto, lockups, ícones,
+        respiro, estados e os "não usar". Tudo no grid 32; nada aqui é opinião, é cota.
       </p>
       <span class="chip">D6 · aprovado — rodada 3, 3A + 3X</span>
       <nav class="page-nav">
@@ -216,8 +621,8 @@
 
     <p class="foot-note">
       <b>Próximo passo:</b> aprovada esta folha, os assets são gerados a partir desta geometria —
-      <code class="mono">favicon.svg</code>, apple-touch-icon, ícones PWA (padrão + maskable), splash e o
-      Plus Jakarta Sans variável auto-hospedado; Arvo e o link do Google Fonts saem do <code class="mono">index.html</code>.
+      <code class="mono">favicon.svg</code>, apple-touch-icon, ícones PWA (padrão + maskable), splash e o Plus Jakarta
+      Sans variável auto-hospedado; Arvo e o link do Google Fonts saem do <code class="mono">index.html</code>.
     </p>
 
     <script>
@@ -231,7 +636,10 @@
         const p = (x, y) => `<circle cx="${x}" cy="${y}" r="${rc}" fill="${a}"/>`;
         return (
           `<svg viewBox="0 0 32 32" aria-label="marca raxa">` +
-          p(m, m) + p(32 - m, m) + p(m, 32 - m) + p(32 - m, 32 - m) +
+          p(m, m) +
+          p(32 - m, m) +
+          p(m, 32 - m) +
+          p(32 - m, 32 - m) +
           `<circle cx="16" cy="16" r="${r0}" fill="${b}"/>${extra}</svg>`
         );
       }
@@ -249,8 +657,7 @@
       // wordmark tones: live in the ctx-* classes (--w1/--w2/--w3)
 
       /* ============ guides ============ */
-      const guides = (inner, vb = '0 0 32 32') =>
-        `<svg viewBox="${vb}" aria-label="grid de construção">${inner}</svg>`;
+      const guides = (inner, vb = '0 0 32 32') => `<svg viewBox="${vb}" aria-label="grid de construção">${inner}</svg>`;
       function gridMarca(markInner) {
         const g =
           `<g stroke="#c2410c" fill="none" opacity="0.32" stroke-width="0.5">` +
@@ -282,7 +689,11 @@
         </div>`;
 
       /* ============ 1 · the mark ============ */
-      const S1 = sec('marca', '01', 'A marca', `
+      const S1 = sec(
+        'marca',
+        '01',
+        'A marca',
+        `
         Cinco pontos, um grid, duas hierarquias: os quatro cantos são as pessoas, o centro é a conta — e o centro é
         sempre <b>um degrau mais claro</b> que os cantos em todo contexto (a luz da marca é o que se oferece).
         É a face "5" do dado e a marca romana de divisão justa; não existe app de dinheiro com um quincunce laranja.`,
@@ -298,13 +709,18 @@
             <li>centro: r <b>5.4</b> em <span class="mono">(16,16)</span> — +0.8 que os cantos = foco sem depender de cor</li>
             <li>vão diagonal (borda a borda): <b>1.31</b> — constante; é dele que a marca respira</li>
             <li>bounding box: <span class="mono">3.4 → 28.6</span> (25.2 × 25.2); raio circunscrito 15.91 ≈ meio canvas</li>
-          </ul></div>`);
+          </ul></div>`,
+      );
 
       /* ============ 2 · pixel-fit ============ */
       const pxItem = (s, inner, micro) =>
         `<span class="item"><span style="width:${s}px;height:${s}px">${inner}</span><small>${s} px</small>${micro ? '<span class="lbl2">micro</span>' : ''}</span>`;
       const markRaw = (o) => ponto(o).replace(/^<svg /, '<svg style="width:100%;height:100%" ');
-      const S2 = sec('pixel', '02', 'Pixel-fit', `
+      const S2 = sec(
+        'pixel',
+        '02',
+        'Pixel-fit',
+        `
         Os centros caem em <span class="mono">4 / 8 / 12</span> quando o canvas é 16 — os pontos já nascem casados
         com o favicon. Abaixo de 20px entra a variante <b>micro</b>: cantos r 4, centro r 6 → diâmetros de
         <b>4 px e 6 px exatos em 16 px</b>, com o centro ainda mais dominante (o foco passa a ser de tamanho, não de cor).
@@ -320,10 +736,15 @@
         </div>`,
         `<div class="note"><b>Regra de troca:</b> micro para render ≤ 19 px (favicon, chips, tab do navegador);
           mestre a partir de 20 px. Acima de 48 px nada muda — a geometria é uma só em qualquer tamanho,
-          que é o que grid de verdade entrega.</div>`);
+          que é o que grid de verdade entrega.</div>`,
+      );
 
       /* ============ 3 · wordmark ============ */
-      const S3 = sec('wordmark', '03', 'Wordmark 3X', `
+      const S3 = sec(
+        'wordmark',
+        '03',
+        'Wordmark 3X',
+        `
         Plus Jakarta Sans <b>ExtraBold (800)</b>, tracking <span class="mono">−0.05em</span>, tudo minúsculo.
         O "x" vira a célula de cinco pontos: <b>0.6em × 0.6em</b> — quadrada, do tamanho da altura-x do Plus Jakarta —
         sentada na baseline entre os dois "a". No nome, os cantos ganham três tons (profundidade na diagonal);
@@ -332,18 +753,23 @@
           ${tile('claro', 'ctx-cream', WM)}
           ${tile('escuro', 'ctx-dark', WM)}
           ${tile('uma cor (adesivo)', 'ctx-ink', WM)}
-          ${tile('a célula do x · 5×', 'ctx-guide', `<svg viewBox="0 0 20 20" style="width:150px">
+          ${tile(
+            'a célula do x · 5×',
+            'ctx-guide',
+            `<svg viewBox="0 0 20 20" style="width:150px">
             <g stroke="#c2410c" fill="none" opacity="0.35" stroke-width="0.4">
               <rect x="0.65" y="0.65" width="18.7" height="18.7" stroke-dasharray="1.2 1"/>
               <path d="M10 0v20M0 10h20" stroke-dasharray="1.2 1"/><circle cx="10" cy="10" r="9.35" stroke-dasharray="1.2 1"/>
             </g>
             <circle cx="4" cy="4" r="3.35" fill="#C2410C"/><circle cx="16" cy="4" r="3.35" fill="#EA580C"/>
             <circle cx="10" cy="10" r="3.35" fill="#F97316"/><circle cx="4" cy="16" r="3.35" fill="#EA580C"/>
-            <circle cx="16" cy="16" r="3.35" fill="#C2410C"/></svg>`)}
+            <circle cx="16" cy="16" r="3.35" fill="#C2410C"/></svg>`,
+          )}
         </div>`,
         `<div class="note"><b>Regra dos tons:</b> na marca sozinha, <b>dois</b> tons (cantos + centro glow) —
           o símbolo precisa ser instantâneo. No wordmark, <b>três</b> (par diagonal TL/BR mais escuro) — na célula
-          pequena o par diagonal é o que dá profundidade de "x" real. Nunca mais que três em um lockup.</div>`);
+          pequena o par diagonal é o que dá profundidade de "x" real. Nunca mais que três em um lockup.</div>`,
+      );
 
       /* ============ 4 · lockups ============ */
       // per-context tones now live in the ctx-* classes — nothing inline in the lockup
@@ -356,7 +782,11 @@
         `<div class="lock col ${ctx}">
           <svg viewBox="0 0 32 32" style="width:${size}px">${ponto({}).replace(/^<svg[^>]*>|<\/svg>$/g, '')}</svg>${WM}
         </div>`;
-      const S4 = sec('lockups', '04', 'Lockups', `
+      const S4 = sec(
+        'lockups',
+        '04',
+        'Lockups',
+        `
         Dois lockups oficiais — horizontal e empilhado — mais as duas partes sozinhas. A folga entre marca e nome é
         <b>0.32 × a largura da marca</b> (uma vez e um terço do ponto de canto). O centro do nome fica na linha do
         centro óptico da marca. Nenhum outro arranjo é oficial.`,
@@ -365,10 +795,15 @@
           <div class="lockwrap">${H('ctx-dark')}<span class="cap">horizontal · escuro</span></div>
           <div class="lockwrap">${V('ctx-cream')}<span class="cap">empilhado</span></div>
           <div class="lockwrap">${V('ctx-tile')}<span class="cap">empilhado · tile</span></div>
-        </div>`);
+        </div>`,
+      );
 
       /* ============ 5 · colors ============ */
-      const S5 = sec('cores', '05', 'Cores por contexto', `
+      const S5 = sec(
+        'cores',
+        '05',
+        'Cores por contexto',
+        `
         A marca vive em pares <b>cantos → centro</b>; a regra única: o centro é sempre um degrau acima na escada de
         luz (<span class="mono">C2410C → EA580C → F97316 → FDBA74 → FAF6F0</span>). Em uma cor, o centro continua
         legível porque é maior — o tamanho sustenta o que a cor não pode dizer.`,
@@ -385,7 +820,8 @@
           <tr><td>escuro <code>#16120E</code></td><td><span class="sw" style="background:#f97316"></span><code>#F97316</code></td><td><span class="sw" style="background:#fdba74"></span><code>#FDBA74</code></td><td><span class="sw" style="background:#f7f1e8"></span><code>#F7F1E8</code></td></tr>
           <tr><td>tile <code>#C2410C</code></td><td><span class="sw" style="background:#fdba74"></span><code>#FDBA74</code></td><td><span class="sw" style="background:#faf6f0"></span><code>#FAF6F0</code></td><td><span class="sw" style="background:#faf6f0"></span><code>#FAF6F0</code></td></tr>
           <tr><td>uma cor</td><td colspan="2">tudo na cor do suporte invertida (o centro se defende pelo raio)</td><td>—</td></tr>
-        </table>`);
+        </table>`,
+      );
 
       /* ============ 6 · icons & favicon ============ */
       const iconTile = (px, maskable) => {
@@ -398,7 +834,11 @@
       };
       const favTab = (name, dark, s16) =>
         `<span class="tab ${dark ? 'dark' : 'light'} ${s16 ? 's32' : ''}">${ponto(MICRO).replace('<svg ', '<svg ')}<span>${name}</span></span>`;
-      const S6 = sec('icones', '06', 'Ícones & favicon', `
+      const S6 = sec(
+        'icones',
+        '06',
+        'Ícones & favicon',
+        `
         Ícone do app: tile <span class="mono">#C2410C</span> com a marca a <b>76%</b> do tile, centrada — assim ela
         cabe inteira na <b>zona segura de 80%</b> do maskable (círculo tracejado) e nos recortes de qualquer launcher.
         Favicon usa a variante micro. O ícone nunca leva o nome; o nome nunca entra em favicon.`,
@@ -415,7 +855,8 @@
           ${favTab('raxa — 32', false, true)}
           ${favTab('raxa — 16', false, false)}
           ${favTab('escuro — 16', true, false)}
-        </div>`);
+        </div>`,
+      );
 
       /* ============ 7 · clear space & minimums ============ */
       const clearSpace = (inner, vbPad = '-9 -9 50 50') =>
@@ -425,7 +866,11 @@
             <rect x="-5.8" y="-5.8" width="9.2" height="9.2"/><rect x="28.6" y="-5.8" width="9.2" height="9.2"/>
             <rect x="-5.8" y="28.6" width="9.2" height="9.2"/><rect x="28.6" y="28.6" width="9.2" height="9.2"/>
           </g>${inner}</svg>`;
-      const S7 = sec('area', '07', 'Área de respiro & tamanho mínimo', `
+      const S7 = sec(
+        'area',
+        '07',
+        'Área de respiro & tamanho mínimo',
+        `
         Unidade de respiro = <b>um ponto de canto</b> (Ø 9.2) em cada lado do bounding box — nos quatro cantos da
         marca o quadrado tracejado mostra a medida. Nenhum texto, borda ou imagem entra na área.
         Tamanho mínimo: marca sozinha <b>16 px</b>; lockup horizontal com o nome legível a partir de
@@ -434,11 +879,16 @@
           <figure class="tile"><div class="box ctx-guide" style="padding:34px">${clearSpace(ponto({}).replace(/^<svg[^>]*>|<\/svg>$/g, ''))}</div><figcaption>respiro = 1 ponto de canto</figcaption></figure>
           <figure class="tile"><div class="box ctx-cream" style="gap:14px;display:flex;align-items:center"><span style="width:16px">${ponto(MICRO)}</span><span style="width:24px">${ponto({})}</span><span style="width:32px">${ponto({})}</span></div><figcaption>mínimos: 16 · 24 · 32</figcaption></figure>
           <figure class="tile"><div class="box ctx-cream" style="aspect-ratio:auto;padding:26px"><div class="lock ctx-cream" style="border:none;padding:0;gap:7px;background:none"><svg viewBox="0 0 32 32" style="width:16px">${ponto({}).replace(/^<svg[^>]*>|<\/svg>$/g, '')}</svg>${WMat(12)}</div></div><figcaption>lockup horizontal no mínimo — 48 px, nome a 12 px</figcaption></figure>
-        </div>`);
+        </div>`,
+      );
 
       /* ============ 8 · states ============ */
       const pulse = `<circle cx="16" cy="16" r="5.4" fill="#f97316" class="pulse-halo"/>`;
-      const S8 = sec('estados', '08', 'Estados — o centro é vivo', `
+      const S8 = sec(
+        'estados',
+        '08',
+        'Estados — o centro é vivo',
+        `
         O ponto central não é decoração: é o <b>único momento de acento da marca</b> e o primeiro gancho de
         animação do produto (D5). Estado padrão aceso; pulso quando uma despesa entra; apaga (vira a cor dos
         cantos) quando a conta está quitada — "acabou, pode respirar". Os cantos podem tingir por participante,
@@ -455,25 +905,28 @@
         </div>`,
         `<div class="note"><b>Onde isso aterrissa:</b> loading (halo pulsando), toasts, estado vazio de conta
           quitada, e o <code class="mono">theme-color</code> do PWA (T4.1). A marca impressa ignora esta seção —
-          estados são da interface, não do logo.</div>`);
+          estados são da interface, não do logo.</div>`,
+      );
 
       /* ============ 9 · don't use ============ */
       const bad = (label, inner, note) =>
         `<figure class="tile"><div class="box bad ctx-cream">${inner}</div><figcaption>${label} — ${note}</figcaption></figure>`;
       const stretch = ponto({}).replace('<svg ', '<svg style="transform:scaleX(0.72) scaleY(1.18)" ');
       const rot = ponto({}).replace('<svg ', '<svg style="transform:rotate(22deg)" ');
-      const grito =
-        `<svg viewBox="0 0 32 32"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      const grito = `<svg viewBox="0 0 32 32"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stop-color="#a855f7"/><stop offset="1" stop-color="#3b82f6"/></linearGradient></defs>
           <g fill="url(#g)"><circle cx="8" cy="8" r="4.6"/><circle cx="24" cy="8" r="4.6"/><circle cx="8" cy="24" r="4.6"/><circle cx="24" cy="24" r="4.6"/><circle cx="16" cy="16" r="5.4"/></g></svg>`;
       const sombra = ponto({}).replace('<svg ', `<svg style="filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))" `);
       const six = ponto({ extra: `<circle cx="16" cy="4.6" r="3.4" fill="var(--a)"/>` });
-      const outline =
-        `<svg viewBox="0 0 32 32" fill="none" stroke="#c2410c" stroke-width="1.2">
+      const outline = `<svg viewBox="0 0 32 32" fill="none" stroke="#c2410c" stroke-width="1.2">
           <circle cx="8" cy="8" r="4.6"/><circle cx="24" cy="8" r="4.6"/><circle cx="8" cy="24" r="4.6"/>
           <circle cx="24" cy="24" r="4.6"/><circle cx="16" cy="16" r="5.4"/></svg>`;
       const soCentro = `<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="5.4" fill="#f97316"/></svg>`;
-      const S9 = sec('naousar', '09', 'Não usar', `
+      const S9 = sec(
+        'naousar',
+        '09',
+        'Não usar',
+        `
         A marca é cinco pontos — nem quatro, nem seis, nem tortos. Distorcer, girar, dar sombra, pintar fora da
         escada tangerina ou quebrar o vão: tudo aqui está errado do jeito que parece.`,
         `<div class="grid">
@@ -484,10 +937,15 @@
           ${bad('mexer nos pontos', six, 'é cinco. sempre.')}
           ${bad('contornar', outline, 'os pontos são cheios')}
           ${bad('usar só o centro', soCentro, 'isso é bullet, não é logo')}
-        </div>`);
+        </div>`,
+      );
 
       /* ============ 10 · assets ============ */
-      const S10 = sec('assets', '10', 'O que gera daqui (T1.2b)', `
+      const S10 = sec(
+        'assets',
+        '10',
+        'O que gera daqui (T1.2b)',
+        `
         Tudo abaixo é exportado <b>desta geometria</b>, desta folha. SVG para o que escala em tela, PNG rasterizado
         de um SVG mestre para launcher/Apple (que não aceitam SVG), sem texto vetórico nos raster —
         por isso favicon e ícone nunca levam o nome.`,
@@ -504,7 +962,8 @@
         </table>`,
         `<div class="note"><b>Contrato de teste:</b> os goldens visuais passam a carregar a fonte self-hosted e o
           favicon novo; o smoke de assets confere presença dos arquivos no build e nenhum link externo de fonte
-          no <code class="mono">index.html</code>. Comportamento da aplicação: intocado.</div>`);
+          no <code class="mono">index.html</code>. Comportamento da aplicação: intocado.</div>`,
+      );
 
       document.getElementById('mounts').innerHTML = [S1, S2, S3, S4, S5, S6, S7, S8, S9, S10].join('');
     </script>

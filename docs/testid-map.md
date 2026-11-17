@@ -7,23 +7,26 @@ Playwright), Visual (`test/visual/`), Unit (`test/components/`).
 
 ## Static ids
 
-| testid                                                                         | component                        | suites                                                                        |
-| ------------------------------------------------------------------------------ | -------------------------------- | ----------------------------------------------------------------------------- |
-| `app-header`                                                                   | `header/Header.tsx`              | integration                                                                   |
-| `app-bar`                                                                      | `header/NavBar.tsx`              | integration                                                                   |
-| `theme-toggle-sun` / `theme-toggle-moon`                                       | `header/ThemeToggle.tsx`         | unit (toggle itself is also reached by role `Alternar tema` in browser tests) |
-| `header-login-link`                                                            | `login/LoginButton.tsx`          | acceptance, unit                                                              |
-| `sync-hint`                                                                    | `login/SyncHint.tsx`             | acceptance, unit                                                              |
-| `offline-banner`                                                               | `common/OfflineBanner.tsx`       | visual                                                                        |
-| `saved-chip`                                                                   | `common/SavedChip.tsx`           | unit, visual                                                                  |
-| `bills-list-skeleton`                                                          | `expense/BillsList.tsx`          | unit                                                                          |
-| `new-bill-jumbo-button`                                                        | `expense/NewBillJumboButton.tsx` | acceptance, unit, visual                                                      |
-| `new-bill-float-button`                                                        | `expense/NewBillFloatButton.tsx` | acceptance, integration                                                       |
-| `new-bill-form`, `new-bill-form-name-input`, `new-bill-form-amount-input`      | `expense/NewBillForm.tsx`        | acceptance, unit, visual                                                      |
-| `bill-total-span`                                                              | `expense/BillDetail.tsx`         | acceptance, unit, visual                                                      |
-| `new-expense-button`                                                           | `expense/BillDetail.tsx`         | acceptance, visual                                                            |
-| `delete-bill-button`, `delete-bill-confirm`                                    | `expense/BillDetail.tsx`         | acceptance (button), visual (both)                                            |
-| `new-expense-form`, `new-expense-form-amount-input`, `new-expense-more-toggle` | `expense/NewExpenseForm.tsx`     | acceptance, unit (toggle also in visual flow)                                 |
+| testid                                                                                                                  | component                        | suites                                                                        |
+| ----------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ----------------------------------------------------------------------------- |
+| `app-header`                                                                                                            | `header/Header.tsx`              | integration                                                                   |
+| `app-bar`                                                                                                               | `header/NavBar.tsx`              | integration                                                                   |
+| `theme-toggle-sun` / `theme-toggle-moon`                                                                                | `header/ThemeToggle.tsx`         | unit (toggle itself is also reached by role `Alternar tema` in browser tests) |
+| `header-login-link`                                                                                                     | `login/LoginButton.tsx`          | acceptance, unit                                                              |
+| `sync-hint`                                                                                                             | `login/SyncHint.tsx`             | acceptance, unit                                                              |
+| `offline-banner`                                                                                                        | `common/OfflineBanner.tsx`       | visual                                                                        |
+| `saved-chip`                                                                                                            | `common/SavedChip.tsx`           | unit, visual                                                                  |
+| `bills-list-skeleton`                                                                                                   | `expense/BillsList.tsx`          | unit                                                                          |
+| `new-bill-jumbo-button`                                                                                                 | `expense/NewBillJumboButton.tsx` | acceptance, unit, visual                                                      |
+| `new-bill-float-button`                                                                                                 | `expense/NewBillFloatButton.tsx` | acceptance, integration                                                       |
+| `new-bill-form`, `new-bill-form-name-input`, `new-bill-form-amount-input`                                               | `expense/NewBillForm.tsx`        | acceptance, unit, visual                                                      |
+| `bill-total-span`                                                                                                       | `expense/BillDetail.tsx`         | acceptance, unit, visual                                                      |
+| `new-expense-button`                                                                                                    | `expense/BillDetail.tsx`         | acceptance, visual                                                            |
+| `delete-bill-button`, `delete-bill-confirm`                                                                             | `expense/BillDetail.tsx`         | acceptance (button), visual (both)                                            |
+| `new-expense-form`, `new-expense-form-amount-input`, `new-expense-more-toggle`                                          | `expense/NewExpenseForm.tsx`     | acceptance, unit (toggle also in visual flow)                                 |
+| `edit-bill-button`, `edit-bill-form`, `edit-bill-form-name-input`, `edit-bill-form-date-input`, `edit-bill-form-submit` | `expense/BillDetail.tsx`         | acceptance, unit                                                              |
+| `edit-expense-form`, `edit-expense-form-amount-input`, `edit-expense-form-submit`                                       | `expense/EditExpenseForm.tsx`    | acceptance, unit                                                              |
+| `edit-expense-{id}-button`                                                                                              | `expense/ExpenseItem.tsx`        | acceptance, unit                                                              |
 
 ## Dynamic ids (template)
 

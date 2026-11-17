@@ -18,8 +18,7 @@ const noProvenanceCodes = {
     type: 'suggestion',
     schema: [],
     messages: {
-      provenanceCode:
-        'Tracker code "{{match}}" in {{kind}}: keep task/phase/decision history in docs/, not in code.',
+      provenanceCode: 'Tracker code "{{match}}" in {{kind}}: keep task/phase/decision history in docs/, not in code.',
     },
   },
   create(context) {

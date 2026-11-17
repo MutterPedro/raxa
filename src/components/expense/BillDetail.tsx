@@ -6,13 +6,16 @@ import { Modal } from '../common/Modal';
 import Bill from '../../core/entities/Bill';
 import LoadingGauge from '../common/LoadingGuage';
 import NewExpenseForm from './NewExpenseForm';
+import EditExpenseForm from './EditExpenseForm';
 import Expense from '../../core/entities/Expense';
 import ExpenseItem from './ExpenseItem';
 import BillParticipantsPartList from './BillParticipantsPartList';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import Field from '../common/Field';
 import SavedChip from '../common/SavedChip';
 import { formatCurrency, formatDate } from '../../core/utils/format';
+import { parseInputDate, toDateInputValue } from '../../core/utils/localDate';
 
 export default function BillDetail() {
   const { billId } = useParams();
@@ -23,6 +26,8 @@ export default function BillDetail() {
   const [bill, setBill] = useState<Bill | null>(null);
   const [total, setTotal] = useState<number>(0);
   const [showForm, setShowForm] = useState<boolean>(false);
+  const [editingBill, setEditingBill] = useState<boolean>(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   // Stays true after the first successful write on this visit — on-device reassurance.
@@ -88,19 +93,99 @@ export default function BillDetail() {
     });
   }
 
+  async function handleBillUpdate(e: React.FormEvent) {
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const name = (formData.get('name') as string).trim();
+    const date = formData.get('date') as string;
+
+    try {
+      const updated = await billService.updateBill(bill?.id ?? Number(billId), {
+        ...(name ? { name } : {}),
+        ...(date ? { date: parseInputDate(date) } : {}),
+      });
+      if (!updated) throw new Error(`Bill ${billId} no longer exists`);
+      setBill(updated);
+      setEditingBill(false);
+      setSaved(true);
+      notify('Conta atualizada');
+    } catch (error) {
+      console.error(error);
+      notify('Não foi possível salvar a conta');
+    }
+  }
+
+  function onExpenseSaved(updated: Expense) {
+    setEditingExpense(null);
+    setSaved(true);
+    setExpenses((current) => current.map((e) => (e.id === updated.id ? updated : e)));
+    // The amount may have changed — refetch the total instead of patching it optimistically.
+    billService.getTotal(Number(billId)).then(setTotal).catch(console.error);
+    refreshParts();
+    notify('Despesa atualizada');
+  }
+
   return bill ? (
     showForm ? (
       <NewExpenseForm bill={bill} handleCancel={() => setShowForm(false)} onExpenseCreated={onExpenseCreated} />
+    ) : editingExpense ? (
+      <EditExpenseForm
+        expense={editingExpense}
+        handleCancel={() => setEditingExpense(null)}
+        onExpenseSaved={onExpenseSaved}
+      />
     ) : (
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-6">
         {saved && <SavedChip />}
         <Card>
-          <h2 className="type-display text-2xl font-bold text-ink">{bill.name}</h2>
-          <p className="mt-1 text-sm text-ink-muted">{formatDate(bill.date)}</p>
-          <p className="mt-4 text-3xl font-bold tabular-nums text-ink" data-testid="bill-total-span">
-            <span className="text-sm font-medium uppercase tracking-wide text-ink-muted">Total</span>{' '}
-            {formatCurrency(total)}
-          </p>
+          {editingBill ? (
+            <form data-testid="edit-bill-form" onSubmit={handleBillUpdate} className="flex flex-col gap-4">
+              <Field
+                label="Nome da conta"
+                name="name"
+                defaultValue={bill.name}
+                autoFocus
+                data-testid="edit-bill-form-name-input"
+              />
+              <Field
+                label="Data"
+                type="date"
+                name="date"
+                defaultValue={toDateInputValue(bill.date)}
+                data-testid="edit-bill-form-date-input"
+              />
+              <div className="flex gap-2">
+                <Button type="submit" size="lg" className="flex-1" data-testid="edit-bill-form-submit">
+                  Salvar
+                </Button>
+                <Button type="button" variant="ghost" size="lg" onClick={() => setEditingBill(false)}>
+                  Cancelar
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <h2 className="type-display text-2xl font-bold break-words text-ink">{bill.name}</h2>
+                  <p className="mt-1 text-sm text-ink-muted">{formatDate(bill.date)}</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setEditingBill(true)}
+                  data-testid="edit-bill-button"
+                  className="shrink-0"
+                >
+                  Editar
+                </Button>
+              </div>
+              <p className="mt-4 text-3xl font-bold tabular-nums text-ink" data-testid="bill-total-span">
+                <span className="text-sm font-medium uppercase tracking-wide text-ink-muted">Total</span>{' '}
+                {formatCurrency(total)}
+              </p>
+            </>
+          )}
         </Card>
         <Card>
           <details className="group" open>
@@ -126,7 +211,7 @@ export default function BillDetail() {
               <div className="overflow-hidden">
                 <ul role="list" className="divide-y divide-line">
                   {expenses.map((expense) => (
-                    <ExpenseItem expense={expense} key={expense.id} />
+                    <ExpenseItem expense={expense} key={expense.id} onEdit={setEditingExpense} />
                   ))}
                 </ul>
               </div>

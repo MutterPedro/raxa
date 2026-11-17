@@ -93,6 +93,43 @@ export class BillService {
     return this.billRepo.getById(billId);
   }
 
+  /** Partial update of a bill; returns null when the bill does not exist. */
+  async updateBill(billId: number, values: { name?: string; date?: Date }): Promise<WithId<Bill> | null> {
+    const bill = await this.billRepo.getById(billId);
+    if (!bill) return null;
+
+    if (values.name !== undefined) bill.name = values.name;
+    if (values.date !== undefined) bill.date = values.date;
+
+    return this.billRepo.save(bill);
+  }
+
+  /**
+   * Partial update of an expense; returns null when the expense does not exist.
+   * Keeps the quickAddExpense invariant: the payer is always among the participants,
+   * otherwise the division math never debits the paid amount to the payer and the
+   * balances stop summing to zero.
+   */
+  async updateExpense(
+    expenseId: number,
+    values: { name?: string; amount?: number; date?: Date; participantIds?: number[]; payerId?: number },
+  ): Promise<WithId<Expense> | null> {
+    const expense = await this.expenseRepo.getById(expenseId);
+    if (!expense) return null;
+
+    if (values.name !== undefined) expense.name = values.name;
+    if (values.amount !== undefined) expense.amount = values.amount;
+    if (values.date !== undefined) expense.date = values.date;
+    if (values.participantIds !== undefined) expense.participantIds = values.participantIds;
+    if (values.payerId !== undefined) expense.payerId = values.payerId;
+
+    if (!expense.participantIds.includes(expense.payerId)) {
+      expense.participantIds = [...expense.participantIds, expense.payerId];
+    }
+
+    return this.expenseRepo.save(expense);
+  }
+
   async getParticipants(billId: number): Promise<User[]> {
     const expenses = await this.getExpenses(billId);
     const participantsIds = new Set(expenses.flatMap((expense) => expense.participantIds));

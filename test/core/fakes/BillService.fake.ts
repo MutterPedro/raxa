@@ -29,6 +29,10 @@ export interface BillServiceFakeOptions {
   deleteExpenseFails?: boolean;
   /** When true, deleteBill rejects — for asserting delete failures keep the user on the bill. */
   deleteBillFails?: boolean;
+  /** When true, updateBill rejects — for asserting bill edit failures keep the form's user. */
+  updateBillFails?: boolean;
+  /** When true, updateExpense rejects — for asserting expense edit failures are reported. */
+  updateExpenseFails?: boolean;
 }
 
 // Component tests exercise a subset of BillService; the cast lets the fake stand in
@@ -49,6 +53,8 @@ export function createBillServiceFake(options: BillServiceFakeOptions = {}): Bil
     quickAddExpenseFails = false,
     deleteExpenseFails = false,
     deleteBillFails = false,
+    updateBillFails = false,
+    updateExpenseFails = false,
   } = options;
 
   const defaultBillObj =
@@ -89,5 +95,21 @@ export function createBillServiceFake(options: BillServiceFakeOptions = {}): Bil
     deleteExpense: deleteExpenseFails
       ? jest.fn(() => Promise.reject(new Error('delete failed')))
       : jest.fn(async () => undefined),
+    updateBill: updateBillFails
+      ? jest.fn(() => Promise.reject(new Error('update failed')))
+      : jest.fn(async (_id: number, values: { name?: string; date?: Date }) =>
+          defaultBillObj ? { ...defaultBillObj, ...values } : null,
+        ),
+    updateExpense: updateExpenseFails
+      ? jest.fn(() => Promise.reject(new Error('update failed')))
+      : jest.fn(
+          async (
+            id: number,
+            values: { name?: string; amount?: number; date?: Date; participantIds?: number[]; payerId?: number },
+          ) => {
+            const target = defaultExpenses.find((expense) => expense.id === id);
+            return target ? { ...target, ...values } : null;
+          },
+        ),
   } as unknown as BillService;
 }

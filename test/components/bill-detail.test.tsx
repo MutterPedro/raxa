@@ -20,8 +20,7 @@ jest.mock('react-router', () => ({
   useNavigate: () => navigateMock,
 }));
 
-function renderDetail(billService: BillService) {
-  const userService: UserService = createUserServiceFake();
+function renderDetail(billService: BillService, userService: UserService = createUserServiceFake()) {
   return render(
     <ServicesContext.Provider value={{ billService, userService }}>
       <ToastProvider>
@@ -276,6 +275,92 @@ describe('BillDetail', () => {
       expect(navigateMock).not.toHaveBeenCalled();
       expect(screen.getByTestId('bill-total-span')).toHaveTextContent('Total R$ 100,00');
       consoleError.mockRestore();
+    });
+  });
+
+  describe('editing', () => {
+    it('renders an edit affordance for the bill and for every expense #unit', async () => {
+      const expense = createExpense({ id: 2, name: 'Ingressos' });
+      renderDetail(createBillServiceFake({ bill: createBill(), expenses: [expense] }));
+
+      expect(await screen.findByTestId('edit-bill-button')).toBeInTheDocument();
+      expect(screen.getByTestId('edit-expense-2-button')).toHaveAccessibleName('Editar despesa Ingressos');
+    });
+
+    it('opens the expense edit form prefilled and saves the new amount #unit', async () => {
+      const me = createUser(1337, 'Eu');
+      const expense = createExpense({ id: 2, name: 'Ingressos', amount: 120.5 });
+      const billService = createBillServiceFake({ bill: createBill(), expenses: [expense], total: 120.5 });
+      renderDetail(billService, createUserServiceFake({ users: [me], usersById: { 1337: me } }));
+
+      fireEvent.click(await screen.findByTestId('edit-expense-2-button'));
+      await screen.findByTestId('edit-expense-form');
+      expect(screen.getByLabelText('Nome da despesa')).toHaveValue('Ingressos');
+      expect(screen.getByTestId('edit-expense-form-amount-input')).toHaveValue(120.5);
+      // The existing participants land in the selects before any interaction.
+      await screen.findAllByText('Eu');
+
+      fireEvent.change(screen.getByTestId('edit-expense-form-amount-input'), { target: { value: '200' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+
+      await waitFor(() =>
+        expect(billService.updateExpense).toHaveBeenCalledWith(
+          2,
+          expect.objectContaining({ amount: 200, participantIds: [1337], payerId: 1337 }),
+        ),
+      );
+      expect(await screen.findByText('Despesa atualizada')).toBeInTheDocument();
+      expect(screen.queryByTestId('edit-expense-form')).not.toBeInTheDocument();
+      expect(screen.getByText('R$ 200,00')).toBeInTheDocument();
+    });
+
+    it('closes the expense edit form on cancel without touching the service #unit', async () => {
+      const expense = createExpense({ id: 2 });
+      const billService = createBillServiceFake({ bill: createBill(), expenses: [expense] });
+      renderDetail(billService);
+
+      fireEvent.click(await screen.findByTestId('edit-expense-2-button'));
+      await screen.findByTestId('edit-expense-form');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+      expect(screen.queryByTestId('edit-expense-form')).not.toBeInTheDocument();
+      expect(billService.updateExpense).not.toHaveBeenCalled();
+    });
+
+    it('keeps the expense edit form open and reports the failure when the update fails #unit', async () => {
+      const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+      const me = createUser(1337, 'Eu');
+      const expense = createExpense({ id: 2 });
+      const billService = createBillServiceFake({ bill: createBill(), expenses: [expense], updateExpenseFails: true });
+      renderDetail(billService, createUserServiceFake({ users: [me], usersById: { 1337: me } }));
+
+      fireEvent.click(await screen.findByTestId('edit-expense-2-button'));
+      await screen.findByTestId('edit-expense-form');
+      fireEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+
+      expect(await screen.findByText('Não foi possível salvar a despesa')).toBeInTheDocument();
+      expect(screen.getByTestId('edit-expense-form')).toBeInTheDocument();
+      consoleError.mockRestore();
+    });
+
+    it('edits the bill name inline and updates the header #unit', async () => {
+      const billService = createBillServiceFake({ bill: createBill() });
+      renderDetail(billService);
+
+      fireEvent.click(await screen.findByTestId('edit-bill-button'));
+      const nameInput = await screen.findByTestId('edit-bill-form-name-input');
+      expect(nameInput).toHaveValue('Show da Pizza');
+
+      fireEvent.change(nameInput, { target: { value: 'Pizza Night' } });
+      fireEvent.click(screen.getByTestId('edit-bill-form-submit'));
+
+      await waitFor(() =>
+        expect(billService.updateBill).toHaveBeenCalledWith(1, { name: 'Pizza Night', date: expect.any(Date) }),
+      );
+      expect(await screen.findByText('Conta atualizada')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Pizza Night' })).toBeInTheDocument();
+      expect(screen.queryByTestId('edit-bill-form')).not.toBeInTheDocument();
     });
   });
 });
