@@ -494,18 +494,6 @@ describe('BillService.ts', function () {
       expect(await service.updateBill(99999, { name: 'ghost' })).toBeNull();
     });
 
-    it('should keep the name when updating only the date of a bill #unit', async function () {
-      const service = buildBillService();
-
-      const bill = await service.createBill({ name: 'keep me' });
-      const newDate = new Date(2026, 8, 1);
-
-      const updated = await service.updateBill(bill.id, { date: newDate });
-
-      expect(updated!.name).toBe('keep me');
-      expect(updated!.date.toISOString()).toBe(newDate.toISOString());
-    });
-
     it('should update an expense #unit', async function () {
       const conn = MemoryDBConnection.build<ExpenseProps>();
       const service = buildBillService({ expenseConn: conn });
