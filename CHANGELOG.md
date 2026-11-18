@@ -27,6 +27,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - The "Quem fica com quanto" division shows skeleton rows while loading instead of an
   empty gap that pops into content.
+- Touch devices: the × that removes a participant chip now has a ~44px hit area
+  (previously ~22×26px, hard to hit with a finger; the chip keeps its compact look).
 
 ## [0.1.0] - 2026-11-15
 

@@ -4,7 +4,8 @@ import { test, expect, type Page } from '@playwright/test';
  * PWA shell contract. Asserts the static install/safe-area metadata that both the dev
  * server and the production build serve from index.html, plus a safe-area inset harness
  * (via CDP, chromium-only — Firefox has no safe-area insets to simulate anyway)
- * proving the UI keeps clear of the notch/home-bar regions and never overflows horizontally.
+ * proving the UI keeps clear of the notch/home-bar regions and never overflows horizontally,
+ * plus a touch-target contract for the tiny chip remove buttons (chromium touch emulation).
  */
 
 const APP_URL = 'http://127.0.0.1:5173/';
@@ -103,5 +104,36 @@ test.describe('PWA shell #integration', function () {
     expect(fabBox!.y + fabBox!.height).toBeLessThanOrEqual(viewport.height - 48);
 
     await cdp.detach();
+  });
+
+  test('chip remove buttons carry a ~44px touch hit area on phones @chromium', async function ({
+    browser,
+    browserName,
+  }) {
+    test.skip(browserName !== 'chromium', 'relies on chromium touch emulation semantics');
+
+    // react-select's chip × is ~22×26px visually; on pointer:coarse devices the
+    // theme grows its clickable area with an invisible pseudo-element (index.css).
+    // The check is behavioral: a tap just outside the visual button must remove the chip.
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+    const page = await context.newPage();
+    await page.goto(APP_URL);
+    await expect(page.getByTestId('app-header')).toBeVisible();
+
+    await page.evaluate(() => window.__seedVisualDemo?.());
+    await page.goto(`${APP_URL}bill/1`);
+    await page.getByTestId('edit-expense-1-button').click();
+    const remove = page.getByRole('button', { name: 'Remove Ana' });
+    await expect(remove).toBeVisible();
+
+    const box = await remove.boundingBox();
+    expect(box).not.toBeNull();
+    // Sanity: the visual button is still the compact one (if it grows for real, drop this).
+    expect(box!.height).toBeLessThan(30);
+
+    await page.touchscreen.tap(box!.x + box!.width / 2, box!.y - 8);
+    await expect(page.getByRole('button', { name: 'Remove Ana' })).toHaveCount(0);
+
+    await context.close();
   });
 });

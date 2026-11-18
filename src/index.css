@@ -202,6 +202,27 @@
   outline-offset: 2px;
 }
 
+/* On touch devices the × that removes a participant chip is far too small to hit
+   (~22×26px). Grow its clickable area to ~44×44 with an invisible pseudo-element —
+   the chip itself keeps its compact look (desktop chips overlap nothing). */
+@media (pointer: coarse) {
+  /* react-select clips the value container; lift it so the grown × hit area below
+     isn't clipped away (chips wrap within the control, nothing paints outside).
+     Doubled class: emotion injects its base styles after the bundle at runtime,
+     so a same-specificity rule would lose. */
+  .select__control.select__control > .select__value-container {
+    overflow: visible;
+  }
+  .select__multi-value__remove {
+    position: relative;
+  }
+  .select__multi-value__remove::after {
+    content: '';
+    position: absolute;
+    inset: -10px -11px;
+  }
+}
+
 /* One global reduced-motion switch: every transition/animation in the app
    collapses to an instantaneous jump, covering anything not already wrapped
    in a motion-reduce: variant. */
