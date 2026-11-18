@@ -19,3 +19,14 @@ Feature: Edit Bill And Expenses
         And I save the expense edit
         Then I should see the bill total equal to 100$
         And I should see the expense row with amount 100$
+
+    Scenario: Paying on behalf of everyone from outside the split
+        Given I start from a fresh app with a bill named "Cervejas"
+        And I open that bill
+        And I add an expense of 90$ split with "Beto"
+        When I ask to edit the expense
+        And I remove "Eu" from the participants
+        And I save the expense edit
+        Then I should see the bill total equal to 90$
+        And I should see "Beto" with a 90$ part to pay
+        And I should see "Eu" with a 90$ part to receive

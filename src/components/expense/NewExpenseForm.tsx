@@ -9,6 +9,7 @@ import Button from '../common/Button';
 import Card from '../common/Card';
 import Field from '../common/Field';
 import SelectField, { CreatableSelectField, type SelectOption } from '../common/SelectField';
+import { mergeOptions, placeholderOption, resolveUserIds, toOption, toUserId } from '../common/userOptions';
 import { parseInputDate, todayInputValue } from '../../core/utils/localDate';
 
 interface NewExpenseFormProps {
@@ -16,13 +17,6 @@ interface NewExpenseFormProps {
   handleCancel: () => void;
   onExpenseCreated: (expense: Expense) => void;
 }
-
-const PLACE_HOLDER_ID = 'place_holder_id';
-
-const toOption = (user: { id: number; name: string }): SelectOption => ({
-  value: user.id.toString(),
-  label: user.name,
-});
 
 export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }: NewExpenseFormProps) {
   const billService = useBillService();
@@ -49,10 +43,7 @@ export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }:
         // Chained after createSelf (not parallel) so the freshly created self is always
         // among the pickable options, and never listed twice.
         const users = await userService.getUsers();
-        setOptions((prev) => {
-          const known = new Map([self, ...users.map(toOption), ...prev].map((option) => [option.value, option]));
-          return Array.from(known.values());
-        });
+        setOptions((prev) => mergeOptions([self], users.map(toOption), prev));
       })
       .catch(console.error);
   }, [userService]);
@@ -74,25 +65,10 @@ export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }:
       const name = (formData.get('name') as string).trim();
       const date = formData.get('date') as string;
 
-      // Users typed into the creatable select only exist after we create them; the payer
-      // may reference one of those placeholders, so resolve through a shared map.
-      const placeholderIds = new Map<string, number>();
-      const participantIds: number[] = [];
-      await Promise.all(
-        participants.map(async (p) => {
-          if (p.value.startsWith(PLACE_HOLDER_ID)) {
-            const user = await userService.createUser({ name: p.label, email: '' });
-            placeholderIds.set(p.value, user.id);
-            participantIds.push(user.id);
-          } else {
-            participantIds.push(Number(p.value));
-          }
-        }),
-      );
-      let payerId: number | undefined;
-      if (payer) {
-        payerId = payer.value.startsWith(PLACE_HOLDER_ID) ? placeholderIds.get(payer.value) : Number(payer.value);
-      }
+      // Typed-in names become real users here; the payer resolves through the same map
+      // so a payer that is still a placeholder lands on the very same new user.
+      const { ids: participantIds, placeholderIds } = await resolveUserIds(participants, userService);
+      const payerId = payer ? toUserId(payer, placeholderIds) : undefined;
 
       // Only forward what was actually filled; blanks fall back to the service defaults.
       const expense = await billService.quickAddExpense(bill.id, {
@@ -115,7 +91,7 @@ export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }:
   function createParticipant(inputValue: string) {
     const cleaned = inputValue.trim();
     if (!cleaned) return;
-    const placeholder = { label: cleaned, value: `${PLACE_HOLDER_ID}-${placeholderSeq.current++}` };
+    const placeholder = placeholderOption(cleaned, placeholderSeq.current++);
     setOptions((prev) => [...prev, placeholder]);
     setParticipants((prev) => [...prev, placeholder]);
   }
@@ -165,13 +141,7 @@ export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }:
                 onChange={(values) => setParticipants(Array.from(values))}
                 isClearable
               />
-              <SelectField
-                label="Quem pagou"
-                inputId="payer"
-                options={participants}
-                value={payer}
-                onChange={setPayer}
-              />
+              <SelectField label="Quem pagou" inputId="payer" options={options} value={payer} onChange={setPayer} />
             </div>
           )}
           <Button type="submit" size="lg" className="w-full" disabled={!(Number(amount) > 0)}>

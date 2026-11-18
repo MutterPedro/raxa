@@ -61,6 +61,24 @@ test('delete-bill-confirm', async ({ page }) => {
   await capture(page, 'delete-bill-confirm');
 });
 
+test('edit-bill-form', async ({ page }) => {
+  await gotoSeeded(page, '/bill/1');
+  await page.getByTestId('edit-bill-button').click();
+  await expect(page.getByTestId('edit-bill-form')).toBeVisible();
+  await capture(page, 'edit-bill-form');
+});
+
+test('edit-expense-form', async ({ page }) => {
+  await gotoSeeded(page, '/bill/1');
+  await page.getByTestId('edit-expense-1-button').click();
+  await expect(page.getByTestId('edit-expense-form')).toBeVisible();
+  // Wait for both selects to be prefilled (chips Eu + Ana and the payer value) —
+  // a golden shot of half-loaded selects would pin an impossible state.
+  await expect(page.getByText('Eu')).toHaveCount(2);
+  await expect(page.getByText(/^Ana$/)).toHaveCount(1);
+  await capture(page, 'edit-expense-form');
+});
+
 test('saved-chip', async ({ page }) => {
   // First write on the home screen leaves the on-device reassurance chip behind.
   await gotoFresh(page);

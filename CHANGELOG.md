@@ -11,11 +11,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - **Edit bills and expenses** — an `Editar` button on the bill card opens an inline form
   for name and date, and a pencil on each expense row opens a fully prefilled edit form
-  (name, amount, date, participants, payer). The payer is always kept among the
-  participants when saving, so the division math stays consistent.
+  (name, amount, date, participants, payer).
 
 ### Changed
 
+- The payer no longer has to be one of the expense participants. Paying on behalf of
+  everyone is now explicit: the participants share the full amount and owe it back, and
+  the outside payer shows up in "Quem fica com quanto" with the amount to receive
+  (balances still sum to zero). Quick add no longer forces the payer into the split.
 - Test-only helpers (`window.createTable`, `doesDbExists`, `getFirebaseSessionManager`,
   `__seedVisualDemo`, `__notifyToast`) are now exposed exclusively in dev builds and are
   stripped from production bundles.

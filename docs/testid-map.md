@@ -24,8 +24,8 @@ Playwright), Visual (`test/visual/`), Unit (`test/components/`).
 | `new-expense-button`                                                                                                    | `expense/BillDetail.tsx`         | acceptance, visual                                                            |
 | `delete-bill-button`, `delete-bill-confirm`                                                                             | `expense/BillDetail.tsx`         | acceptance (button), visual (both)                                            |
 | `new-expense-form`, `new-expense-form-amount-input`, `new-expense-more-toggle`                                          | `expense/NewExpenseForm.tsx`     | acceptance, unit (toggle also in visual flow)                                 |
-| `edit-bill-button`, `edit-bill-form`, `edit-bill-form-name-input`, `edit-bill-form-date-input`, `edit-bill-form-submit` | `expense/BillDetail.tsx`         | acceptance, unit                                                              |
-| `edit-expense-form`, `edit-expense-form-amount-input`, `edit-expense-form-submit`                                       | `expense/EditExpenseForm.tsx`    | acceptance, unit                                                              |
+| `edit-bill-button`, `edit-bill-form`, `edit-bill-form-name-input`, `edit-bill-form-date-input`, `edit-bill-form-submit` | `expense/BillDetail.tsx`         | acceptance, unit, visual (form)                                               |
+| `edit-expense-form`, `edit-expense-form-amount-input`, `edit-expense-form-submit`                                       | `expense/EditExpenseForm.tsx`    | acceptance, unit, visual (form)                                               |
 | `edit-expense-{id}-button`                                                                                              | `expense/ExpenseItem.tsx`        | acceptance, unit                                                              |
 
 ## Dynamic ids (template)

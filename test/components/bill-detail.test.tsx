@@ -344,6 +344,28 @@ describe('BillDetail', () => {
       consoleError.mockRestore();
     });
 
+    it('keeps a payer who was removed from the participants, settling up from outside the split #unit', async () => {
+      const me = createUser(1337, 'Eu');
+      const ana = createUser(7, 'Ana');
+      const expense = createExpense({ id: 2, name: 'Bolo', amount: 90, participantIds: [1337, 7], payerId: 1337 });
+      const billService = createBillServiceFake({ bill: createBill(), expenses: [expense], total: 90 });
+      renderDetail(billService, createUserServiceFake({ users: [me, ana], usersById: { 1337: me, 7: ana } }));
+
+      fireEvent.click(await screen.findByTestId('edit-expense-2-button'));
+      await screen.findByTestId('edit-expense-form');
+
+      // Dropping the payer's chip must not force them back in: they paid on behalf of Ana.
+      fireEvent.click(await screen.findByLabelText('Remove Eu'));
+      fireEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+
+      await waitFor(() =>
+        expect(billService.updateExpense).toHaveBeenCalledWith(
+          2,
+          expect.objectContaining({ participantIds: [7], payerId: 1337 }),
+        ),
+      );
+    });
+
     it('edits the bill name inline and updates the header #unit', async () => {
       const billService = createBillServiceFake({ bill: createBill() });
       renderDetail(billService);

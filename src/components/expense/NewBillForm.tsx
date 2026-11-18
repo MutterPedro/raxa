@@ -5,6 +5,7 @@ import Button from '../common/Button';
 import Card from '../common/Card';
 import Field from '../common/Field';
 import SelectField, { CreatableSelectField, type SelectOption } from '../common/SelectField';
+import { mergeOptions, placeholderOption, resolveUserIds, toOption, toUserId } from '../common/userOptions';
 import { todayInputValue } from '../../core/utils/localDate';
 
 export interface NewBillFormValues {
@@ -21,13 +22,6 @@ export interface NewBillFormProps {
   handleSubmitBill: (values: NewBillFormValues) => void;
   handleCancel: () => void;
 }
-
-const PLACE_HOLDER_ID = 'place_holder_id';
-
-const toOption = (user: { id: number; name: string }): SelectOption => ({
-  value: user.id.toString(),
-  label: user.name,
-});
 
 export default function NewBillForm({ handleSubmitBill, handleCancel }: NewBillFormProps) {
   const userService = useUserService();
@@ -49,10 +43,7 @@ export default function NewBillForm({ handleSubmitBill, handleCancel }: NewBillF
         // Chained after createSelf (not parallel) so the freshly created self is always
         // among the pickable options, and never listed twice.
         const users = await userService.getUsers();
-        setOptions((prev) => {
-          const known = new Map([self, ...users.map(toOption), ...prev].map((option) => [option.value, option]));
-          return Array.from(known.values());
-        });
+        setOptions((prev) => mergeOptions([self], users.map(toOption), prev));
       })
       .catch(console.error);
   }, [userService]);
@@ -65,26 +56,14 @@ export default function NewBillForm({ handleSubmitBill, handleCancel }: NewBillF
     const date = (formData.get('date') as string) || '';
     const amountNumber = Number(amount) || 0;
 
-    // Users typed into the creatable select only exist after we create them; the payer
-    // may reference one of those placeholders, so resolve through a shared map.
+    // Typed-in names become real users here; the payer resolves through the same map
+    // so a payer that is still a placeholder lands on the very same new user.
     const participantIds: number[] = [];
     let payerId: number | undefined;
     if (amountNumber > 0) {
-      const placeholderIds = new Map<string, number>();
-      await Promise.all(
-        participants.map(async (p) => {
-          if (p.value.startsWith(PLACE_HOLDER_ID)) {
-            const user = await userService.createUser({ name: p.label, email: '' });
-            placeholderIds.set(p.value, user.id);
-            participantIds.push(user.id);
-          } else {
-            participantIds.push(Number(p.value));
-          }
-        }),
-      );
-      if (payer) {
-        payerId = payer.value.startsWith(PLACE_HOLDER_ID) ? placeholderIds.get(payer.value) : Number(payer.value);
-      }
+      const { ids, placeholderIds } = await resolveUserIds(participants, userService);
+      participantIds.push(...ids);
+      if (payer) payerId = toUserId(payer, placeholderIds);
     }
 
     handleSubmitBill({ name, date, amount: amountNumber, participantIds, payerId });
@@ -93,7 +72,7 @@ export default function NewBillForm({ handleSubmitBill, handleCancel }: NewBillF
   function createParticipant(inputValue: string) {
     const cleaned = inputValue.trim();
     if (!cleaned) return;
-    const placeholder = { label: cleaned, value: `${PLACE_HOLDER_ID}-${placeholderSeq.current++}` };
+    const placeholder = placeholderOption(cleaned, placeholderSeq.current++);
     setOptions((prev) => [...prev, placeholder]);
     setParticipants((prev) => [...prev, placeholder]);
   }
@@ -141,7 +120,7 @@ export default function NewBillForm({ handleSubmitBill, handleCancel }: NewBillF
               <SelectField
                 label="Quem pagou"
                 inputId="new-bill-form-payer-input"
-                options={participants}
+                options={options}
                 value={payer}
                 onChange={setPayer}
               />

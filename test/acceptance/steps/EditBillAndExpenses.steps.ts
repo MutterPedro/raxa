@@ -116,4 +116,67 @@ defineFeature(feature, (test) => {
       await expect(page.getByText('Despesa atualizada')).toBeVisible();
     });
   });
+
+  test('Paying on behalf of everyone from outside the split', ({ given, when, then, and }) => {
+    given(/^I start from a fresh app with a bill named "(.*)"$/, async function (name: string) {
+      const context = await browser.newContext();
+      page = await context.newPage();
+      await page.goto('http://127.0.0.1:5173/');
+      await expect(page).toHaveTitle(/raxa/);
+
+      await page.getByTestId('new-bill-jumbo-button').click();
+      await page.getByTestId('new-bill-form-name-input').fill(name);
+      await page.getByRole('button', { name: 'Criar' }).click();
+      await expect(page.getByTestId('bill-item-name-1')).toContainText(name);
+    });
+
+    and('I open that bill', async function () {
+      await page.getByTestId('bill-item-name-1').click();
+      await expect(page).toHaveURL(/\/bill\/1/);
+      await expect(page.getByTestId('bill-total-span')).toBeVisible();
+    });
+
+    and(/^I add an expense of (\d+)\$ split with "(.*)"$/, async function (amount: string, participant: string) {
+      await page.getByTestId('new-expense-button').click();
+      await page.getByTestId('new-expense-form-amount-input').fill(amount);
+      // The options section is open by default: add a typed participant on top of self.
+      const participantInput = page.locator('#new-expense-form-participant-input');
+      await participantInput.fill(participant);
+      await participantInput.press('Enter');
+      await page.getByRole('button', { name: 'Adicionar' }).click();
+      await expect(page.getByTestId('bill-total-span')).toHaveText(`Total ${brl(Number(amount))}`);
+    });
+
+    when('I ask to edit the expense', async function () {
+      await page.getByTestId('edit-expense-1-button').click();
+      await expect(page.getByTestId('edit-expense-form')).toBeVisible();
+    });
+
+    and(/^I remove "(.*)" from the participants$/, async function (participant: string) {
+      await page.getByRole('button', { name: `Remove ${participant}` }).click();
+    });
+
+    and('I save the expense edit', async function () {
+      await page.getByRole('button', { name: 'Salvar' }).click();
+      await expect(page.getByTestId('edit-expense-form')).toBeHidden();
+    });
+
+    then(/^I should see the bill total equal to (\d+)\$$/, async function (amount: string) {
+      await expect(page.getByTestId('bill-total-span')).toHaveText(`Total ${brl(Number(amount))}`);
+    });
+
+    and(/^I should see "(.*)" with a (\d+)\$ part to pay$/, async function (participant: string, amount: string) {
+      const row = page.locator('li').filter({ has: page.getByTestId(`bill-part-participant-${participant}`) });
+      await expect(row.getByTestId(`bill-part-amount-${participant}`)).toHaveText(brl(Number(amount)));
+      await expect(row.getByText('a pagar')).toBeVisible();
+    });
+
+    and(/^I should see "(.*)" with a (\d+)\$ part to receive$/, async function (participant: string, amount: string) {
+      const row = page.locator('li').filter({ has: page.getByTestId(`bill-part-participant-${participant}`) });
+      // The outside payer shares in nothing and is simply owed the whole amount.
+      // brl() prepends the symbol before the minus: `R$ -90,00`, as formatCurrency does.
+      await expect(row.getByTestId(`bill-part-amount-${participant}`)).toHaveText(brl(-Number(amount)));
+      await expect(row.getByText('a receber')).toBeVisible();
+    });
+  });
 });

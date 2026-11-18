@@ -406,7 +406,7 @@ describe('BillService.ts', function () {
       expect(expense.name).toBe('Trip');
     });
 
-    it('should append the payer to a quick added expense when it is not among the bill participants #unit', async function () {
+    it('should keep a quick added expense paid by an outsider out of the bill participants #unit', async function () {
       const userService = new UserService(UserRepositoryFake.build());
       const service = buildBillService({ userService });
 
@@ -425,8 +425,18 @@ describe('BillService.ts', function () {
 
       const expense = await service.quickAddExpense(bill.id, { amount: 30, payerId: outsider.id });
 
+      // The outsider paid on behalf of the bill participants: they share the 30 and
+      // owe it back, the payer shares in nothing.
       expect(expense.payerId).toBe(outsider.id);
-      expect(expense.participantIds).toEqual([self.id, friend.id, outsider.id]);
+      expect(expense.participantIds).toEqual([self.id, friend.id]);
+
+      const parts = await service.getParticipantsParts(bill.id);
+      const byId = new Map(parts.map((part) => [part.user.id, part.amount]));
+      // self: 20 share − 40 paid + 15 share = −5; friend: 20 + 15 = 35; outsider: −30.
+      expect(byId.get(self.id)).toBeCloseTo(-5);
+      expect(byId.get(friend.id)).toBeCloseTo(35);
+      expect(byId.get(outsider.id)).toBeCloseTo(-30);
+      expect(parts.reduce((acc, part) => acc + part.amount, 0)).toBeCloseTo(0);
     });
 
     it('should keep every explicitly provided value of a quick added expense #unit', async function () {
@@ -486,6 +496,12 @@ describe('BillService.ts', function () {
       expect(updated!.name).toBe('new name');
       expect(updated!.ownerId).toBe(1337);
       expect(updated!.date.toISOString()).toBe(bill.date.toISOString());
+
+      const newDate = new Date(2026, 8, 1);
+      const dateOnly = await service.updateBill(bill.id, { date: newDate });
+
+      expect(dateOnly!.name).toBe('new name');
+      expect(dateOnly!.date.toISOString()).toBe(newDate.toISOString());
     });
 
     it('should return null when updating a bill that does not exist #unit', async function () {
@@ -525,7 +541,7 @@ describe('BillService.ts', function () {
       expect(conn.items[0].amount).toBe(60);
     });
 
-    it('should append the payer to an updated expense when it is not among the participants #unit', async function () {
+    it('should keep the payer out of the participants when updating an expense that way #unit', async function () {
       const service = buildBillService();
 
       const bill = await service.createBill({ name: 'test' });
@@ -539,7 +555,10 @@ describe('BillService.ts', function () {
 
       const updated = await service.updateExpense(expense.id, { participantIds: [2, 3], payerId: 1 });
 
-      expect(updated!.participantIds).toEqual([2, 3, 1]);
+      // Paying on behalf of the participants is legitimate: the payer stays outside
+      // the split, and the division math owes the full amount back to them.
+      expect(updated!.participantIds).toEqual([2, 3]);
+      expect(updated!.payerId).toBe(1);
     });
 
     it('should return null when updating an expense that does not exist #unit', async function () {

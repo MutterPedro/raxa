@@ -8,6 +8,7 @@ import Button from '../common/Button';
 import Card from '../common/Card';
 import Field from '../common/Field';
 import SelectField, { CreatableSelectField, type SelectOption } from '../common/SelectField';
+import { mergeOptions, placeholderOption, resolveUserIds, toOption, toUserId } from '../common/userOptions';
 import { parseInputDate, toDateInputValue } from '../../core/utils/localDate';
 
 interface EditExpenseFormProps {
@@ -15,14 +16,6 @@ interface EditExpenseFormProps {
   handleCancel: () => void;
   onExpenseSaved: (expense: Expense) => void;
 }
-
-// Same placeholder scheme as NewExpenseForm: typed-in names only become users on submit.
-const PLACE_HOLDER_ID = 'place_holder_id';
-
-const toOption = (user: { id: number; name: string }): SelectOption => ({
-  value: user.id.toString(),
-  label: user.name,
-});
 
 export default function EditExpenseForm({ expense, handleCancel, onExpenseSaved }: EditExpenseFormProps) {
   const billService = useBillService();
@@ -37,19 +30,19 @@ export default function EditExpenseForm({ expense, handleCancel, onExpenseSaved 
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    Promise.all([userService.getByIds(expense.participantIds), userService.getUsers()])
-      .then(([expenseParticipants, allUsers]) => {
-        const selected = expenseParticipants.map(toOption);
+    // The payer may sit outside the participant list (paying on behalf of everyone),
+    // so load everyone involved — not just the participants — to prefill both selects.
+    const participantIdSet = new Set(expense.participantIds);
+    const involvedIds = [...new Set([...expense.participantIds, expense.payerId])];
+    Promise.all([userService.getByIds(involvedIds), userService.getUsers()])
+      .then(([involvedUsers, allUsers]) => {
+        const selected = involvedUsers.filter((user) => participantIdSet.has(user.id)).map(toOption);
         setParticipants(selected);
-        const currentPayer = expenseParticipants.find((user) => user.id === expense.payerId);
+        const currentPayer = involvedUsers.find((user) => user.id === expense.payerId);
         setPayer(currentPayer ? toOption(currentPayer) : null);
         // Pickable options are every known user plus the selected ones — a participant
         // the user store no longer has must still be removable, never silently dropped.
-        setOptions(
-          Array.from(
-            new Map([...allUsers.map(toOption), ...selected].map((option) => [option.value, option])).values(),
-          ),
-        );
+        setOptions(mergeOptions(allUsers.map(toOption), selected, currentPayer ? [toOption(currentPayer)] : []));
       })
       .catch(console.error);
   }, [userService, expense]);
@@ -60,27 +53,11 @@ export default function EditExpenseForm({ expense, handleCancel, onExpenseSaved 
     if (!(amountNumber > 0) || participants.length === 0) return;
 
     try {
-      // Names typed into the creatable select only exist after we create them; the payer
-      // may reference one of those placeholders, so resolve through a shared map.
-      const placeholderIds = new Map<string, number>();
-      const participantIds: number[] = [];
-      await Promise.all(
-        participants.map(async (p) => {
-          if (p.value.startsWith(PLACE_HOLDER_ID)) {
-            const user = await userService.createUser({ name: p.label, email: '' });
-            placeholderIds.set(p.value, user.id);
-            participantIds.push(user.id);
-          } else {
-            participantIds.push(Number(p.value));
-          }
-        }),
-      );
+      // Typed-in names become real users here; the payer resolves through the same map
+      // so a payer that is still a placeholder lands on the very same new user.
+      const { ids: participantIds, placeholderIds } = await resolveUserIds(participants, userService);
       let payerId = expense.payerId;
-      if (payer) {
-        payerId = payer.value.startsWith(PLACE_HOLDER_ID)
-          ? (placeholderIds.get(payer.value) ?? expense.payerId)
-          : Number(payer.value);
-      }
+      if (payer) payerId = toUserId(payer, placeholderIds) ?? expense.payerId;
 
       // A blank name keeps the current one — clearing it entirely is not a meaningful edit.
       const formData = new FormData(e.target as HTMLFormElement);
@@ -108,7 +85,7 @@ export default function EditExpenseForm({ expense, handleCancel, onExpenseSaved 
   function createParticipant(inputValue: string) {
     const cleaned = inputValue.trim();
     if (!cleaned) return;
-    const placeholder = { label: cleaned, value: `${PLACE_HOLDER_ID}-${placeholderSeq.current++}` };
+    const placeholder = placeholderOption(cleaned, placeholderSeq.current++);
     setOptions((prev) => [...prev, placeholder]);
     setParticipants((prev) => [...prev, placeholder]);
   }
@@ -140,13 +117,7 @@ export default function EditExpenseForm({ expense, handleCancel, onExpenseSaved 
             onChange={(values) => setParticipants(Array.from(values))}
             isClearable
           />
-          <SelectField
-            label="Quem pagou"
-            inputId="edit-payer"
-            options={participants}
-            value={payer}
-            onChange={setPayer}
-          />
+          <SelectField label="Quem pagou" inputId="edit-payer" options={options} value={payer} onChange={setPayer} />
           <Button
             type="submit"
             size="lg"

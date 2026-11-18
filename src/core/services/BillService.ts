@@ -52,8 +52,8 @@ export class BillService {
   /**
    * Amount-first quick capture: only the amount is required, every other value falls
    * back to a default — today, the current self as payer, all current bill participants
-   * and the bill's own name. The payer is always kept among the participants because
-   * the division math only counts participants.
+   * and the bill's own name. The payer never joins the split by force: when they are
+   * not one of the bill participants they paid on behalf of everyone and get credited.
    */
   async quickAddExpense(
     billId: number,
@@ -62,9 +62,9 @@ export class BillService {
     const date = values.date ?? new Date();
     const payerId = values.payerId ?? (await this.userService.createSelf()).id;
 
-    const participants =
-      values.participantIds ?? (await this.getParticipants(billId)).map((participant) => participant.id);
-    const participantIds = participants.includes(payerId) ? participants : [...participants, payerId];
+    const participants = values.participantIds ?? (await this.getParticipants(billId)).map((p) => p.id);
+    // Someone has to carry the share: an empty split falls back to the payer alone.
+    const participantIds = participants.length > 0 ? participants : [payerId];
 
     const bill = await this.getById(billId);
     const name = values.name?.trim() || bill?.name || '';
@@ -106,9 +106,8 @@ export class BillService {
 
   /**
    * Partial update of an expense; returns null when the expense does not exist.
-   * Keeps the quickAddExpense invariant: the payer is always among the participants,
-   * otherwise the division math never debits the paid amount to the payer and the
-   * balances stop summing to zero.
+   * The payer does not have to be among the participants: paying from outside the
+   * split is legitimate, and getParticipantsParts credits the full amount back to them.
    */
   async updateExpense(
     expenseId: number,
@@ -123,35 +122,35 @@ export class BillService {
     if (values.participantIds !== undefined) expense.participantIds = values.participantIds;
     if (values.payerId !== undefined) expense.payerId = values.payerId;
 
-    if (!expense.participantIds.includes(expense.payerId)) {
-      expense.participantIds = [...expense.participantIds, expense.payerId];
-    }
-
     return this.expenseRepo.save(expense);
   }
 
+  /**
+   * Everyone involved in the bill: the participants of its expenses plus whoever paid
+   * for one of them — an outside payer must show up to receive the money back.
+   */
   async getParticipants(billId: number): Promise<User[]> {
     const expenses = await this.getExpenses(billId);
-    const participantsIds = new Set(expenses.flatMap((expense) => expense.participantIds));
+    const participantsIds = new Set(expenses.flatMap((expense) => [...expense.participantIds, expense.payerId]));
 
     return this.userService.getByIds([...participantsIds]);
   }
 
+  /**
+   * Net balance per involved user: participants share each expense they take part in,
+   * and whoever paid one has the full amount credited back. A payer outside the
+   * participants shares in nothing and is simply owed the whole amount. Balances always
+   * sum to zero.
+   */
   async getParticipantsParts(billId: number): Promise<{ amount: number; user: User }[]> {
     const participants = await this.getParticipants(billId);
     const expenses = await this.getExpenses(billId);
 
     return participants.map((user) => {
       const amount = expenses.reduce((acc, expense) => {
-        if (expense.participantIds.includes(user.id)) {
-          const part = acc + expense.amount / expense.participantIds.length;
-
-          if (expense.payerId === user.id) {
-            return part - expense.amount;
-          }
-
-          return part;
-        }
+        const shares = expense.participantIds.length;
+        if (shares > 0 && expense.participantIds.includes(user.id)) acc += expense.amount / shares;
+        if (expense.payerId === user.id) acc -= expense.amount;
         return acc;
       }, 0);
 
