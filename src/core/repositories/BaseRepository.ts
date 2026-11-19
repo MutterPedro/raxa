@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import type { DBConnection } from '../../infra/DBConnection';
+import type { DBConnection, ItemPredicate, ListOptions } from '../../infra/DBConnection';
 
 import { TABLE_FIELDS } from '../utils/decorators/database';
 import { WithId } from '../../@types/utils';
@@ -51,9 +51,20 @@ export abstract class BaseRepository<T extends BaseEntity, P extends object = ob
     return updated!;
   }
 
-  async list(page: number): Promise<WithId<T>[]> {
-    const rawList = await this.dbConnection.list(page);
+  async list(page: number, options?: ListOptions): Promise<WithId<T>[]> {
+    const rawList = await this.dbConnection.list(page, options);
     return rawList.map((data) => this.fromPlainObject(data));
+  }
+
+  /** Paged rows matching an arbitrary predicate, in the same order as `list`. */
+  async searchPage(predicate: ItemPredicate<P>, page: number, options?: ListOptions): Promise<WithId<T>[]> {
+    const rawList = await this.dbConnection.searchPage(predicate, page, options);
+    return rawList.map((data) => this.fromPlainObject(data));
+  }
+
+  /** How many rows exist (optionally matching the predicate). */
+  count(predicate?: ItemPredicate<P>): Promise<number> {
+    return this.dbConnection.count(predicate);
   }
 
   async filter(filter: Partial<P>): Promise<WithId<T>[]> {

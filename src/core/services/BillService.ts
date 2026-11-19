@@ -8,6 +8,7 @@ import Expense from '../entities/Expense';
 import { ExpenseRepository } from '../repositories/ExpenseRepository';
 import { WithId } from '../../@types/utils';
 import User from '../entities/User';
+import { buildNameMatcher } from '../utils/search';
 import { UserService } from './UserService';
 
 @injectable()
@@ -27,8 +28,21 @@ export class BillService {
     return this.billRepo.save(bill);
   }
 
-  async getBills(page: number = 1): Promise<Bill[]> {
-    return this.billRepo.list(page);
+  /**
+   * One page of bills, newest first. `search` filters names ignoring case and
+   * accents; blank/omitted terms list everything.
+   */
+  async getBills(page: number = 1, opts: { search?: string } = {}): Promise<Bill[]> {
+    const term = opts.search?.trim();
+    return term
+      ? this.billRepo.searchPage(buildNameMatcher(term), page, { newestFirst: true })
+      : this.billRepo.list(page, { newestFirst: true });
+  }
+
+  /** How many bills match the same filter — the feed decides "more pages" from this. */
+  async countBills(opts: { search?: string } = {}): Promise<number> {
+    const term = opts.search?.trim();
+    return this.billRepo.count(term ? buildNameMatcher(term) : undefined);
   }
 
   async deleteBill(billId: number): Promise<void> {

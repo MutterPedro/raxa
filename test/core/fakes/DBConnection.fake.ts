@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { MaybeWithId, WithId } from '../../../src/@types/utils';
-import { DBConnection } from '../../../src/infra/DBConnection';
+import type { DBConnection, ItemPredicate, ListOptions } from '../../../src/infra/DBConnection';
 
 export class MemoryDBConnection<T extends object> implements DBConnection<T> {
   public items: WithId<T>[] = [];
@@ -8,11 +8,15 @@ export class MemoryDBConnection<T extends object> implements DBConnection<T> {
   // Auto-increment ids are never reused, mirroring Dexie: deleting the last row
   // must not hand its id to the next insert.
   private nextId = 1;
+  // Mirrors IndexedDBConnection's default page size so unit tests exercise real paging.
+  private pageSize = 10;
 
   private constructor() {}
 
-  static build<T extends object>(): MemoryDBConnection<T> {
-    return new MemoryDBConnection<T>();
+  static build<T extends object>(pageSize = 10): MemoryDBConnection<T> {
+    const conn = new MemoryDBConnection<T>();
+    conn.pageSize = pageSize;
+    return conn;
   }
 
   async update(id: number, data: Partial<T>): Promise<number> {
@@ -55,8 +59,28 @@ export class MemoryDBConnection<T extends object> implements DBConnection<T> {
     this.items.forEach((item, idx) => this.indexes.set(item.id, idx));
   }
 
-  async list(): Promise<WithId<T>[]> {
-    return this.items;
+  async list(page = 1, options?: ListOptions): Promise<WithId<T>[]> {
+    return this.paginate(this.items, page, options);
+  }
+
+  async searchPage(predicate: ItemPredicate<T>, page = 1, options?: ListOptions): Promise<WithId<T>[]> {
+    return this.paginate(
+      this.items.filter((item) => predicate(item)),
+      page,
+      options,
+    );
+  }
+
+  async count(predicate?: ItemPredicate<T>): Promise<number> {
+    return predicate ? this.items.filter((item) => predicate(item)).length : this.items.length;
+  }
+
+  private paginate(items: WithId<T>[], page: number, options?: ListOptions): WithId<T>[] {
+    if (page <= 0) {
+      throw new RangeError('Page number must be greater than zero');
+    }
+    const ordered = options?.newestFirst ? [...items].reverse() : items;
+    return ordered.slice((page - 1) * this.pageSize, page * this.pageSize);
   }
 
   async filter(filter: Partial<T>): Promise<WithId<T>[]> {

@@ -9,12 +9,19 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Bill search and an infinite bills feed** — a search field above the home list narrows
+  bills by name ignoring case and accents (typing is debounced; blank lists everything),
+  and the list auto-loads older pages as its end scrolls into view — no buttons, no
+  page-size knowledge in the UI (`countBills` drives "more pages"). The persistence port
+  gained predicate paging (`searchPage`/`count`) for this.
 - **Edit bills and expenses** — an `Editar` button on the bill card opens an inline form
   for name and date, and a pencil on each expense row opens a fully prefilled edit form
   (name, amount, date, participants, payer).
 
 ### Changed
 
+- The home bills list is now ordered newest first, so a freshly created bill lands at the
+  top instead of the bottom.
 - The payer no longer has to be one of the expense participants. Paying on behalf of
   everyone is now explicit: the participants share the full amount and owe it back, and
   the outside payer shows up in "Quem fica com quanto" with the amount to receive

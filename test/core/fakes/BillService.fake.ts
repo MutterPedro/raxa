@@ -4,7 +4,10 @@ import type User from '../../../src/core/entities/User';
 import type { BillService } from '../../../src/core/services/BillService';
 
 export interface BillServiceFakeOptions {
+  /** Pool served by getBills, newest first, sliced per page; also the search corpus. */
   bills?: Bill[];
+  /** Slice size getBills applies (small values make infinite-feed tests easy). */
+  billsPageSize?: number;
   total?: number;
   participants?: User[];
   /** When true, getBills never resolves — for asserting loading states. */
@@ -40,6 +43,7 @@ export interface BillServiceFakeOptions {
 export function createBillServiceFake(options: BillServiceFakeOptions = {}): BillService {
   const {
     bills = [],
+    billsPageSize = 10,
     total = 0,
     participants = [],
     billsPending = false,
@@ -68,8 +72,21 @@ export function createBillServiceFake(options: BillServiceFakeOptions = {}): Bil
       return b;
     })();
 
+  // Mirrors BillService's listing contract: a newest-first pool, searched with a plain
+  // case-insensitive contains (the real accent folding is unit-tested on the service),
+  // and sliced per page.
+  const searched = (search?: string): Bill[] => {
+    const term = search?.trim().toLowerCase();
+    return term ? bills.filter((bill) => bill.name.toLowerCase().includes(term)) : bills;
+  };
+
   return {
-    getBills: jest.fn(() => (billsPending ? new Promise<Bill[]>(() => {}) : Promise.resolve(bills))),
+    getBills: jest.fn(async (page: number = 1, opts: { search?: string } = {}) => {
+      if (billsPending) return new Promise<Bill[]>(() => {});
+      const found = searched(opts.search);
+      return found.slice((page - 1) * billsPageSize, page * billsPageSize);
+    }),
+    countBills: jest.fn(async (opts: { search?: string } = {}) => Promise.resolve(searched(opts.search).length)),
     getTotal: jest.fn(async () => total),
     getParticipants: jest.fn(async () => participants),
     getById: jest.fn(async () => defaultBillObj),

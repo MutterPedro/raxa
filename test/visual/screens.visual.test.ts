@@ -13,6 +13,15 @@ test('home-list', async ({ page }) => {
   await capture(page, 'home-list');
 });
 
+test('home-search', async ({ page }) => {
+  await gotoSeeded(page);
+  await page.getByTestId('bills-search-input').fill('churr');
+  // Debounce plus fetch: only the seeded "Churrasco de domingo" survives the filter.
+  await expect(page.getByTestId('bill-item-name-1')).toHaveCount(0);
+  await expect(page.getByTestId('bill-item-name-2')).toBeVisible();
+  await capture(page, 'home-search');
+});
+
 test('bill-detail', async ({ page }) => {
   await gotoSeeded(page, '/bill/1');
   await expect(page.getByTestId('bill-total-span')).toBeVisible();

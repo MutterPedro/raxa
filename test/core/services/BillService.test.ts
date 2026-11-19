@@ -333,6 +333,74 @@ describe('BillService.ts', function () {
       expect(await service.getBills(1)).toHaveLength(2);
     });
 
+    it('should list bills newest first #unit', async function () {
+      const service = buildBillService();
+
+      const first = await service.createBill({ name: 'first' });
+      const second = await service.createBill({ name: 'second' });
+      const third = await service.createBill({ name: 'third' });
+
+      const bills = await service.getBills();
+
+      expect(bills.map((bill) => bill.id)).toEqual([third.id, second.id, first.id]);
+    });
+
+    it('should page through bills without repeats or gaps #unit', async function () {
+      const conn = MemoryDBConnection.build<BillProps>(3);
+      const service = buildBillService({ billConn: conn });
+
+      for (let i = 0; i < 7; i++) {
+        await service.createBill({ name: `bill ${i}` });
+      }
+
+      const page1 = await service.getBills(1);
+      const page2 = await service.getBills(2);
+      const page3 = await service.getBills(3);
+      const page4 = await service.getBills(4);
+
+      expect(page1.map((bill) => bill.name)).toEqual(['bill 6', 'bill 5', 'bill 4']);
+      expect(page2.map((bill) => bill.name)).toEqual(['bill 3', 'bill 2', 'bill 1']);
+      expect(page3.map((bill) => bill.name)).toEqual(['bill 0']);
+      expect(page4).toHaveLength(0);
+    });
+
+    it('should find bills by name ignoring case and accents #unit', async function () {
+      const service = buildBillService();
+
+      await service.createBill({ name: 'Açaí no parque' });
+      await service.createBill({ name: 'Cinema em família' });
+      await service.createBill({ name: 'cinema à tarde' });
+      await service.createBill({ name: 'Churrasco' });
+
+      const acai = await service.getBills(1, { search: 'acai' });
+      const cinema = await service.getBills(1, { search: ' CINEMA ' });
+
+      expect(acai.map((bill) => bill.name)).toEqual(['Açaí no parque']);
+      expect(cinema.map((bill) => bill.name)).toEqual(['cinema à tarde', 'Cinema em família']);
+    });
+
+    it('should list every bill when the search term is blank #unit', async function () {
+      const service = buildBillService();
+
+      await service.createBill({ name: casual.name });
+      await service.createBill({ name: casual.name });
+
+      expect(await service.getBills(1, { search: '   ' })).toHaveLength(2);
+      expect(await service.getBills(1, {})).toHaveLength(2);
+    });
+
+    it('should count bills with the same filter the listing uses #unit', async function () {
+      const service = buildBillService();
+
+      await service.createBill({ name: 'Açaí no parque' });
+      await service.createBill({ name: 'Cinema' });
+      await service.createBill({ name: 'Churrasco' });
+
+      expect(await service.countBills()).toBe(3);
+      expect(await service.countBills({ search: 'acai' })).toBe(1);
+      expect(await service.countBills({ search: '   ' })).toBe(3);
+    });
+
     it('should get a bill by its id #unit', async function () {
       const conn = MemoryDBConnection.build<BillProps>();
       const service = buildBillService({ billConn: conn });

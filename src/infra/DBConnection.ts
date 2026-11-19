@@ -8,8 +8,25 @@ export interface DBConnection<T extends object = object> {
   add(data: object): Promise<WithId<T>>;
   delete(id: number): Promise<void>;
   getById(id: number): Promise<WithId<T> | void>;
-  list(page: number): Promise<WithId<T>[]>;
+  list(page: number, options?: ListOptions): Promise<WithId<T>[]>;
   filter(filter: Partial<T>): Promise<WithId<T>[]>;
+  /** Paged rows passing an arbitrary predicate, in the same order `list` uses. */
+  searchPage(predicate: ItemPredicate<T>, page: number, options?: ListOptions): Promise<WithId<T>[]>;
+  /** How many rows exist (optionally passing the predicate). */
+  count(predicate?: ItemPredicate<T>): Promise<number>;
+}
+
+export interface ListOptions {
+  /** Iterate newest id first instead of the storage order. */
+  newestFirst?: boolean;
+}
+
+export type ItemPredicate<T extends object> = (item: WithId<T>) => boolean;
+
+function assertPage(page: number): void {
+  if (page <= 0) {
+    throw new RangeError('Page number must be greater than zero');
+  }
 }
 
 @injectable()
@@ -46,11 +63,10 @@ export class IndexedDBConnection<T extends object> implements DBConnection<T> {
     return entity as WithId<T>;
   }
 
-  async list(page: number = 1): Promise<WithId<T>[]> {
-    if (page <= 0) {
-      throw new RangeError('Page number must be greater than zero');
-    }
-    const entities = await this.table
+  async list(page: number = 1, options?: ListOptions): Promise<WithId<T>[]> {
+    assertPage(page);
+    const source = options?.newestFirst ? this.table.reverse() : this.table;
+    const entities = await source
       .offset((page - 1) * this.pageSize)
       .limit(this.pageSize)
       .toArray();
@@ -60,5 +76,21 @@ export class IndexedDBConnection<T extends object> implements DBConnection<T> {
 
   filter(filter: Partial<T>): Promise<WithId<T>[]> {
     return this.table.where(filter).toArray() as Promise<WithId<T>[]>;
+  }
+
+  async searchPage(predicate: ItemPredicate<T>, page: number, options?: ListOptions): Promise<WithId<T>[]> {
+    assertPage(page);
+    let collection = this.table.filter((obj) => predicate(obj as WithId<T>));
+    if (options?.newestFirst) {
+      collection = collection.reverse();
+    }
+    return (await collection
+      .offset((page - 1) * this.pageSize)
+      .limit(this.pageSize)
+      .toArray()) as WithId<T>[];
+  }
+
+  count(predicate?: ItemPredicate<T>): Promise<number> {
+    return predicate ? this.table.filter((obj) => predicate(obj as WithId<T>)).count() : this.table.count();
   }
 }
