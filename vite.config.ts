@@ -1,11 +1,29 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import tailwindcss from '@tailwindcss/vite';
+import { copyFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+// GitHub Pages has no SPA fallback: every deep link (e.g. /login) served straight
+// from the CDN 404s. Pages special-cases 404.html — serve the app shell there so
+// the router can take over. Must run before VitePWA's closeBundle so the copy is
+// precached like any other html file.
+function spa404(): Plugin {
+  return {
+    name: 'spa-404',
+    apply: 'build',
+    closeBundle() {
+      const dist = resolve(__dirname, 'dist');
+      copyFileSync(resolve(dist, 'index.html'), resolve(dist, '404.html'));
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    spa404(),
     react(),
     // PWA install/offline UX: branded manifest, themed theme-color metas in
     // index.html + src/infra/theme.ts, safe-area padding, and a precache that covers
