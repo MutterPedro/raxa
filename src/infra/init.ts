@@ -4,23 +4,29 @@ import { applyMigrations } from './migrations';
 import { dexieFactory, userServiceFactory, billServiceFactory } from '../inversify.config';
 import { FirebaseSessionManager, SessionManager } from './SessionManager.ts';
 
-export function init(): void {
-  const conn = dexieFactory();
-
-  applyMigrations(conn);
-
-  const userService = userServiceFactory();
-  userService.createSelf().catch(console.error);
-
+export async function init(): Promise<void> {
   // Test-only helpers, exposed exclusively in dev builds: `test/integration/` (via
   // `page.evaluate`) and the visual suite drive them through the dev server, and the
   // static `import.meta.env.DEV` check lets production bundles drop the functions.
+  // Registered first and synchronously: browser tests expect them as soon as the
+  // page loads, long before the async boot below settles.
   if (import.meta.env.DEV) {
     window.createTable = createTable;
     window.doesDbExists = doesDbExists;
     window.getFirebaseSessionManager = getFirebaseSessionManager;
     window.__seedVisualDemo = seedVisualDemo;
   }
+
+  const conn = dexieFactory();
+
+  applyMigrations(conn);
+
+  const userService = userServiceFactory();
+  // Self must exist before restore (a password login may adopt that row), and
+  // restore must finish before the first render so the header and sync hint do
+  // not flash the logged-out state of a session that is actually alive.
+  await userService.createSelf();
+  await userService.restoreSession().catch(console.error);
 }
 
 async function doesDbExists(dbName: string, version?: number): Promise<boolean> {

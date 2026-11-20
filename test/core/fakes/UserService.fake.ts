@@ -6,7 +6,8 @@ export interface UserServiceFakeOptions {
   usersById?: Record<number, User>;
   /** Id for the user returned by createSelf (default: 1337 'Eu'). */
   selfId?: number;
-  /** logged_in of the self returned by createSelf (default: false, i.e. logged out). */
+  /** logged_in of the self returned by createSelf (default: false, i.e. logged out).
+   *  Also drives getLoggedUser: logged in returns the self row, logged out returns null. */
   loggedIn?: boolean;
   /** First id handed out by createUser (default: 42). */
   nextId?: number;
@@ -57,6 +58,7 @@ export function createUserServiceFake(options: UserServiceFakeOptions = {}): Use
       if (authError) throw authError;
       return makeUser(selfId, 'Eu', email);
     }),
+    getLoggedUser: jest.fn(async () => (loggedIn ? makeUser(selfId, 'Eu', 'placeholder@email.com') : null)),
     loginWithGoogle: jest.fn(async () => {
       if (authError) throw authError;
       return googleUser ?? makeUser(77, 'Google User', 'google.user@example.com');

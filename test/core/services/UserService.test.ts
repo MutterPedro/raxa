@@ -144,13 +144,14 @@ describe('UserService.ts', function () {
       const fakeRepo = UserRepositoryFake.build(conn, session);
       const service = new UserService(fakeRepo);
       const user = await service.createUser({ name: casual.name, email: 'ana@gmail.com' });
-      session.googleCreds = { email: 'ana@gmail.com', name: 'Ana' };
+      session.googleCreds = { uid: 'ana-google-uid', email: 'ana@gmail.com', name: 'Ana' };
 
       const logged = await service.loginWithGoogle();
 
       expect(logged.id).toBe(user.id);
       expect(logged.logged_in).toBe(true);
-      expect(conn.items).toHaveLength(1);
+      // The uid becomes the stable identity persisted on the row.
+      expect(conn.items[0].firebase_uid).toBe('ana-google-uid');
     });
 
     it('should log in with Google creating the user when the email is new locally #unit', async function () {
@@ -158,7 +159,7 @@ describe('UserService.ts', function () {
       const session = SessionManagerFake.build();
       const fakeRepo = UserRepositoryFake.build(conn, session);
       const service = new UserService(fakeRepo);
-      session.googleCreds = { email: 'novo@gmail.com', name: 'Novo Usuario' };
+      session.googleCreds = { uid: 'novo-google-uid', email: 'novo@gmail.com', name: 'Novo Usuario' };
 
       const logged = await service.loginWithGoogle();
 
@@ -166,6 +167,7 @@ describe('UserService.ts', function () {
       expect(logged.email).toBe('novo@gmail.com');
       expect(logged.logged_in).toBe(true);
       expect(conn.items).toHaveLength(1);
+      expect(conn.items[0].firebase_uid).toBe('novo-google-uid');
     });
 
     it('should reject when the Google popup fails #unit', async function () {
@@ -177,6 +179,120 @@ describe('UserService.ts', function () {
 
       await expect(service.loginWithGoogle()).rejects.toEqual({ code: 'auth/popup-closed-by-user' });
       expect(conn.items).toHaveLength(0);
+    });
+
+    it('should prefer the row bound to the uid over the email match on google login #unit', async function () {
+      const conn = MemoryDBConnection.build<UserProps>();
+      const session = SessionManagerFake.build();
+      const fakeRepo = UserRepositoryFake.build(conn, session);
+      const service = new UserService(fakeRepo);
+      const bound = await service.createUser({ name: 'Binded', email: 'bound@old.email' });
+      bound.firebase_uid = 'google-uid';
+      await fakeRepo.save(bound);
+      await service.createUser({ name: 'Email Match', email: 'google.user@example.com' });
+      session.googleCreds = { uid: 'google-uid', email: 'google.user@example.com', name: 'Google User' };
+
+      const logged = await service.loginWithGoogle();
+
+      expect(logged.id).toBe(bound.id);
+      expect(conn.items).toHaveLength(2);
+    });
+
+    it('should persist the firebase uid on sign up #unit', async function () {
+      const conn = MemoryDBConnection.build<UserProps>();
+      const session = SessionManagerFake.build();
+      const fakeRepo = UserRepositoryFake.build(conn, session);
+      const service = new UserService(fakeRepo);
+
+      const email = casual.email;
+      const user = await service.signUp(email, 'some-password', casual.name);
+
+      expect(user.firebase_uid).toBe(`uid-${email}`);
+      expect(conn.items[conn.items.length - 1].firebase_uid).toBe(`uid-${email}`);
+    });
+
+    it('should persist the firebase uid on password login #unit', async function () {
+      const conn = MemoryDBConnection.build<UserProps>();
+      const session = SessionManagerFake.build();
+      const fakeRepo = UserRepositoryFake.build(conn, session);
+      const service = new UserService(fakeRepo);
+      const user = await service.createUser({ name: casual.name, email: casual.email });
+
+      await service.login(user.email, 'some-password');
+
+      expect(conn.items[0].firebase_uid).toBe(`uid-${user.email}`);
+    });
+
+    it('should return nobody as the logged user before any login #unit', async function () {
+      const fakeRepo = UserRepositoryFake.build();
+      fakeRepo.clearLogged();
+      const service = new UserService(fakeRepo);
+
+      expect(await service.getLoggedUser()).toBeNull();
+    });
+
+    it('should restore a live session by uid after a reload #unit', async function () {
+      const conn = MemoryDBConnection.build<UserProps>();
+      const session = SessionManagerFake.build();
+      const fakeRepo = UserRepositoryFake.build(conn, session);
+      const service = new UserService(fakeRepo);
+      const email = casual.email;
+      const user = await service.createUser({ name: casual.name, email });
+      await service.login(email, 'some-password');
+
+      // Simulate a page reload: in-memory marker gone, Firebase session alive.
+      fakeRepo.clearLogged();
+      expect(await service.getLoggedUser()).toBeNull();
+      session.currentUser = { uid: `uid-${email}`, email, name: user.name };
+
+      const restored = await service.restoreSession();
+
+      expect(restored?.id).toBe(user.id);
+      expect((await service.getLoggedUser())?.id).toBe(user.id);
+    });
+
+    it('should clear the logged user when no firebase session survives #unit', async function () {
+      const conn = MemoryDBConnection.build<UserProps>();
+      const session = SessionManagerFake.build();
+      const fakeRepo = UserRepositoryFake.build(conn, session);
+      const service = new UserService(fakeRepo);
+      const user = await service.createUser({ name: casual.name, email: casual.email });
+      await service.login(user.email, 'some-password');
+
+      session.currentUser = null;
+      const restored = await service.restoreSession();
+
+      expect(restored).toBeNull();
+      expect(await service.getLoggedUser()).toBeNull();
+    });
+
+    it('should adopt the email match and bind the uid when restoring #unit', async function () {
+      const conn = MemoryDBConnection.build<UserProps>();
+      const session = SessionManagerFake.build();
+      const fakeRepo = UserRepositoryFake.build(conn, session);
+      const service = new UserService(fakeRepo);
+      const user = await service.createUser({ name: 'Sem Uid', email: 'sem.uid@email.com' });
+
+      // Row predates uid binding (created before this feature, or another device).
+      session.currentUser = { uid: 'fresh-uid', email: 'sem.uid@email.com', name: 'Sem Uid' };
+
+      const restored = await service.restoreSession();
+
+      expect(restored?.id).toBe(user.id);
+      expect(conn.items[0].firebase_uid).toBe('fresh-uid');
+    });
+
+    it('should not create a user when restoring an unknown account #unit', async function () {
+      const conn = MemoryDBConnection.build<UserProps>();
+      const session = SessionManagerFake.build();
+      const fakeRepo = UserRepositoryFake.build(conn, session);
+      const service = new UserService(fakeRepo);
+
+      session.currentUser = { uid: 'ghost-uid', email: 'ghost@nowhere.com', name: 'Ghost' };
+
+      expect(await service.restoreSession()).toBeNull();
+      expect(conn.items).toHaveLength(0);
+      expect(await service.getLoggedUser()).toBeNull();
     });
   });
 });

@@ -36,6 +36,9 @@ test('no external font links in the document', async ({ request }) => {
 
 test('Plus Jakarta Sans is the active self-hosted font', async ({ page }) => {
   await page.goto('/');
+  // Fonts load on demand: wait for the async boot to render text before asking
+  // which faces got requested.
+  await page.waitForFunction(() => !!document.querySelector('#root')?.children.length);
   await page.evaluate(() => document.fonts.ready);
   const loaded = await page.evaluate(() =>
     [...document.fonts]

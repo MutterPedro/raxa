@@ -11,6 +11,11 @@ describe('entities', function () {
 
       expect(Object.keys(tables).sort()).toEqual(['bill', 'expense', 'user']);
 
+      // Dexie *replaces* a table's schema on upgrade (indexes not re-declared are
+      // deleted), so the user v2 that adds firebase_uid must repeat every v1 field.
+      const userV2 = tables.user[2].split(',');
+      expect(userV2).toEqual(expect.arrayContaining(['++id', 'name', 'email', 'firebase_uid']));
+
       for (const name of ['bill', 'expense', 'user']) {
         const versions = Object.keys(tables[name]).map(Number);
 

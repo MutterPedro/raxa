@@ -38,6 +38,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **The session survives a full page reload** — Firebase persists its own sign-in, but a
+  reload (or a Google login) used to leave the header on `Entrar` and the sync hint
+  showing. Local user rows now store the Firebase uid, boot restores the matching row as
+  the logged user before the first render (adopting an email match and re-binding its uid;
+  an unknown account logs nobody in), and the header avatar and sync hint track the real
+  logged user instead of the reserved self row.
+- Deep links (e.g. `/login` opened directly) 404'd on GitHub Pages — the build now ships
+  the app shell as `404.html`, which Pages serves for unknown paths so the router takes over.
 - The "Quem fica com quanto" division shows skeleton rows while loading instead of an
   empty gap that pops into content.
 - Touch devices: the × that removes a participant chip now has a ~44px hit area

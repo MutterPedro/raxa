@@ -6,14 +6,14 @@ import { NavLink } from 'react-router';
 
 export default function LoginButton() {
   const userService = useUserService();
-  const [self, setSelf] = useState<User | null>(null);
+  const [loggedUser, setLoggedUser] = useState<User | null>(null);
 
   useEffect(() => {
-    userService.createSelf().then(setSelf).catch(console.error);
+    userService.getLoggedUser().then(setLoggedUser).catch(console.error);
   }, [userService]);
 
-  return self?.logged_in ? (
-    <Avatar user={self!} />
+  return loggedUser ? (
+    <Avatar user={loggedUser} />
   ) : (
     <NavLink
       to="/login"

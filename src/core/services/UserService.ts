@@ -4,6 +4,8 @@ import { UserRepository } from '../repositories/UserRepository';
 import User, { UserProps } from '../entities/User';
 import { synchronized } from '../utils/decorators';
 
+import type { WithId } from '../../@types/utils';
+
 @injectable()
 export class UserService {
   private static RESERVED_SELF_ID = 1337;
@@ -49,9 +51,9 @@ export class UserService {
     self.name = name;
 
     const updated = await this.userRepo.save(self);
-    await this.userRepo.setLoggedSignUp(updated, password);
-
-    return updated;
+    const uid = await this.userRepo.setLoggedSignUp(updated, password);
+    updated.firebase_uid = uid;
+    return this.userRepo.save(updated);
   }
 
   /**
@@ -60,10 +62,11 @@ export class UserService {
    * reserved self row rather than failing.
    */
   async login(email: string, password: string): Promise<User> {
-    await this.userRepo.authenticateWithPassword(email, password);
+    const uid = await this.userRepo.authenticateWithPassword(email, password);
 
     const found = await this.userRepo.findByEmail(email);
-    const user = found ?? (await this.adoptSelfEmail(email));
+    const user = found ?? (await this.adoptSelfEmail(email, uid));
+    await this.bindUid(user, uid);
     this.userRepo.setLogged(user);
 
     return user;
@@ -76,20 +79,66 @@ export class UserService {
   async loginWithGoogle(): Promise<User> {
     const creds = await this.userRepo.authenticateWithGoogle();
 
-    const found = await this.userRepo.findByEmail(creds.email);
+    const found = await this.resolveLocalUser(creds.uid, creds.email);
     if (found) {
+      await this.bindUid(found, creds.uid);
       this.userRepo.setLogged(found);
       return found;
     }
 
     const created = await this.createUser({ name: creds.name, email: creds.email });
+    await this.bindUid(created, creds.uid);
     this.userRepo.setLogged(created);
     return created;
   }
 
-  private async adoptSelfEmail(email: string): Promise<User> {
+  /** The local user currently logged in, or null when nobody is. */
+  getLoggedUser(): Promise<WithId<User> | null> {
+    return this.userRepo.getLogged();
+  }
+
+  /**
+   * Boot-time session restore: Firebase persists its own session across reloads,
+   * so if one is still alive the matching local row is logged back in. When the
+   * account is unknown locally (data cleared, never logged in here) nobody is
+   * logged in — an active Firebase session alone is not a local account.
+   */
+  async restoreSession(): Promise<User | null> {
+    const current = await this.userRepo.currentUser();
+    if (!current) {
+      this.userRepo.clearLogged();
+      return null;
+    }
+
+    const byUid = await this.userRepo.findByUid(current.uid);
+    const byEmail = byUid ? undefined : await this.userRepo.findByEmail(current.email);
+    const user = byUid ?? byEmail;
+    if (!user) {
+      return null;
+    }
+
+    await this.bindUid(user, current.uid);
+    this.userRepo.setLogged(user);
+    return user;
+  }
+
+  private async adoptSelfEmail(email: string, uid: string): Promise<User> {
     const self = await this.createSelf();
     self.email = email;
+    self.firebase_uid = uid;
     return this.userRepo.save(self);
+  }
+
+  /** The uid is the stable identity; the email is only a fallback handle. */
+  private async resolveLocalUser(uid: string, email: string): Promise<WithId<User> | undefined> {
+    return (await this.userRepo.findByUid(uid)) ?? (await this.userRepo.findByEmail(email));
+  }
+
+  private bindUid(user: WithId<User>, uid: string): Promise<WithId<User>> {
+    if (user.firebase_uid === uid) {
+      return Promise.resolve(user);
+    }
+    user.firebase_uid = uid;
+    return this.userRepo.save(user);
   }
 }

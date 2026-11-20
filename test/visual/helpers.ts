@@ -14,6 +14,9 @@ export const gotoSeeded = async (page: Page, route = '/') => {
   await gotoFresh(page);
   await page.evaluate(() => window.__seedVisualDemo?.());
   await page.goto(route);
+  // Boot is async (self row + session restore run before the first render), so
+  // "load" no longer implies "mounted": wait for real content before touching it.
+  await page.waitForFunction(() => !!document.querySelector('#root')?.children.length);
 };
 
 /** Captures a golden screenshot after web fonts settle. Zero pixel budget on purpose:

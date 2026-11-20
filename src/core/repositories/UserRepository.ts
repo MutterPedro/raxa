@@ -27,6 +27,7 @@ export class UserRepository extends BaseRepository<User, UserProps> {
     user.id = data.id;
     user.name = data.name;
     user.email = data.email;
+    user.firebase_uid = data.firebase_uid ?? '';
     user.logged_in = this.isLogged(data.id);
     return user;
   }
@@ -51,10 +52,34 @@ export class UserRepository extends BaseRepository<User, UserProps> {
     user.logged_in = true;
   }
 
-  async setLoggedSignUp(user: User, password: string): Promise<void> {
-    await this.sessionManager.signUpWithPassword(user.email, password);
+  /** Drops the in-memory logged-in marker (boot with no live session; tests). */
+  clearLogged(): void {
+    UserRepository.LOGGED_USER_ID = undefined as unknown as number;
+  }
+
+  async getLogged(): Promise<WithId<User> | null> {
+    if (UserRepository.LOGGED_USER_ID === undefined) {
+      return null;
+    }
+    return (await this.getById(UserRepository.LOGGED_USER_ID)) ?? null;
+  }
+
+  async findByUid(uid: string): Promise<WithId<User> | undefined> {
+    const [user] = await this.filter({ firebase_uid: uid });
+    return user;
+  }
+
+  /** The account Firebase still has signed in (persisted session), if any. */
+  currentUser(): Promise<SessionCredentials | null> {
+    return this.sessionManager.getCurrentUser();
+  }
+
+  /** Authenticates the new account and marks it logged in; returns the new uid. */
+  async setLoggedSignUp(user: User, password: string): Promise<string> {
+    const uid = await this.sessionManager.signUpWithPassword(user.email, password);
 
     this.setLogged(user);
+    return uid;
   }
 
   private isLogged(id: number): boolean {

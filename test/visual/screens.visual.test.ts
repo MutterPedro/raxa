@@ -113,6 +113,7 @@ test('toast', async ({ page }) => {
   // Plain variant (message + close only) through the real provider via the test bridge;
   // no shipped flow emits a plain toast today, so the bridge is the only way to pin it.
   await gotoSeeded(page, '/bill/1');
+  await page.waitForFunction(() => !!window.__notifyToast);
   await page.evaluate(() => window.__notifyToast?.('Não foi possível desfazer', { duration: 0 }));
   await expect(page.getByText('Não foi possível desfazer')).toBeVisible();
   await capture(page, 'toast');

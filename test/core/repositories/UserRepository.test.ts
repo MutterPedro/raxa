@@ -49,5 +49,62 @@ describe('User.ts', function () {
       expect(mockedSessionManager.credentials).toHaveLength(1);
       expect(mockedSessionManager.credentials).toContainEqual({ email: user.email, password });
     });
+
+    it('should find a user by its firebase uid #unit', async function () {
+      const mockedDbConn = MemoryDBConnection.build<UserProps>();
+      const repo = new UserRepository(mockedDbConn, SessionManagerFake.build());
+
+      const user = new User();
+      user.name = 'Ana';
+      user.email = 'ana@email.com';
+      user.firebase_uid = 'uid-ana';
+      await repo.save(user);
+
+      expect((await repo.findByUid('uid-ana'))?.email).toBe('ana@email.com');
+      expect(await repo.findByUid('uid-inexistent')).toBeUndefined();
+    });
+
+    it('should hydrate legacy rows saved before the firebase uid field #unit', async function () {
+      const mockedDbConn = MemoryDBConnection.build<UserProps>();
+      const repo = new UserRepository(mockedDbConn, SessionManagerFake.build());
+
+      // A v1 row has no firebase_uid property at all.
+      const saved = await repo.save(Object.assign(new User(), { name: 'Legacy', email: 'legacy@email.com' }));
+      delete mockedDbConn.items[0].firebase_uid;
+
+      const user = await repo.getById(saved.id);
+      expect(user?.firebase_uid).toBe('');
+    });
+
+    it('should expose the account the session manager still has signed in #unit', async function () {
+      const mockedSessionManager = SessionManagerFake.build();
+      mockedSessionManager.currentUser = { uid: 'uid-ana', email: 'ana@email.com', name: 'Ana' };
+      const repo = new UserRepository(MemoryDBConnection.build<UserProps>(), mockedSessionManager);
+
+      expect(await repo.currentUser()).toEqual({ uid: 'uid-ana', email: 'ana@email.com', name: 'Ana' });
+    });
+
+    it('should track the logged user until it is cleared #unit', async function () {
+      const mockedDbConn = MemoryDBConnection.build<UserProps>();
+      const repo = new UserRepository(mockedDbConn, SessionManagerFake.build());
+      repo.clearLogged();
+
+      expect(await repo.getLogged()).toBeNull();
+
+      const user = new User();
+      user.name = 'Ana';
+      user.email = 'ana@email.com';
+      const saved = await repo.save(user);
+      repo.setLogged(saved);
+
+      expect((await repo.getLogged())?.id).toBe(saved.id);
+
+      // A logged marker pointing at a deleted row resolves to nobody.
+      await mockedDbConn.delete(saved.id);
+      expect(await repo.getLogged()).toBeNull();
+
+      repo.clearLogged();
+      expect(await repo.getLogged()).toBeNull();
+    });
   });
 });

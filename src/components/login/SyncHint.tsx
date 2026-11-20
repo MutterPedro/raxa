@@ -11,13 +11,13 @@ import { useUserService } from '../state/useUserService';
  */
 export default function SyncHint() {
   const userService = useUserService();
-  const [self, setSelf] = useState<User | null>(null);
+  const [loggedUser, setLoggedUser] = useState<User | null>(null);
 
   useEffect(() => {
-    userService.createSelf().then(setSelf).catch(console.error);
+    userService.getLoggedUser().then(setLoggedUser).catch(console.error);
   }, [userService]);
 
-  if (self?.logged_in) return null;
+  if (loggedUser) return null;
 
   return (
     <NavLink

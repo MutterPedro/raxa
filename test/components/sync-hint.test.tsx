@@ -38,8 +38,8 @@ describe('SyncHint', () => {
     const userService = createUserServiceFake({ loggedIn: true });
     renderHint(userService);
 
-    // Wait for the self check to complete, then confirm nothing showed up.
-    await waitFor(() => expect(userService.createSelf).toHaveBeenCalled());
+    // Wait for the session check to complete, then confirm nothing showed up.
+    await waitFor(() => expect(userService.getLoggedUser).toHaveBeenCalled());
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(screen.queryByTestId('sync-hint')).not.toBeInTheDocument();
   });
