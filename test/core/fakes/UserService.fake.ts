@@ -10,12 +10,25 @@ export interface UserServiceFakeOptions {
   loggedIn?: boolean;
   /** First id handed out by createUser (default: 42). */
   nextId?: number;
+  /** When set, signUp/login/loginWithGoogle reject with it (e.g. `{ code: 'auth/wrong-password' }`). */
+  authError?: unknown;
+  /** User returned by loginWithGoogle (default: id 77 'Google User'). */
+  googleUser?: User;
 }
 
 // Component tests exercise a subset of UserService; the cast lets the fake stand in
 // wherever the real service type is expected.
 export function createUserServiceFake(options: UserServiceFakeOptions = {}): UserService {
-  const { users = [], usersById = {}, selfId = 1337, loggedIn = false, nextId = 42 } = options;
+  const { users = [], usersById = {}, selfId = 1337, loggedIn = false, nextId = 42, authError, googleUser } = options;
+
+  const makeUser = (id: number, name: string, email: string): User => {
+    const user = new User();
+    user.id = id;
+    user.name = name;
+    user.email = email;
+    user.logged_in = true;
+    return user;
+  };
 
   let nextIdCounter = nextId;
   return {
@@ -35,6 +48,18 @@ export function createUserServiceFake(options: UserServiceFakeOptions = {}): Use
       user.name = values.name;
       user.email = values.email;
       return user;
+    }),
+    signUp: jest.fn(async (email: string, _password: string, name: string) => {
+      if (authError) throw authError;
+      return makeUser(selfId, name, email);
+    }),
+    login: jest.fn(async (email: string) => {
+      if (authError) throw authError;
+      return makeUser(selfId, 'Eu', email);
+    }),
+    loginWithGoogle: jest.fn(async () => {
+      if (authError) throw authError;
+      return googleUser ?? makeUser(77, 'Google User', 'google.user@example.com');
     }),
   } as unknown as UserService;
 }

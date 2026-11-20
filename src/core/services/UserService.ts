@@ -53,4 +53,43 @@ export class UserService {
 
     return updated;
   }
+
+  /**
+   * Password login. Firebase is verified first, so a wrong password never touches
+   * local rows. An email without a local user (fresh device pre-sync) claims the
+   * reserved self row rather than failing.
+   */
+  async login(email: string, password: string): Promise<User> {
+    await this.userRepo.authenticateWithPassword(email, password);
+
+    const found = await this.userRepo.findByEmail(email);
+    const user = found ?? (await this.adoptSelfEmail(email));
+    this.userRepo.setLogged(user);
+
+    return user;
+  }
+
+  /**
+   * Google login: the popup yields the profile, so an email new locally gets a user
+   * created on the spot (name and email come pre-verified from the provider).
+   */
+  async loginWithGoogle(): Promise<User> {
+    const creds = await this.userRepo.authenticateWithGoogle();
+
+    const found = await this.userRepo.findByEmail(creds.email);
+    if (found) {
+      this.userRepo.setLogged(found);
+      return found;
+    }
+
+    const created = await this.createUser({ name: creds.name, email: creds.email });
+    this.userRepo.setLogged(created);
+    return created;
+  }
+
+  private async adoptSelfEmail(email: string): Promise<User> {
+    const self = await this.createSelf();
+    self.email = email;
+    return this.userRepo.save(self);
+  }
 }

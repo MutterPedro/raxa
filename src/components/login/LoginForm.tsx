@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import Card from '../common/Card';
 import Field from '../common/Field';
 import Button from '../common/Button';
+import { useUserService } from '../state/useUserService';
+import { authErrorMessage, isPopupDismissed } from '../../core/utils/authErrors';
 
 // Google brand identity mark — the fixed four-color artwork is defined by Google's
 // brand guidelines and deliberately sits outside the app palette.
@@ -33,7 +36,45 @@ const segmentClasses = (active: boolean) =>
   }`;
 
 const LoginForm: React.FC = () => {
+  const userService = useUserService();
+  const navigate = useNavigate();
   const [isSignUp, setIsSignUp] = useState(false);
+  const [values, setValues] = useState({ email: '', password: '', confirmPassword: '', name: '' });
+  const [error, setError] = useState('');
+  const [pending, setPending] = useState(false);
+
+  const setField =
+    (field: keyof typeof values) =>
+    (event: React.ChangeEvent<HTMLInputElement>): void =>
+      setValues((values) => ({ ...values, [field]: event.target.value }));
+
+  // Every auth action shares the busy/error handling; success always lands on home.
+  async function signIn(run: () => Promise<unknown>): Promise<void> {
+    setPending(true);
+    setError('');
+    try {
+      await run();
+      navigate('/');
+    } catch (authError) {
+      // Closing the Google popup is a change of mind, not a failure worth a message.
+      if (!isPopupDismissed(authError)) setError(authErrorMessage(authError));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  function handleSubmit(event: React.FormEvent): void {
+    event.preventDefault();
+    if (isSignUp && values.password !== values.confirmPassword) {
+      setError('As senhas não coincidem.');
+      return;
+    }
+    void signIn(
+      isSignUp
+        ? () => userService.signUp(values.email, values.password, values.name)
+        : () => userService.login(values.email, values.password),
+    );
+  }
 
   return (
     <Card className="w-full max-w-md p-8">
@@ -47,7 +88,10 @@ const LoginForm: React.FC = () => {
         <button
           type="button"
           aria-pressed={!isSignUp}
-          onClick={() => setIsSignUp(false)}
+          onClick={() => {
+            setIsSignUp(false);
+            setError('');
+          }}
           className={segmentClasses(!isSignUp)}
         >
           Entrar
@@ -55,31 +99,79 @@ const LoginForm: React.FC = () => {
         <button
           type="button"
           aria-pressed={isSignUp}
-          onClick={() => setIsSignUp(true)}
+          onClick={() => {
+            setIsSignUp(true);
+            setError('');
+          }}
           className={segmentClasses(isSignUp)}
         >
           Criar conta
         </button>
       </div>
-      <form className="mt-6 flex flex-col gap-4">
-        <Field label="Email" type="email" id="email" placeholder="voce@exemplo.com" autoComplete="email" />
-        <Field label="Senha" type="password" id="password" autoComplete="current-password" />
+      <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
+        <Field
+          label="Email"
+          type="email"
+          id="email"
+          placeholder="voce@exemplo.com"
+          autoComplete="email"
+          required
+          value={values.email}
+          onChange={setField('email')}
+        />
+        <Field
+          label="Senha"
+          type="password"
+          id="password"
+          autoComplete={isSignUp ? 'new-password' : 'current-password'}
+          required
+          value={values.password}
+          onChange={setField('password')}
+        />
         {isSignUp && (
           <>
-            <Field label="Confirmar senha" type="password" id="confirmPassword" autoComplete="new-password" />
-            <Field label="Nome" id="name" placeholder="Fulano da Silva" autoComplete="name" />
+            <Field
+              label="Confirmar senha"
+              type="password"
+              id="confirmPassword"
+              autoComplete="new-password"
+              required
+              value={values.confirmPassword}
+              onChange={setField('confirmPassword')}
+            />
+            <Field
+              label="Nome"
+              id="name"
+              placeholder="Fulano da Silva"
+              autoComplete="name"
+              required
+              value={values.name}
+              onChange={setField('name')}
+            />
           </>
         )}
-        <Button type="button" size="lg" className="mt-2 w-full">
-          {isSignUp ? 'Criar conta' : 'Entrar'}
+        <Button type="submit" size="lg" className="mt-2 w-full" disabled={pending} data-testid="login-submit-button">
+          {isSignUp ? (pending ? 'Criando conta…' : 'Criar conta') : pending ? 'Entrando…' : 'Entrar'}
         </Button>
+        {error && (
+          <p role="alert" data-testid="login-error" className="text-sm text-danger">
+            {error}
+          </p>
+        )}
       </form>
       <div className="my-5 flex items-center gap-3">
         <span className="h-px flex-1 bg-line" />
         <span className="text-xs text-ink-muted">ou</span>
         <span className="h-px flex-1 bg-line" />
       </div>
-      <Button type="button" variant="secondary" size="lg" className="flex w-full gap-2.5">
+      <Button
+        type="button"
+        variant="secondary"
+        size="lg"
+        className="flex w-full gap-2.5"
+        disabled={pending}
+        onClick={() => void signIn(() => userService.loginWithGoogle())}
+      >
         <GoogleIcon />
         Continuar com Google
       </Button>

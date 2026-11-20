@@ -9,6 +9,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Working login** — the login screen is live: sign up (email + password + name, claiming
+  the local self row), password login, and Google sign-in (`signInWithPopup`), all verified
+  against Firebase Auth before any local row is touched. Auth failures surface in pt-BR
+  (deliberately vague for wrong credentials), dismissed Google popups stay silent, and a
+  pending request disables the buttons. Signing in makes the sync hint disappear and lands
+  on the home list.
 - **Bill search and an infinite bills feed** — a search field above the home list narrows
   bills by name ignoring case and accents (typing is debounced; blank lists everything),
   and the list auto-loads older pages as its end scrolls into view — no buttons, no

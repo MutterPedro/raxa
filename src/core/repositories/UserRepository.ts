@@ -7,7 +7,7 @@ import User from '../entities/User';
 
 import type { WithId } from '../../@types/utils';
 import type { DBConnection } from '../../infra/DBConnection';
-import type { SessionManager } from '../../infra/SessionManager';
+import type { SessionCredentials, SessionManager } from '../../infra/SessionManager';
 
 export class UserRepository extends BaseRepository<User, UserProps> {
   private static LOGGED_USER_ID: number;
@@ -31,11 +31,30 @@ export class UserRepository extends BaseRepository<User, UserProps> {
     return user;
   }
 
+  async findByEmail(email: string): Promise<WithId<User> | undefined> {
+    const [user] = await this.filter({ email });
+    return user;
+  }
+
+  /** Verifies credentials remotely without touching local rows; throws on failure. */
+  authenticateWithPassword(email: string, password: string): Promise<string> {
+    return this.sessionManager.loginWithPassword(email, password);
+  }
+
+  authenticateWithGoogle(): Promise<SessionCredentials> {
+    return this.sessionManager.loginWithGoogle();
+  }
+
+  /** Marks a local user as the logged-in one for this session. */
+  setLogged(user: WithId<User>): void {
+    UserRepository.LOGGED_USER_ID = user.id;
+    user.logged_in = true;
+  }
+
   async setLoggedSignUp(user: User, password: string): Promise<void> {
     await this.sessionManager.signUpWithPassword(user.email, password);
 
-    UserRepository.LOGGED_USER_ID = user.id;
-    user.logged_in = true;
+    this.setLogged(user);
   }
 
   private isLogged(id: number): boolean {
