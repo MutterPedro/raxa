@@ -1,11 +1,12 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 
 import type { UserService } from '../../src/core/services/UserService';
 import { ServicesContext } from '../../src/components/state/ServicesContext';
 import SyncHint from '../../src/components/login/SyncHint';
 import { createBillServiceFake } from '../core/fakes/BillService.fake';
 import { createUserServiceFake } from '../core/fakes/UserService.fake';
+import { createUser } from '../factories/entities';
 
 // react-router is ESM-only under jest (same as bills-list/bill-detail); a plain-anchor
 // NavLink keeps the href assertion meaningful.
@@ -41,6 +42,16 @@ describe('SyncHint', () => {
     // Wait for the session check to complete, then confirm nothing showed up.
     await waitFor(() => expect(userService.getLoggedUser).toHaveBeenCalled());
     await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(screen.queryByTestId('sync-hint')).not.toBeInTheDocument();
+  });
+
+  it('hides the moment a login is announced, without any reload #unit', async () => {
+    const userService = createUserServiceFake({ loggedIn: false });
+    renderHint(userService);
+    await screen.findByTestId('sync-hint');
+
+    act(() => userService.emitLoggedUser(createUser(1337, 'Eu')));
+
     expect(screen.queryByTestId('sync-hint')).not.toBeInTheDocument();
   });
 });

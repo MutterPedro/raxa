@@ -10,6 +10,8 @@ import type { WithId } from '../../@types/utils';
 export class UserService {
   private static RESERVED_SELF_ID = 1337;
 
+  private readonly loggedUserListeners = new Set<(user: WithId<User> | null) => void>();
+
   constructor(
     @inject(TYPES.UserRepository)
     private readonly userRepo: UserRepository,
@@ -53,7 +55,9 @@ export class UserService {
     const updated = await this.userRepo.save(self);
     const uid = await this.userRepo.setLoggedSignUp(updated, password);
     updated.firebase_uid = uid;
-    return this.userRepo.save(updated);
+    const signedUp = await this.userRepo.save(updated);
+    this.notifyLoggedUser(signedUp);
+    return signedUp;
   }
 
   /**
@@ -67,7 +71,7 @@ export class UserService {
     const found = await this.userRepo.findByEmail(email);
     const user = found ?? (await this.adoptSelfEmail(email, uid));
     await this.bindUid(user, uid);
-    this.userRepo.setLogged(user);
+    this.markLoggedIn(user);
 
     return user;
   }
@@ -82,13 +86,13 @@ export class UserService {
     const found = await this.resolveLocalUser(creds.uid, creds.email);
     if (found) {
       await this.bindUid(found, creds.uid);
-      this.userRepo.setLogged(found);
+      this.markLoggedIn(found);
       return found;
     }
 
     const created = await this.createUser({ name: creds.name, email: creds.email });
     await this.bindUid(created, creds.uid);
-    this.userRepo.setLogged(created);
+    this.markLoggedIn(created);
     return created;
   }
 
@@ -107,6 +111,7 @@ export class UserService {
     const current = await this.userRepo.currentUser();
     if (!current) {
       this.userRepo.clearLogged();
+      this.notifyLoggedUser(null);
       return null;
     }
 
@@ -118,8 +123,31 @@ export class UserService {
     }
 
     await this.bindUid(user, current.uid);
-    this.userRepo.setLogged(user);
+    this.markLoggedIn(user);
     return user;
+  }
+
+  /**
+   * Subscribes to every logged-user change (login, signup, restore, clear). The
+   * header and sync hint live outside the router, so an in-app login never
+   * remounts them — they subscribe here to flip without waiting for a reload.
+   */
+  subscribeLoggedUser(listener: (user: WithId<User> | null) => void): () => void {
+    this.loggedUserListeners.add(listener);
+    return () => {
+      this.loggedUserListeners.delete(listener);
+    };
+  }
+
+  private markLoggedIn(user: WithId<User>): void {
+    this.userRepo.setLogged(user);
+    this.notifyLoggedUser(user);
+  }
+
+  private notifyLoggedUser(user: WithId<User> | null): void {
+    for (const listener of this.loggedUserListeners) {
+      listener(user);
+    }
   }
 
   private async adoptSelfEmail(email: string, uid: string): Promise<User> {

@@ -14,7 +14,19 @@ export default function SyncHint() {
   const [loggedUser, setLoggedUser] = useState<User | null>(null);
 
   useEffect(() => {
-    userService.getLoggedUser().then(setLoggedUser).catch(console.error);
+    let active = true;
+    userService
+      .getLoggedUser()
+      .then((user) => {
+        if (active) setLoggedUser(user);
+      })
+      .catch(console.error);
+    // Hide the moment a login lands anywhere in the app, not just on reload.
+    const unsubscribe = userService.subscribeLoggedUser(setLoggedUser);
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [userService]);
 
   if (loggedUser) return null;

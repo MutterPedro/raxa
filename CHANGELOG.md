@@ -43,7 +43,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   showing. Local user rows now store the Firebase uid, boot restores the matching row as
   the logged user before the first render (adopting an email match and re-binding its uid;
   an unknown account logs nobody in), and the header avatar and sync hint track the real
-  logged user instead of the reserved self row.
+  logged user through a small logged-user subscription — so they also flip in place right
+  after signing in, without waiting for a reload. Pinned by an integration regression test
+  that signs up, checks the header, reloads, and checks again.
 - Deep links (e.g. `/login` opened directly) 404'd on GitHub Pages — the build now ships
   the app shell as `404.html`, which Pages serves for unknown paths so the router takes over.
 - The "Quem fica com quanto" division shows skeleton rows while loading instead of an

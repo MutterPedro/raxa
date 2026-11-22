@@ -17,9 +17,14 @@ export interface UserServiceFakeOptions {
   googleUser?: User;
 }
 
+/** Extra knobs only component tests use (the real service has no emit). */
+export interface UserServiceFakeControls {
+  emitLoggedUser(user: User | null): void;
+}
+
 // Component tests exercise a subset of UserService; the cast lets the fake stand in
 // wherever the real service type is expected.
-export function createUserServiceFake(options: UserServiceFakeOptions = {}): UserService {
+export function createUserServiceFake(options: UserServiceFakeOptions = {}): UserService & UserServiceFakeControls {
   const { users = [], usersById = {}, selfId = 1337, loggedIn = false, nextId = 42, authError, googleUser } = options;
 
   const makeUser = (id: number, name: string, email: string): User => {
@@ -32,6 +37,7 @@ export function createUserServiceFake(options: UserServiceFakeOptions = {}): Use
   };
 
   let nextIdCounter = nextId;
+  const loggedListeners = new Set<(user: User | null) => void>();
   return {
     getUsers: jest.fn(async () => users),
     getByIds: jest.fn(async (ids: number[]) => ids.map((id) => usersById[id]).filter(Boolean)),
@@ -59,9 +65,16 @@ export function createUserServiceFake(options: UserServiceFakeOptions = {}): Use
       return makeUser(selfId, 'Eu', email);
     }),
     getLoggedUser: jest.fn(async () => (loggedIn ? makeUser(selfId, 'Eu', 'placeholder@email.com') : null)),
+    subscribeLoggedUser: jest.fn((listener: (user: User | null) => void) => {
+      loggedListeners.add(listener);
+      return () => {
+        loggedListeners.delete(listener);
+      };
+    }),
+    emitLoggedUser: (user) => loggedListeners.forEach((listener) => listener(user)),
     loginWithGoogle: jest.fn(async () => {
       if (authError) throw authError;
       return googleUser ?? makeUser(77, 'Google User', 'google.user@example.com');
     }),
-  } as unknown as UserService;
+  } as unknown as UserService & UserServiceFakeControls;
 }

@@ -196,6 +196,38 @@ describe('UserService.ts', function () {
       expect(await service.getLoggedUser()).toBeNull();
     });
 
+    it('should notify subscribers when a login changes the logged user #unit', async function () {
+      const { service, user } = await arrangeLocalUser();
+      const seen: unknown[] = [];
+      service.subscribeLoggedUser((logged) => seen.push(logged?.id));
+
+      const logged = await service.login(user.email, 'some-password');
+
+      expect(seen).toEqual([logged.id]);
+    });
+
+    it('should notify subscribers when a restore finds no surviving session #unit', async function () {
+      const { session, service } = await arrangePasswordLoggedIn();
+      const seen: unknown[] = [];
+      service.subscribeLoggedUser((logged) => seen.push(logged));
+      session.currentUser = null;
+
+      await service.restoreSession();
+
+      expect(seen).toEqual([null]);
+    });
+
+    it('should stop notifying a subscriber after it unsubscribes #unit', async function () {
+      const { service, user } = await arrangeLocalUser();
+      const seen: unknown[] = [];
+      const unsubscribe = service.subscribeLoggedUser((logged) => seen.push(logged));
+
+      unsubscribe();
+      await service.login(user.email, 'some-password');
+
+      expect(seen).toHaveLength(0);
+    });
+
     it('should restore a live session by uid after a reload #unit', async function () {
       const email = casual.email;
       const { repo, session, service, user } = await arrangePasswordLoggedIn(email);

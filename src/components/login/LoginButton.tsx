@@ -9,7 +9,19 @@ export default function LoginButton() {
   const [loggedUser, setLoggedUser] = useState<User | null>(null);
 
   useEffect(() => {
-    userService.getLoggedUser().then(setLoggedUser).catch(console.error);
+    let active = true;
+    userService
+      .getLoggedUser()
+      .then((user) => {
+        if (active) setLoggedUser(user);
+      })
+      .catch(console.error);
+    // The header outlives route changes, so follow logins that happen elsewhere.
+    const unsubscribe = userService.subscribeLoggedUser(setLoggedUser);
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [userService]);
 
   return loggedUser ? (
