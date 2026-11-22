@@ -144,7 +144,7 @@ describe('UserService.ts', function () {
 
     it('should log in with Google reusing the user that has the email #unit', async function () {
       const { conn, session, service, user } = await arrangeLocalUser('ana@gmail.com');
-      session.googleCreds = { uid: 'ana-google-uid', email: 'ana@gmail.com', name: 'Ana' };
+      session.googleCreds = { uid: 'ana-google-uid', email: 'ana@gmail.com', name: 'Ana', picture: '' };
 
       const logged = await service.loginWithGoogle();
 
@@ -156,7 +156,7 @@ describe('UserService.ts', function () {
 
     it('should log in with Google creating the user when the email is new locally #unit', async function () {
       const { conn, session, service } = arrange();
-      session.googleCreds = { uid: 'novo-google-uid', email: 'novo@gmail.com', name: 'Novo Usuario' };
+      session.googleCreds = { uid: 'novo-google-uid', email: 'novo@gmail.com', name: 'Novo Usuario', picture: '' };
 
       const logged = await service.loginWithGoogle();
 
@@ -165,6 +165,21 @@ describe('UserService.ts', function () {
       expect(logged.logged_in).toBe(true);
       expect(conn.items).toHaveLength(1);
       expect(conn.items[0].firebase_uid).toBe('novo-google-uid');
+    });
+
+    it('should persist the Google profile picture on the user row #unit', async function () {
+      const { conn, session, service } = arrange();
+      session.googleCreds = {
+        uid: 'foto-google-uid',
+        email: 'foto@gmail.com',
+        name: 'Foto User',
+        picture: 'https://lh3.googleusercontent.com/a/foto',
+      };
+
+      const logged = await service.loginWithGoogle();
+
+      expect(logged.photo_url).toBe('https://lh3.googleusercontent.com/a/foto');
+      expect(conn.items[0].photo_url).toBe('https://lh3.googleusercontent.com/a/foto');
     });
 
     it('should reject when the Google popup fails #unit', async function () {
@@ -182,7 +197,7 @@ describe('UserService.ts', function () {
       bound.firebase_uid = 'google-uid';
       await repo.save(bound);
       await service.createUser({ name: 'Email Match', email: 'google.user@example.com' });
-      session.googleCreds = { uid: 'google-uid', email: 'google.user@example.com', name: 'Google User' };
+      session.googleCreds = { uid: 'google-uid', email: 'google.user@example.com', name: 'Google User', picture: '' };
 
       const logged = await service.loginWithGoogle();
 
@@ -235,7 +250,7 @@ describe('UserService.ts', function () {
       // Simulate a page reload: the in-memory marker is gone, the Firebase
       // session is still alive and the row carries the bound uid.
       repo.clearLogged();
-      session.currentUser = { uid: `uid-${email}`, email, name: user.name };
+      session.currentUser = { uid: `uid-${email}`, email, name: user.name, picture: '' };
 
       const restored = await service.restoreSession();
 
@@ -255,7 +270,7 @@ describe('UserService.ts', function () {
     it('should adopt the email match and bind the uid when restoring #unit', async function () {
       const { conn, session, service, user } = await arrangeLocalUser('sem.uid@email.com');
       // Row predates uid binding (created before this feature, or on another device).
-      session.currentUser = { uid: 'fresh-uid', email: 'sem.uid@email.com', name: 'Sem Uid' };
+      session.currentUser = { uid: 'fresh-uid', email: 'sem.uid@email.com', name: 'Sem Uid', picture: '' };
 
       const restored = await service.restoreSession();
 
@@ -263,9 +278,25 @@ describe('UserService.ts', function () {
       expect(conn.items[0].firebase_uid).toBe('fresh-uid');
     });
 
+    it('should refresh the stored picture with the live session one when restoring #unit', async function () {
+      const email = casual.email;
+      const { conn, session, service } = await arrangePasswordLoggedIn(email);
+      session.currentUser = {
+        uid: `uid-${email}`,
+        email,
+        name: 'Qualquer',
+        picture: 'https://lh3.googleusercontent.com/a/nova',
+      };
+
+      const restored = await service.restoreSession();
+
+      expect(restored?.photo_url).toBe('https://lh3.googleusercontent.com/a/nova');
+      expect(conn.items[0].photo_url).toBe('https://lh3.googleusercontent.com/a/nova');
+    });
+
     it('should not create a user when restoring an unknown account #unit', async function () {
       const { conn, session, service } = arrange();
-      session.currentUser = { uid: 'ghost-uid', email: 'ghost@nowhere.com', name: 'Ghost' };
+      session.currentUser = { uid: 'ghost-uid', email: 'ghost@nowhere.com', name: 'Ghost', picture: '' };
 
       const restored = await service.restoreSession();
 

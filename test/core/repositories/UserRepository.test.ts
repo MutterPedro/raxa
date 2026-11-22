@@ -68,20 +68,22 @@ describe('User.ts', function () {
       const mockedDbConn = MemoryDBConnection.build<UserProps>();
       const repo = new UserRepository(mockedDbConn, SessionManagerFake.build());
 
-      // A v1 row has no firebase_uid property at all.
+      // A v1 row has no firebase_uid (v2) or photo_url (v3) property at all.
       const saved = await repo.save(Object.assign(new User(), { name: 'Legacy', email: 'legacy@email.com' }));
       delete mockedDbConn.items[0].firebase_uid;
+      delete mockedDbConn.items[0].photo_url;
 
       const user = await repo.getById(saved.id);
       expect(user?.firebase_uid).toBe('');
+      expect(user?.photo_url).toBe('');
     });
 
     it('should expose the account the session manager still has signed in #unit', async function () {
       const mockedSessionManager = SessionManagerFake.build();
-      mockedSessionManager.currentUser = { uid: 'uid-ana', email: 'ana@email.com', name: 'Ana' };
+      mockedSessionManager.currentUser = { uid: 'uid-ana', email: 'ana@email.com', name: 'Ana', picture: '' };
       const repo = new UserRepository(MemoryDBConnection.build<UserProps>(), mockedSessionManager);
 
-      expect(await repo.currentUser()).toEqual({ uid: 'uid-ana', email: 'ana@email.com', name: 'Ana' });
+      expect(await repo.currentUser()).toEqual({ uid: 'uid-ana', email: 'ana@email.com', name: 'Ana', picture: '' });
     });
 
     it('should track the logged user until it is cleared #unit', async function () {

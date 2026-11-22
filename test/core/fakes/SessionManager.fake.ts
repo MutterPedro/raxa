@@ -5,7 +5,12 @@ export class SessionManagerFake implements SessionManager {
   /** When set, loginWithPassword rejects with this error (e.g. `{ code: 'auth/wrong-password' }`). */
   loginError?: unknown;
   /** Profile returned by loginWithGoogle. */
-  googleCreds: SessionCredentials = { uid: 'google-uid', email: 'google.user@example.com', name: 'Google User' };
+  googleCreds: SessionCredentials = {
+    uid: 'google-uid',
+    email: 'google.user@example.com',
+    name: 'Google User',
+    picture: '',
+  };
   /** When set, loginWithGoogle rejects with this error. */
   googleError?: unknown;
   /** Account returned by getCurrentUser (default: none signed in). */

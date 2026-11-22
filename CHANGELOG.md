@@ -38,6 +38,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **Profile pictures** — Google accounts now carry their profile photo: the URL travels
+  with the session credentials (a `photo_url` field on the user, schema v3), is persisted
+  at login and refreshed on restore when the provider rotates it, and the avatar shows it
+  — falling back to the initials when it can't load (offline).
 - **Amount fields accept the decimal comma** — valor inputs are plain text fields with a
   decimal keypad (`inputMode="decimal"`) instead of `type="number"`, so a pt-BR mobile
   keyboard can actually type `10,5`. Parsing accepts what users type and paste: `10,5`,

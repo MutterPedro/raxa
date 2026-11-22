@@ -14,6 +14,8 @@ export interface SessionCredentials {
   uid: string;
   email: string;
   name: string;
+  /** Provider profile picture (empty for email/password accounts). */
+  picture: string;
 }
 
 export interface SessionManager {
@@ -25,11 +27,17 @@ export interface SessionManager {
   deleteSession(): Promise<void>;
 }
 
-function credentialsOf(user: { uid: string; email: string | null; displayName: string | null }): SessionCredentials {
+function credentialsOf(user: {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+}): SessionCredentials {
   return {
     uid: user.uid,
     email: user.email ?? '',
     name: user.displayName ?? user.email ?? '',
+    picture: user.photoURL ?? '',
   };
 }
 

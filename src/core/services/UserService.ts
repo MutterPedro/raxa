@@ -86,14 +86,16 @@ export class UserService {
     const found = await this.resolveLocalUser(creds.uid, creds.email);
     if (found) {
       await this.bindUid(found, creds.uid);
-      this.markLoggedIn(found);
-      return found;
+      const updated = await this.bindPicture(found, creds.picture);
+      this.markLoggedIn(updated);
+      return updated;
     }
 
     const created = await this.createUser({ name: creds.name, email: creds.email });
     await this.bindUid(created, creds.uid);
-    this.markLoggedIn(created);
-    return created;
+    const withPicture = await this.bindPicture(created, creds.picture);
+    this.markLoggedIn(withPicture);
+    return withPicture;
   }
 
   /** The local user currently logged in, or null when nobody is. */
@@ -123,8 +125,9 @@ export class UserService {
     }
 
     await this.bindUid(user, current.uid);
-    this.markLoggedIn(user);
-    return user;
+    const restored = await this.bindPicture(user, current.picture);
+    this.markLoggedIn(restored);
+    return restored;
   }
 
   /**
@@ -167,6 +170,15 @@ export class UserService {
       return Promise.resolve(user);
     }
     user.firebase_uid = uid;
+    return this.userRepo.save(user);
+  }
+
+  /** Keeps the stored profile picture current (provider URLs rotate); no write when unchanged. */
+  private bindPicture(user: WithId<User>, picture: string): Promise<WithId<User>> {
+    if (!picture || user.photo_url === picture) {
+      return Promise.resolve(user);
+    }
+    user.photo_url = picture;
     return this.userRepo.save(user);
   }
 }

@@ -28,6 +28,7 @@ export class UserRepository extends BaseRepository<User, UserProps> {
     user.name = data.name;
     user.email = data.email;
     user.firebase_uid = data.firebase_uid ?? '';
+    user.photo_url = data.photo_url ?? '';
     user.logged_in = this.isLogged(data.id);
     return user;
   }
