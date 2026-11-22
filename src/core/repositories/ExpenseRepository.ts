@@ -21,6 +21,7 @@ export class ExpenseRepository extends BaseRepository<Expense, ExpenseProps> {
     expense.payerId = data.payerId;
     expense.amount = data.amount;
     expense.date = new Date(data.date);
+    expense.synced_at = data.synced_at;
 
     return expense;
   }

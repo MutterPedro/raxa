@@ -9,6 +9,15 @@ interface BaseEntity {
   id: number;
 }
 
+/** Rows with sync status: `synced_at` stays undefined while local changes are pending. */
+interface SyncedEntity extends BaseEntity {
+  synced_at?: number;
+}
+
+function isSynced(entity: BaseEntity): entity is SyncedEntity {
+  return 'synced_at' in entity;
+}
+
 @injectable()
 export abstract class BaseRepository<T extends BaseEntity, P extends object = object> {
   constructor(protected readonly dbConnection: DBConnection<P>) {}
@@ -40,6 +49,12 @@ export abstract class BaseRepository<T extends BaseEntity, P extends object = ob
   }
 
   async save(entity: T): Promise<WithId<T>> {
+    // A domain write puts the row back to pending sync; only the sync worker
+    // ever stamps synced_at again.
+    if (isSynced(entity)) {
+      entity.synced_at = undefined;
+    }
+
     if (!entity.id || entity.id <= 0) {
       //@ts-ignore
       delete entity.id;

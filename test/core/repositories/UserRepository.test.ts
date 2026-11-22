@@ -79,6 +79,18 @@ describe('UserRepository.ts', function () {
       expect(user?.photo_url).toBe('');
     });
 
+    it('should return a synced row to pending on every save #unit', async function () {
+      const { conn, repo } = arrange();
+      const saved = await repo.save(makeUser({ name: 'Ana', email: 'ana@email.com' }));
+      // Pretend the sync worker stamped the stored row; hydrate it back.
+      conn.items[0].synced_at = 1234;
+      const stamped = await repo.getById(saved.id);
+
+      await repo.save(stamped!);
+
+      expect(conn.items[0].synced_at).toBeUndefined();
+    });
+
     it('should expose the account the session manager still has signed in #unit', async function () {
       const { repo, session } = arrange();
       session.currentUser = { uid: 'uid-ana', email: 'ana@email.com', name: 'Ana', picture: '' };

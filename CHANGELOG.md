@@ -26,6 +26,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Entities now carry sync status: `bill`, `expense` and `user` rows have a `synced_at`
+  timestamp (schema v4) — absent means the row has local changes not yet sent to the
+  server, and every write through a repository puts the row back to pending. Nothing
+  stamps it until the sync worker lands; this is the groundwork.
 - The home bills list is now ordered newest first, so a freshly created bill lands at the
   top instead of the bottom.
 - The payer no longer has to be one of the expense participants. Paying on behalf of
