@@ -7,6 +7,7 @@ import Field from '../common/Field';
 import SelectField, { CreatableSelectField, type SelectOption } from '../common/SelectField';
 import { mergeOptions, placeholderOption, resolveUserIds, toOption, toUserId } from '../common/userOptions';
 import { todayInputValue } from '../../core/utils/localDate';
+import { parseAmount } from '../../core/utils/format';
 
 export interface NewBillFormValues {
   name: string;
@@ -54,7 +55,7 @@ export default function NewBillForm({ handleSubmitBill, handleCancel }: NewBillF
     const formData = new FormData(form);
     const name = (formData.get('name') as string) || '';
     const date = (formData.get('date') as string) || '';
-    const amountNumber = Number(amount) || 0;
+    const amountNumber = parseAmount(amount) || 0;
 
     // Typed-in names become real users here; the payer resolves through the same map
     // so a payer that is still a placeholder lands on the very same new user.
@@ -93,16 +94,14 @@ export default function NewBillForm({ handleSubmitBill, handleCancel }: NewBillF
           <Field label="Data" type="date" name="date" id="date" defaultValue={todayInputValue()} />
           <Field
             label="Valor"
-            type="number"
+            inputMode="decimal"
             name="amount"
-            step="0.01"
-            min="0"
             hint="Sem valor agora? Crie a conta e adicione despesas depois."
             data-testid="new-bill-form-amount-input"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
           />
-          {Number(amount) > 0 && (
+          {parseAmount(amount) > 0 && (
             <div
               role="group"
               aria-label="Divisão da primeira despesa"

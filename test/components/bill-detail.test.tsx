@@ -109,6 +109,20 @@ describe('BillDetail', () => {
     expect(screen.getByTestId('bill-total-span')).toHaveTextContent('Total R$ 60,00');
   });
 
+  it('accepts the amount written pt-BR style, comma and all #unit', async () => {
+    const billService = createBillServiceFake({ bill: createBill() });
+    renderDetail(billService);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nova despesa' }));
+    await screen.findByTestId('new-expense-form');
+    fireEvent.click(screen.getByTestId('new-expense-more-toggle'));
+
+    fireEvent.change(screen.getByTestId('new-expense-form-amount-input'), { target: { value: '1.234,56' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Adicionar' }));
+
+    await waitFor(() => expect(billService.quickAddExpense).toHaveBeenCalledWith(1, { amount: 1234.56 }));
+  });
+
   it('passes the filled-in values of the open options section to the quick add #unit', async () => {
     const billService = createBillServiceFake({ bill: createBill() });
     renderDetail(billService);
@@ -296,7 +310,7 @@ describe('BillDetail', () => {
       fireEvent.click(await screen.findByTestId('edit-expense-2-button'));
       await screen.findByTestId('edit-expense-form');
       expect(screen.getByLabelText('Nome da despesa')).toHaveValue('Ingressos');
-      expect(screen.getByTestId('edit-expense-form-amount-input')).toHaveValue(120.5);
+      expect(screen.getByTestId('edit-expense-form-amount-input')).toHaveValue('120,5');
       // The existing participants land in the selects before any interaction.
       await screen.findAllByText('Eu');
 

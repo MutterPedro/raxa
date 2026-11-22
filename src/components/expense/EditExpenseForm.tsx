@@ -10,6 +10,7 @@ import Field from '../common/Field';
 import SelectField, { CreatableSelectField, type SelectOption } from '../common/SelectField';
 import { mergeOptions, placeholderOption, resolveUserIds, toOption, toUserId } from '../common/userOptions';
 import { parseInputDate, toDateInputValue } from '../../core/utils/localDate';
+import { amountToInputValue, parseAmount } from '../../core/utils/format';
 
 interface EditExpenseFormProps {
   expense: Expense;
@@ -22,7 +23,7 @@ export default function EditExpenseForm({ expense, handleCancel, onExpenseSaved 
   const userService = useUserService();
   const { notify } = useToast();
 
-  const [amount, setAmount] = useState(String(expense.amount));
+  const [amount, setAmount] = useState(amountToInputValue(expense.amount));
   const [participants, setParticipants] = useState<SelectOption[]>([]);
   const [options, setOptions] = useState<SelectOption[]>([]);
   const [payer, setPayer] = useState<SelectOption | null>();
@@ -49,7 +50,7 @@ export default function EditExpenseForm({ expense, handleCancel, onExpenseSaved 
 
   async function handleFormSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const amountNumber = Number(amount);
+    const amountNumber = parseAmount(amount);
     if (!(amountNumber > 0) || participants.length === 0) return;
 
     try {
@@ -98,10 +99,8 @@ export default function EditExpenseForm({ expense, handleCancel, onExpenseSaved 
           <Field label="Nome da despesa" name="name" defaultValue={expense.name} />
           <Field
             label="Valor"
-            type="number"
+            inputMode="decimal"
             name="amount"
-            step="0.01"
-            min="0"
             autoFocus
             data-testid="edit-expense-form-amount-input"
             value={amount}
@@ -122,7 +121,7 @@ export default function EditExpenseForm({ expense, handleCancel, onExpenseSaved 
             type="submit"
             size="lg"
             className="w-full"
-            disabled={!(Number(amount) > 0) || participants.length === 0}
+            disabled={!(parseAmount(amount) > 0) || participants.length === 0}
             data-testid="edit-expense-form-submit"
           >
             Salvar

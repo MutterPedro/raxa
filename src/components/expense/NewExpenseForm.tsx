@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import Bill from '../../core/entities/Bill';
 import Expense from '../../core/entities/Expense';
+import { parseAmount } from '../../core/utils/format';
 import { useBillService } from '../state/useBillService';
 import { useUserService } from '../state/useUserService';
 import { useToast } from '../common/Toast';
@@ -50,7 +51,7 @@ export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }:
 
   async function handleFormSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const amountNumber = Number(amount);
+    const amountNumber = parseAmount(amount);
     if (!(amountNumber > 0)) return;
 
     try {
@@ -103,10 +104,8 @@ export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }:
         <div className="mt-4 flex flex-col gap-4">
           <Field
             label="Valor"
-            type="number"
+            inputMode="decimal"
             name="amount"
-            step="0.01"
-            min="0"
             autoFocus
             hint="Só o valor já basta — o resto vem pronto, e você ajusta à vontade."
             data-testid="new-expense-form-amount-input"
@@ -144,7 +143,7 @@ export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }:
               <SelectField label="Quem pagou" inputId="payer" options={options} value={payer} onChange={setPayer} />
             </div>
           )}
-          <Button type="submit" size="lg" className="w-full" disabled={!(Number(amount) > 0)}>
+          <Button type="submit" size="lg" className="w-full" disabled={!(parseAmount(amount) > 0)}>
             Adicionar
           </Button>
           <Button type="button" variant="ghost" onClick={handleCancel} className="w-full">

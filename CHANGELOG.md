@@ -38,6 +38,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **Amount fields accept the decimal comma** — valor inputs are plain text fields with a
+  decimal keypad (`inputMode="decimal"`) instead of `type="number"`, so a pt-BR mobile
+  keyboard can actually type `10,5`. Parsing accepts what users type and paste: `10,5`,
+  `1.234,56`, and dot decimals alike, and the edit-expense form prefills with a comma.
 - **The session survives a full page reload** — Firebase persists its own sign-in, but a
   reload (or a Google login) used to leave the header on `Entrar` and the sync hint
   showing. Local user rows now store the Firebase uid, boot restores the matching row as
