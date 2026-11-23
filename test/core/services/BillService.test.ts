@@ -242,6 +242,57 @@ describe('BillService.ts', function () {
       expect(expenses[1].name).toEqual(expense2.name);
     });
 
+    it('should page through a bill expenses in insertion order #unit', async function () {
+      const conn = MemoryDBConnection.build<ExpenseProps>(3);
+      const service = buildBillService({ expenseConn: conn });
+      const bill = await service.createBill({ name: casual.name });
+
+      for (let i = 0; i < 7; i++) {
+        await service.addExpense(bill.id, {
+          name: `expense ${i}`,
+          amount: 1,
+          date: new Date().toISOString(),
+          participantIds: [1, 2],
+          payerId: 1,
+        });
+      }
+
+      const page1 = await service.getExpensesPage(bill.id, 1);
+      const page2 = await service.getExpensesPage(bill.id, 2);
+      const page3 = await service.getExpensesPage(bill.id, 3);
+
+      expect(page1.map((expense) => expense.name)).toEqual(['expense 0', 'expense 1', 'expense 2']);
+      expect(page2.map((expense) => expense.name)).toEqual(['expense 3', 'expense 4', 'expense 5']);
+      expect(page3.map((expense) => expense.name)).toEqual(['expense 6']);
+      expect(await service.getExpensesPage(bill.id, 4)).toHaveLength(0);
+    });
+
+    it('should count only the expenses of the bill being paged #unit', async function () {
+      const service = buildBillService();
+      const bill = await service.createBill({ name: casual.name });
+      const other = await service.createBill({ name: casual.name });
+
+      for (let i = 0; i < 3; i++) {
+        await service.addExpense(bill.id, {
+          name: `expense ${i}`,
+          amount: 1,
+          date: new Date().toISOString(),
+          participantIds: [1],
+          payerId: 1,
+        });
+      }
+      await service.addExpense(other.id, {
+        name: 'other expense',
+        amount: 1,
+        date: new Date().toISOString(),
+        participantIds: [1],
+        payerId: 1,
+      });
+
+      expect(await service.countExpenses(bill.id)).toBe(3);
+      expect(await service.countExpenses(other.id)).toBe(1);
+    });
+
     it.each<string[]>([
       [casual.name, casual.name, casual.name],
       [casual.name, casual.name, casual.name, casual.name],

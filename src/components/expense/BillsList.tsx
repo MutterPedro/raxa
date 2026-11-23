@@ -1,8 +1,7 @@
-import { useEffect, useRef } from 'react';
-
 import type Bill from '../../core/entities/Bill';
 import BillItem from './BillItem';
 import Skeleton from '../common/Skeleton';
+import { useSentinel } from '../common/useSentinel';
 
 export interface BillsListProps {
   bills: Bill[];
@@ -20,30 +19,9 @@ export default function BillsList({
   isLoadingMore = false,
   onLoadMore,
 }: BillsListProps) {
-  const sentinelRef = useRef<HTMLDivElement>(null);
-
   // Infinite feed: the sentinel sits below the last card and loads the next page
-  // as it enters view. The effect re-runs after every append, so the observer is
-  // re-registered and fires again while the sentinel stays in view — the feed
-  // chains until the viewport is full or the rows run out.
-  useEffect(
-    function () {
-      const node = sentinelRef.current;
-      if (!node || !onLoadMore) return;
-      // jsdom has no IntersectionObserver; loading directly keeps the chain (and
-      // tests over it) deterministic there.
-      if (typeof IntersectionObserver === 'undefined') {
-        onLoadMore();
-        return;
-      }
-      const observer = new IntersectionObserver(function (entries) {
-        if (entries.some((entry) => entry.isIntersecting)) onLoadMore();
-      });
-      observer.observe(node);
-      return () => observer.disconnect();
-    },
-    [onLoadMore, hasMore, bills.length],
-  );
+  // as it enters view, chaining until the viewport is full or the rows run out.
+  const sentinelRef = useSentinel(hasMore ? (onLoadMore ?? null) : null, bills.length);
 
   if (isLoading) {
     return (

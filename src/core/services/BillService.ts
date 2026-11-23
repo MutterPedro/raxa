@@ -97,6 +97,16 @@ export class BillService {
     return expenses;
   }
 
+  /** One page of the bill's expenses in insertion order (page 1 = oldest). */
+  async getExpensesPage(billId: number, page: number): Promise<Expense[]> {
+    return this.expenseRepo.searchPage((expense) => expense.billId === billId, page);
+  }
+
+  /** How many expenses the bill has — the feed decides "more pages" from this. */
+  async countExpenses(billId: number): Promise<number> {
+    return this.expenseRepo.count((expense) => expense.billId === billId);
+  }
+
   async getTotal(billId: number): Promise<number> {
     const expenses = await this.getExpenses(billId);
 

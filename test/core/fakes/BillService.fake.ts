@@ -16,6 +16,8 @@ export interface BillServiceFakeOptions {
   bill?: Bill | null;
   /** Expenses returned by getExpenses (default: empty). */
   expenses?: Expense[];
+  /** Slice size getExpensesPage applies (small values make infinite-feed tests easy). */
+  expensesPageSize?: number;
   /** Parts returned by getParticipantsParts (default: empty). */
   parts?: { amount: number; user: User }[];
   /** Id handed out by createBill (default: 1). */
@@ -49,6 +51,7 @@ export function createBillServiceFake(options: BillServiceFakeOptions = {}): Bil
     billsPending = false,
     bill: defaultBill,
     expenses: defaultExpenses = [],
+    expensesPageSize = 10,
     parts: defaultParts = [],
     createdBillId = 1,
     createdExpense,
@@ -91,6 +94,10 @@ export function createBillServiceFake(options: BillServiceFakeOptions = {}): Bil
     getParticipants: jest.fn(async () => participants),
     getById: jest.fn(async () => defaultBillObj),
     getExpenses: jest.fn(async () => defaultExpenses),
+    getExpensesPage: jest.fn(async (_billId: number, page: number) =>
+      defaultExpenses.slice((page - 1) * expensesPageSize, page * expensesPageSize),
+    ),
+    countExpenses: jest.fn(async () => defaultExpenses.length),
     getParticipantsParts: jest.fn(async () => defaultParts),
     createBill: jest.fn((values: { name: string; date?: Date; ownerId?: number }) => {
       const created = new Bill();

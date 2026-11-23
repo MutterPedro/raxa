@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useBillService } from '../state/useBillService';
 import { useToast } from '../common/Toast';
 import { Modal } from '../common/Modal';
+import { useSentinel } from '../common/useSentinel';
 import Bill from '../../core/entities/Bill';
 import LoadingGauge from '../common/LoadingGuage';
 import NewExpenseForm from './NewExpenseForm';
@@ -29,7 +30,14 @@ export default function BillDetail() {
   const [editingBill, setEditingBill] = useState<boolean>(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false);
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  // Expenses live in one feed object (same reasoning as the home bills feed): page
+  // appends and the "more pages" counter must move together.
+  const [expenseFeed, setExpenseFeed] = useState<{ expenses: Expense[]; page: number; total: number }>({
+    expenses: [],
+    page: 0,
+    total: 0,
+  });
+  const [loadingMoreExpenses, setLoadingMoreExpenses] = useState<boolean>(false);
   // Stays true after the first successful write on this visit — on-device reassurance.
   const [saved, setSaved] = useState<boolean>(false);
   // Bumped whenever the division must be refetched (expense added or undone).
@@ -46,8 +54,39 @@ export default function BillDetail() {
       .getTotal(Number(billId))
       .then((t) => setTotal(t))
       .catch(console.error);
-    billService.getExpenses(Number(billId)).then((expenses) => setExpenses(expenses));
+    Promise.all([billService.getExpensesPage(Number(billId), 1), billService.countExpenses(Number(billId))])
+      .then(([expenses, count]) => setExpenseFeed({ expenses, page: 1, total: count }))
+      .catch(console.error);
   }, [billService, billId]);
+
+  const hasMoreExpenses = expenseFeed.page > 0 && expenseFeed.expenses.length < expenseFeed.total;
+
+  // Guarded synchronously (state updates batch): two quick sentinel triggers must
+  // not fetch the same page twice.
+  const loadingMoreRef = useRef(false);
+  const loadMoreExpenses = useCallback(
+    async function () {
+      if (loadingMoreRef.current || !hasMoreExpenses) return;
+      loadingMoreRef.current = true;
+      setLoadingMoreExpenses(true);
+      try {
+        const next = await billService.getExpensesPage(Number(billId), expenseFeed.page + 1);
+        setExpenseFeed((feed) => {
+          const expenses = [...feed.expenses, ...next];
+          // An empty page means the earlier count was stale — stop asking.
+          const total = next.length === 0 ? expenses.length : feed.total;
+          return { expenses, page: feed.page + 1, total };
+        });
+      } catch (error) {
+        console.error(error);
+      } finally {
+        loadingMoreRef.current = false;
+        setLoadingMoreExpenses(false);
+      }
+    },
+    [billService, billId, expenseFeed.page, hasMoreExpenses],
+  );
+  const sentinelRef = useSentinel(hasMoreExpenses ? loadMoreExpenses : null, expenseFeed.expenses.length);
 
   function refreshParts() {
     setPartsRefreshKey((key) => key + 1);
@@ -70,7 +109,7 @@ export default function BillDetail() {
     setShowForm(false);
     setSaved(true);
     setTotal((current) => current + expense.amount);
-    setExpenses((current) => [...current, expense]);
+    setExpenseFeed((feed) => ({ ...feed, expenses: [...feed.expenses, expense], total: feed.total + 1 }));
     refreshParts();
     notify('Despesa adicionada', {
       duration: 6000,
@@ -81,7 +120,11 @@ export default function BillDetail() {
             .deleteExpense(expense.id)
             .then(() => {
               setTotal((current) => current - expense.amount);
-              setExpenses((current) => current.filter((e) => e.id !== expense.id));
+              setExpenseFeed((feed) => ({
+                ...feed,
+                expenses: feed.expenses.filter((e) => e.id !== expense.id),
+                total: feed.total - 1,
+              }));
               refreshParts();
             })
             .catch((error) => {
@@ -118,7 +161,10 @@ export default function BillDetail() {
   function onExpenseSaved(updated: Expense) {
     setEditingExpense(null);
     setSaved(true);
-    setExpenses((current) => current.map((e) => (e.id === updated.id ? updated : e)));
+    setExpenseFeed((feed) => ({
+      ...feed,
+      expenses: feed.expenses.map((e) => (e.id === updated.id ? updated : e)),
+    }));
     // The amount may have changed — refetch the total instead of patching it optimistically.
     billService.getTotal(Number(billId)).then(setTotal).catch(console.error);
     refreshParts();
@@ -210,10 +256,20 @@ export default function BillDetail() {
             <div className="grid grid-rows-[0fr] transition-[grid-template-rows] ease-soft duration-200 group-open:grid-rows-[1fr]">
               <div className="overflow-hidden">
                 <ul role="list" className="divide-y divide-line">
-                  {expenses.map((expense) => (
+                  {expenseFeed.expenses.map((expense) => (
                     <ExpenseItem expense={expense} key={expense.id} onEdit={setEditingExpense} />
                   ))}
                 </ul>
+                {/* Only mounted while older pages exist, so the (invisible) sentinel
+                    never changes the card height of a fully loaded list. */}
+                {hasMoreExpenses && (
+                  <div ref={sentinelRef} data-testid="expenses-sentinel" aria-hidden="true" className="h-px w-full" />
+                )}
+                {loadingMoreExpenses && (
+                  <p className="py-2 text-center text-sm text-ink-muted" role="status">
+                    Carregando…
+                  </p>
+                )}
               </div>
             </div>
           </details>

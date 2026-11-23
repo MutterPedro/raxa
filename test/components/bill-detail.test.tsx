@@ -53,6 +53,26 @@ describe('BillDetail', () => {
     expect(row).toHaveTextContent('R$ 120,50');
   });
 
+  it('chains expense pages until every row is shown #unit', async () => {
+    const expenses = Array.from({ length: 5 }, (_, i) => createExpense({ id: i + 1, name: `Despesa ${i + 1}` }));
+    const billService = createBillServiceFake({
+      bill: createBill(),
+      expenses,
+      expensesPageSize: 2,
+      total: expenses.reduce((sum, e) => sum + e.amount, 0),
+    });
+
+    renderDetail(billService);
+
+    // jsdom has no IntersectionObserver, so the sentinel fires directly and the feed
+    // chains pages until all five rows (2 + 2 + 1) are on screen.
+    for (let i = 1; i <= 5; i++) {
+      expect(await screen.findByText(`Despesa ${i}`)).toBeInTheDocument();
+    }
+    expect(billService.getExpensesPage).toHaveBeenCalledWith(1, 3);
+    expect(billService.getExpensesPage).not.toHaveBeenCalledWith(1, 4);
+  });
+
   it('renders division rows with amounts and owes/gets labels #unit', async () => {
     const parts = [
       { amount: -75.25, user: createUser(1337, 'Eu') },

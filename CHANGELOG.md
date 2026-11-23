@@ -9,6 +9,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Infinite expense feed** — the bill detail screen no longer loads every expense at once:
+  the list appends the next page as its end scrolls into view, exactly like the home bills
+  feed (the sentinel logic now lives in a shared `useSentinel` hook; `getExpensesPage` and
+  `countExpenses` drive it, keeping the familiar oldest-first order).
 - **Working login** — the login screen is live: sign up (email + password + name, claiming
   the local self row), password login, and Google sign-in (`signInWithPopup`), all verified
   against Firebase Auth before any local row is touched. Auth failures surface in pt-BR
