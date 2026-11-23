@@ -1,20 +1,29 @@
 import { inject, injectable } from 'inversify';
 import { TYPES } from '../../infra/di';
+import { ExpenseRepository } from '../repositories/ExpenseRepository';
 import { UserRepository } from '../repositories/UserRepository';
 import User, { UserProps } from '../entities/User';
+import { ExpenseProps } from '../entities/Expense';
 import { synchronized } from '../utils/decorators';
 
+import type { SessionCredentials } from '../../infra/SessionManager';
 import type { WithId } from '../../@types/utils';
+
+/** The provider data an adoption writes onto a local row (name excluded on purpose). */
+type ProviderProfile = Pick<SessionCredentials, 'uid' | 'email' | 'picture'>;
 
 @injectable()
 export class UserService {
   private static RESERVED_SELF_ID = 1337;
+  private static PLACEHOLDER_SELF_EMAIL = 'placeholder@email.com';
 
   private readonly loggedUserListeners = new Set<(user: WithId<User> | null) => void>();
 
   constructor(
     @inject(TYPES.UserRepository)
     private readonly userRepo: UserRepository,
+    @inject(TYPES.ExpenseRepository)
+    private readonly expenseRepo: ExpenseRepository,
   ) {}
 
   async createUser(values: Omit<UserProps, 'id'>): Promise<User> {
@@ -33,7 +42,7 @@ export class UserService {
 
     const user = new User();
     user.name = 'Eu';
-    user.email = 'placeholder@email.com';
+    user.email = UserService.PLACEHOLDER_SELF_EMAIL;
     user.id = UserService.RESERVED_SELF_ID;
     return this.userRepo.create(user);
   }
@@ -77,25 +86,33 @@ export class UserService {
   }
 
   /**
-   * Google login: the popup yields the profile, so an email new locally gets a user
-   * created on the spot (name and email come pre-verified from the provider).
+   * Google login: the popup yields the profile. A never-adopted self row *is* this
+   * person — every bill and expense already references it — so the provider identity
+   * lands there (the friendly name stays 'Eu') instead of creating a second row for
+   * the same human.
    */
   async loginWithGoogle(): Promise<User> {
     const creds = await this.userRepo.authenticateWithGoogle();
 
     const found = await this.resolveLocalUser(creds.uid, creds.email);
-    if (found) {
-      await this.bindUid(found, creds.uid);
-      const updated = await this.bindPicture(found, creds.picture);
-      this.markLoggedIn(updated);
-      return updated;
+    if (!found) {
+      const self = await this.createSelf();
+      if (this.isPlaceholderSelf(self)) {
+        const claimed = await this.adoptIntoSelf(self, creds);
+        this.markLoggedIn(claimed);
+        return claimed;
+      }
+
+      const created = await this.createUser({ name: creds.name, email: creds.email });
+      await this.bindUid(created, creds.uid);
+      const withPicture = await this.bindPicture(created, creds.picture);
+      this.markLoggedIn(withPicture);
+      return withPicture;
     }
 
-    const created = await this.createUser({ name: creds.name, email: creds.email });
-    await this.bindUid(created, creds.uid);
-    const withPicture = await this.bindPicture(created, creds.picture);
-    this.markLoggedIn(withPicture);
-    return withPicture;
+    const user = await this.bindProviderRow(found, creds);
+    this.markLoggedIn(user);
+    return user;
   }
 
   /** The local user currently logged in, or null when nobody is. */
@@ -124,8 +141,7 @@ export class UserService {
       return null;
     }
 
-    await this.bindUid(user, current.uid);
-    const restored = await this.bindPicture(user, current.picture);
+    const restored = await this.bindProviderRow(user, current);
     this.markLoggedIn(restored);
     return restored;
   }
@@ -180,5 +196,72 @@ export class UserService {
     }
     user.photo_url = picture;
     return this.userRepo.save(user);
+  }
+
+  /** The self row as it came from the app, never claimed by an account. */
+  private isPlaceholderSelf(user: User): boolean {
+    return !user.firebase_uid && user.email === UserService.PLACEHOLDER_SELF_EMAIL;
+  }
+
+  private async getPlaceholderSelf(): Promise<WithId<User> | undefined> {
+    const self = await this.userRepo.getById(UserService.RESERVED_SELF_ID);
+    return self && this.isPlaceholderSelf(self) ? self : undefined;
+  }
+
+  /**
+   * Gives the provider's account to the self row: email, uid and picture move over
+   * while the familiar `Eu` name stays put. Expenses already pointing at the self row
+   * need no change, so the avatar shows up everywhere at once.
+   */
+  private adoptIntoSelf(self: WithId<User>, creds: ProviderProfile): Promise<WithId<User>> {
+    self.email = creds.email;
+    self.firebase_uid = creds.uid;
+    self.photo_url = creds.picture;
+    return this.userRepo.save(self);
+  }
+
+  /**
+   * Rows created before the self row was adopted, or by an earlier provider login, are
+   * the same human twice. The provider data moves to whichever row is already referenced
+   * (the self row when it is still unclaimed, otherwise the row found), and the other one
+   * goes away with its expense references rewritten onto the survivor.
+   */
+  private async bindProviderRow(found: WithId<User>, creds: ProviderProfile): Promise<WithId<User>> {
+    if (found.id === UserService.RESERVED_SELF_ID) {
+      await this.bindUid(found, creds.uid);
+      return this.bindPicture(found, creds.picture);
+    }
+
+    const self = await this.getPlaceholderSelf();
+    if (self) {
+      const claimed = await this.adoptIntoSelf(self, creds);
+      await this.repointExpenses(found.id, claimed.id);
+      await this.userRepo.delete(found.id);
+      return claimed;
+    }
+
+    await this.bindUid(found, creds.uid);
+    return this.bindPicture(found, creds.picture);
+  }
+
+  /** Moves every expense naming the dropped row (payer or participant) to the survivor. */
+  private async repointExpenses(droppedId: number, survivorId: number): Promise<void> {
+    const namesDropped = (expense: WithId<ExpenseProps>) =>
+      expense.payerId === droppedId || expense.participantIds.includes(droppedId);
+
+    // Every save stops the row from matching, so page 1 is re-queried until it comes back empty.
+    let matches = await this.expenseRepo.searchPage(namesDropped, 1);
+    while (matches.length > 0) {
+      await Promise.all(
+        matches.map((expense) => {
+          if (expense.payerId === droppedId) expense.payerId = survivorId;
+          expense.participantIds = Array.from(
+            new Set(expense.participantIds.map((id) => (id === droppedId ? survivorId : id))),
+          );
+          return this.expenseRepo.save(expense);
+        }),
+      );
+      matches = await this.expenseRepo.searchPage(namesDropped, 1);
+    }
   }
 }

@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import Header from '../../src/components/header/Header';
 import { ServicesContext } from '../../src/components/state/ServicesContext';
 import { UserService } from '../../src/core/services/UserService';
+import { ExpenseRepositoryFake } from '../core/fakes/ExpenseRepository.fake';
 import { UserRepositoryFake } from '../core/fakes/UserRepository.fake';
 import { BillService } from '../../src/core/services/BillService';
 import { themeStore } from '../../src/infra/theme';
@@ -39,8 +40,7 @@ describe('Header', () => {
   afterEach(resetTheme);
 
   const buildUserService = (): UserService => {
-    const fakeRepo = UserRepositoryFake.build();
-    return new UserService(fakeRepo);
+    return new UserService(UserRepositoryFake.build(), ExpenseRepositoryFake.build());
   };
 
   const mockBillService = {} as BillService;

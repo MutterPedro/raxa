@@ -1,7 +1,10 @@
 import casual from 'casual';
+import Expense from '../../../src/core/entities/Expense';
+import { createExpense } from '../../factories/entities';
 import { MemoryDBConnection } from '../fakes/DBConnection.fake';
 import { SessionManagerFake } from '../fakes/SessionManager.fake';
-import { UserProps } from '../../../src/core/entities';
+import { ExpenseProps, UserProps } from '../../../src/core/entities';
+import { ExpenseRepositoryFake } from '../fakes/ExpenseRepository.fake';
 import { UserRepositoryFake } from '../fakes/UserRepository.fake';
 import { UserService } from '../../../src/core/services/UserService';
 
@@ -12,12 +15,20 @@ import { UserService } from '../../../src/core/services/UserService';
  */
 function arrange() {
   const conn = MemoryDBConnection.build<UserProps>();
+  const expenseConn = MemoryDBConnection.build<ExpenseProps>();
   const session = SessionManagerFake.build();
   const repo = UserRepositoryFake.build(conn, session);
   repo.clearLogged();
-  const service = new UserService(repo);
+  const expenseRepo = ExpenseRepositoryFake.build(expenseConn);
+  const service = new UserService(repo, expenseRepo);
 
-  return { conn, session, repo, service };
+  return { conn, expenseConn, session, repo, expenseRepo, service };
+}
+
+/** arrange: one expense with the given payer and participants. */
+async function arrangeExpense(expenseRepo: ExpenseRepositoryFake, overrides: Partial<Expense>) {
+  // id 0 sends BaseRepository.save down the create path (the factory default id is 1).
+  return expenseRepo.save(createExpense({ id: 0, ...overrides }));
 }
 
 /** arrange: one local user that never signed in (no firebase uid bound yet). */
@@ -154,17 +165,127 @@ describe('UserService.ts', function () {
       expect(conn.items[0].firebase_uid).toBe('ana-google-uid');
     });
 
-    it('should log in with Google creating the user when the email is new locally #unit', async function () {
+    it('should log in with Google claiming the self row when the email is new locally #unit', async function () {
       const { conn, session, service } = arrange();
       session.googleCreds = { uid: 'novo-google-uid', email: 'novo@gmail.com', name: 'Novo Usuario', picture: '' };
 
       const logged = await service.loginWithGoogle();
 
-      expect(logged.name).toBe('Novo Usuario');
+      // The provider account lands on the self row every bill already references; the
+      // friendly name stays 'Eu' instead of the Google display name.
+      expect(logged.id).toBe(1337);
+      expect(logged.name).toBe('Eu');
       expect(logged.email).toBe('novo@gmail.com');
       expect(logged.logged_in).toBe(true);
       expect(conn.items).toHaveLength(1);
       expect(conn.items[0].firebase_uid).toBe('novo-google-uid');
+    });
+
+    it('should fold a duplicate provider row into the self row on google login #unit', async function () {
+      const { conn, session, repo, expenseConn, expenseRepo, service } = arrange();
+      // Deployed devices hold both rows: the untouched self row and the Google row
+      // created by earlier logins, with expenses on each side.
+      const self = await service.createSelf();
+      const dup = await service.createUser({ name: 'Pedro', email: 'pedro@gmail.com' });
+      dup.firebase_uid = 'pedro-google-uid';
+      await repo.save(dup);
+      const payerExpense = await arrangeExpense(expenseRepo, { payerId: dup.id, participantIds: [self.id, dup.id] });
+      const selfExpense = await arrangeExpense(expenseRepo, { payerId: self.id, participantIds: [self.id] });
+      const otherExpense = await arrangeExpense(expenseRepo, { payerId: 99, participantIds: [99, dup.id] });
+      session.googleCreds = {
+        uid: 'pedro-google-uid',
+        email: 'pedro@gmail.com',
+        name: 'Pedro',
+        picture: 'https://lh3.googleusercontent.com/a/pedro',
+      };
+
+      const logged = await service.loginWithGoogle();
+
+      expect(logged.id).toBe(1337);
+      expect(logged.name).toBe('Eu');
+      expect(logged.photo_url).toBe('https://lh3.googleusercontent.com/a/pedro');
+      // The duplicate is gone, and only the survivor keeps its uid.
+      expect(conn.items.map((u) => u.id)).toEqual([1337]);
+      // Expenses keep pointing at one row: the payer moves, participants dedupe.
+      const [payerRow] = expenseConn.items.filter((e) => e.id === payerExpense.id);
+      expect(payerRow.payerId).toBe(1337);
+      expect(payerRow.participantIds).toEqual([self.id]); // the dropped id folds in, leaving one reference
+      const [selfRow] = expenseConn.items.filter((e) => e.id === selfExpense.id);
+      expect(selfRow.payerId).toBe(self.id);
+      expect(selfRow.participantIds).toEqual([self.id]);
+      // Expenses paid by someone else also move the participant reference.
+      const [otherRow] = expenseConn.items.filter((e) => e.id === otherExpense.id);
+      expect(otherRow.payerId).toBe(99);
+      expect(otherRow.participantIds).toEqual([99, self.id]);
+    });
+
+    it('should fold the duplicate row into the self row when restoring a session #unit', async function () {
+      const { conn, session, repo, service } = arrange();
+      const self = await service.createSelf();
+      const dup = await service.createUser({ name: 'Pedro', email: 'pedro@gmail.com' });
+      dup.firebase_uid = 'pedro-google-uid';
+      await repo.save(dup);
+      session.currentUser = {
+        uid: 'pedro-google-uid',
+        email: 'pedro@gmail.com',
+        name: 'Pedro',
+        picture: 'https://lh3.googleusercontent.com/a/pedro',
+      };
+
+      const restored = await service.restoreSession();
+
+      // A reload on a device that still has the old duplicate self-heals onto 'Eu'.
+      expect(restored?.id).toBe(self.id);
+      expect(restored?.name).toBe('Eu');
+      expect(restored?.photo_url).toBe('https://lh3.googleusercontent.com/a/pedro');
+      expect(conn.items.map((u) => u.id)).toEqual([1337]);
+
+      // Restoring again over the claimed self row only refreshes it.
+      session.currentUser = { ...session.currentUser, picture: 'https://lh3.googleusercontent.com/a/pedro-2' };
+      const again = await service.restoreSession();
+      expect(again?.id).toBe(1337);
+      expect(again?.photo_url).toBe('https://lh3.googleusercontent.com/a/pedro-2');
+      expect(conn.items).toHaveLength(1);
+    });
+
+    it('should create a separate row for a new google account when the self row has an owner #unit', async function () {
+      const { conn, session, repo, service } = arrange();
+      const self = await service.createSelf();
+      self.firebase_uid = 'someone-else-uid';
+      self.email = 'outra@gmail.com';
+      await repo.save(self);
+      session.googleCreds = {
+        uid: 'terceiro-uid',
+        email: 'terceiro@gmail.com',
+        name: 'Terceiro',
+        picture: 'https://lh3.googleusercontent.com/a/terceiro',
+      };
+
+      const logged = await service.loginWithGoogle();
+
+      // Another person owns 'Eu', so this account gets its own row.
+      expect(logged.id).not.toBe(self.id);
+      expect(logged.name).toBe('Terceiro');
+      expect(logged.photo_url).toBe('https://lh3.googleusercontent.com/a/terceiro');
+      expect(conn.items).toHaveLength(2);
+    });
+
+    it('should keep both rows when the self row already belongs to another account #unit', async function () {
+      const { conn, session, repo, service } = arrange();
+      const self = await service.createSelf();
+      self.firebase_uid = 'someone-else-uid';
+      self.email = 'outra@gmail.com';
+      await repo.save(self);
+      const dup = await service.createUser({ name: 'Pedro', email: 'pedro@gmail.com' });
+      dup.firebase_uid = 'pedro-google-uid';
+      await repo.save(dup);
+      session.googleCreds = { uid: 'pedro-google-uid', email: 'pedro@gmail.com', name: 'Pedro', picture: '' };
+
+      const logged = await service.loginWithGoogle();
+
+      // Folding now would steal another person's rows, so both stay.
+      expect(logged.id).toBe(dup.id);
+      expect(conn.items).toHaveLength(2);
     });
 
     it('should persist the Google profile picture on the user row #unit', async function () {
