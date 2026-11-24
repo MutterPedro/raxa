@@ -18,6 +18,8 @@ import SavedChip from '../common/SavedChip';
 import { formatCurrency, formatDate } from '../../core/utils/format';
 import { parseInputDate, toDateInputValue } from '../../core/utils/localDate';
 
+const EXPENSES_SEARCH_DEBOUNCE_MS = 250;
+
 export default function BillDetail() {
   const { billId } = useParams();
   const billService = useBillService();
@@ -31,13 +33,16 @@ export default function BillDetail() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false);
   // Expenses live in one feed object (same reasoning as the home bills feed): page
-  // appends and the "more pages" counter must move together.
-  const [expenseFeed, setExpenseFeed] = useState<{ expenses: Expense[]; page: number; total: number }>({
-    expenses: [],
-    page: 0,
-    total: 0,
-  });
+  // appends, the name filter and the "more pages" counter must move together.
+  const [expenseFeed, setExpenseFeed] = useState<{
+    expenses: Expense[];
+    page: number;
+    total: number;
+    filter: string | null;
+  }>({ expenses: [], page: 0, total: 0, filter: null });
   const [loadingMoreExpenses, setLoadingMoreExpenses] = useState<boolean>(false);
+  const [search, setSearch] = useState<string>('');
+  const [debouncedSearch, setDebouncedSearch] = useState<string>('');
   // Stays true after the first successful write on this visit — on-device reassurance.
   const [saved, setSaved] = useState<boolean>(false);
   // Bumped whenever the division must be refetched (expense added or undone).
@@ -54,28 +59,57 @@ export default function BillDetail() {
       .getTotal(Number(billId))
       .then((t) => setTotal(t))
       .catch(console.error);
-    Promise.all([billService.getExpensesPage(Number(billId), 1), billService.countExpenses(Number(billId))])
-      .then(([expenses, count]) => setExpenseFeed({ expenses, page: 1, total: count }))
-      .catch(console.error);
   }, [billService, billId]);
 
-  const hasMoreExpenses = expenseFeed.page > 0 && expenseFeed.expenses.length < expenseFeed.total;
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), EXPENSES_SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Refetches page 1 whenever the (debounced) filter moves — including the first load.
+  // searchRef tracks the always-current filter, so a page whose fetch raced a filter
+  // change can drop its result instead of merging rows from two different searches.
+  const searchRef = useRef('');
+  useEffect(() => {
+    let cancelled = false;
+    searchRef.current = debouncedSearch;
+    Promise.all([
+      billService.getExpensesPage(Number(billId), 1, { search: debouncedSearch }),
+      billService.countExpenses(Number(billId), { search: debouncedSearch }),
+    ])
+      .then(([expenses, count]) => {
+        if (!cancelled) setExpenseFeed({ expenses, page: 1, total: count, filter: debouncedSearch });
+      })
+      .catch(console.error);
+    return () => {
+      cancelled = true;
+    };
+  }, [billService, billId, debouncedSearch]);
+
+  // A re-filter is in flight and the rows shown still belong to the old term.
+  const staleExpenses = expenseFeed.filter !== null && expenseFeed.filter !== debouncedSearch;
+  const hasMoreExpenses = expenseFeed.page > 0 && !staleExpenses && expenseFeed.expenses.length < expenseFeed.total;
+  const searching = debouncedSearch !== '';
 
   // Guarded synchronously (state updates batch): two quick sentinel triggers must
   // not fetch the same page twice.
   const loadingMoreRef = useRef(false);
   const loadMoreExpenses = useCallback(
     async function () {
+      const searchAtCall = debouncedSearch;
       if (loadingMoreRef.current || !hasMoreExpenses) return;
       loadingMoreRef.current = true;
       setLoadingMoreExpenses(true);
       try {
-        const next = await billService.getExpensesPage(Number(billId), expenseFeed.page + 1);
+        const next = await billService.getExpensesPage(Number(billId), expenseFeed.page + 1, {
+          search: searchAtCall,
+        });
+        if (searchRef.current !== searchAtCall) return; // filter moved on mid-flight
         setExpenseFeed((feed) => {
           const expenses = [...feed.expenses, ...next];
           // An empty page means the earlier count was stale — stop asking.
           const total = next.length === 0 ? expenses.length : feed.total;
-          return { expenses, page: feed.page + 1, total };
+          return { expenses, page: feed.page + 1, total, filter: feed.filter };
         });
       } catch (error) {
         console.error(error);
@@ -84,12 +118,25 @@ export default function BillDetail() {
         setLoadingMoreExpenses(false);
       }
     },
-    [billService, billId, expenseFeed.page, hasMoreExpenses],
+    [billService, billId, debouncedSearch, expenseFeed.page, hasMoreExpenses],
   );
   const sentinelRef = useSentinel(hasMoreExpenses ? loadMoreExpenses : null, expenseFeed.expenses.length);
 
   function refreshParts() {
     setPartsRefreshKey((key) => key + 1);
+  }
+
+  // A write while a filter is active may make rows appear or vanish — refetch the
+  // matching page 1 instead of guessing where the row belongs.
+  function reloadExpenses() {
+    if (searching) {
+      Promise.all([
+        billService.getExpensesPage(Number(billId), 1, { search: debouncedSearch }),
+        billService.countExpenses(Number(billId), { search: debouncedSearch }),
+      ])
+        .then(([expenses, count]) => setExpenseFeed({ expenses, page: 1, total: count, filter: debouncedSearch }))
+        .catch(console.error);
+    }
   }
 
   async function confirmDeleteBill() {
@@ -109,7 +156,11 @@ export default function BillDetail() {
     setShowForm(false);
     setSaved(true);
     setTotal((current) => current + expense.amount);
-    setExpenseFeed((feed) => ({ ...feed, expenses: [...feed.expenses, expense], total: feed.total + 1 }));
+    if (searching) {
+      reloadExpenses();
+    } else {
+      setExpenseFeed((feed) => ({ ...feed, expenses: [...feed.expenses, expense], total: feed.total + 1 }));
+    }
     refreshParts();
     notify('Despesa adicionada', {
       duration: 6000,
@@ -120,11 +171,15 @@ export default function BillDetail() {
             .deleteExpense(expense.id)
             .then(() => {
               setTotal((current) => current - expense.amount);
-              setExpenseFeed((feed) => ({
-                ...feed,
-                expenses: feed.expenses.filter((e) => e.id !== expense.id),
-                total: feed.total - 1,
-              }));
+              if (searching) {
+                reloadExpenses();
+              } else {
+                setExpenseFeed((feed) => ({
+                  ...feed,
+                  expenses: feed.expenses.filter((e) => e.id !== expense.id),
+                  total: feed.total - 1,
+                }));
+              }
               refreshParts();
             })
             .catch((error) => {
@@ -161,10 +216,15 @@ export default function BillDetail() {
   function onExpenseSaved(updated: Expense) {
     setEditingExpense(null);
     setSaved(true);
-    setExpenseFeed((feed) => ({
-      ...feed,
-      expenses: feed.expenses.map((e) => (e.id === updated.id ? updated : e)),
-    }));
+    if (searching) {
+      // The edit may move the row out of (or into) the current filter.
+      reloadExpenses();
+    } else {
+      setExpenseFeed((feed) => ({
+        ...feed,
+        expenses: feed.expenses.map((e) => (e.id === updated.id ? updated : e)),
+      }));
+    }
     // The amount may have changed — refetch the total instead of patching it optimistically.
     billService.getTotal(Number(billId)).then(setTotal).catch(console.error);
     refreshParts();
@@ -255,11 +315,29 @@ export default function BillDetail() {
             </summary>
             <div className="grid grid-rows-[0fr] transition-[grid-template-rows] ease-soft duration-200 group-open:grid-rows-[1fr]">
               <div className="overflow-hidden">
+                {/* Same reveal rule as the home search bar: only once the bill has
+                    expenses (or a search is running), so empty bills stay clean. */}
+                {(expenseFeed.total > 0 || search !== '') && (
+                  <input
+                    type="search"
+                    data-testid="expenses-search-input"
+                    aria-label="Buscar despesas"
+                    placeholder="Buscar despesa por nome…"
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    className="mb-2 w-full h-11 rounded-[var(--radius-field)] border border-line bg-surface-raised px-3 text-ink placeholder:text-ink-faint focus-ring"
+                  />
+                )}
                 <ul role="list" className="divide-y divide-line">
                   {expenseFeed.expenses.map((expense) => (
                     <ExpenseItem expense={expense} key={expense.id} onEdit={setEditingExpense} />
                   ))}
                 </ul>
+                {searching && expenseFeed.expenses.length === 0 && (
+                  <p className="py-2 text-center text-sm text-ink-muted" role="status">
+                    Nenhuma despesa encontrada
+                  </p>
+                )}
                 {/* Only mounted while older pages exist, so the (invisible) sentinel
                     never changes the card height of a fully loaded list. */}
                 {hasMoreExpenses && (

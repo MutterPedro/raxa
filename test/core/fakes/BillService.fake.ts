@@ -83,6 +83,13 @@ export function createBillServiceFake(options: BillServiceFakeOptions = {}): Bil
     return term ? bills.filter((bill) => bill.name.toLowerCase().includes(term)) : bills;
   };
 
+  // Same contract as the bills search above: trimmed case-insensitive contains
+  // (accent folding is unit-tested on the service), and sliced per page.
+  const searchedExpenses = (search?: string): Expense[] => {
+    const term = search?.trim().toLowerCase();
+    return term ? defaultExpenses.filter((expense) => expense.name.toLowerCase().includes(term)) : defaultExpenses;
+  };
+
   return {
     getBills: jest.fn(async (page: number = 1, opts: { search?: string } = {}) => {
       if (billsPending) return new Promise<Bill[]>(() => {});
@@ -94,10 +101,13 @@ export function createBillServiceFake(options: BillServiceFakeOptions = {}): Bil
     getParticipants: jest.fn(async () => participants),
     getById: jest.fn(async () => defaultBillObj),
     getExpenses: jest.fn(async () => defaultExpenses),
-    getExpensesPage: jest.fn(async (_billId: number, page: number) =>
-      defaultExpenses.slice((page - 1) * expensesPageSize, page * expensesPageSize),
+    getExpensesPage: jest.fn(async (_billId: number, page: number, opts: { search?: string } = {}) => {
+      const found = searchedExpenses(opts.search);
+      return found.slice((page - 1) * expensesPageSize, page * expensesPageSize);
+    }),
+    countExpenses: jest.fn(async (_billId: number, opts: { search?: string } = {}) =>
+      Promise.resolve(searchedExpenses(opts.search).length),
     ),
-    countExpenses: jest.fn(async () => defaultExpenses.length),
     getParticipantsParts: jest.fn(async () => defaultParts),
     createBill: jest.fn((values: { name: string; date?: Date; ownerId?: number }) => {
       const created = new Bill();

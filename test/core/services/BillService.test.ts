@@ -29,6 +29,19 @@ function buildUserService(): UserService {
   return new UserService(UserRepositoryFake.build(), ExpenseRepositoryFake.build());
 }
 
+/** arrange: add one expense per name to the bill. */
+async function addExpenses(service: BillService, billId: number, names: string[]): Promise<void> {
+  for (const name of names) {
+    await service.addExpense(billId, {
+      name,
+      amount: 1,
+      date: new Date().toISOString(),
+      participantIds: [1],
+      payerId: 1,
+    });
+  }
+}
+
 describe('BillService.ts', function () {
   describe('Unit tests', function () {
     it('should add a new bill anonymously #unit', async function () {
@@ -252,15 +265,11 @@ describe('BillService.ts', function () {
       const service = buildBillService({ expenseConn: conn });
       const bill = await service.createBill({ name: casual.name });
 
-      for (let i = 0; i < 7; i++) {
-        await service.addExpense(bill.id, {
-          name: `expense ${i}`,
-          amount: 1,
-          date: new Date().toISOString(),
-          participantIds: [1, 2],
-          payerId: 1,
-        });
-      }
+      await addExpenses(
+        service,
+        bill.id,
+        Array.from({ length: 7 }, (_, i) => `expense ${i}`),
+      );
 
       const page1 = await service.getExpensesPage(bill.id, 1);
       const page2 = await service.getExpensesPage(bill.id, 2);
@@ -277,25 +286,39 @@ describe('BillService.ts', function () {
       const bill = await service.createBill({ name: casual.name });
       const other = await service.createBill({ name: casual.name });
 
-      for (let i = 0; i < 3; i++) {
-        await service.addExpense(bill.id, {
-          name: `expense ${i}`,
-          amount: 1,
-          date: new Date().toISOString(),
-          participantIds: [1],
-          payerId: 1,
-        });
-      }
-      await service.addExpense(other.id, {
-        name: 'other expense',
-        amount: 1,
-        date: new Date().toISOString(),
-        participantIds: [1],
-        payerId: 1,
-      });
+      await addExpenses(service, bill.id, ['expense 0', 'expense 1', 'expense 2']);
+      await addExpenses(service, other.id, ['other expense']);
 
       expect(await service.countExpenses(bill.id)).toBe(3);
       expect(await service.countExpenses(other.id)).toBe(1);
+    });
+
+    it('should search the bill expenses by name ignoring case and accents #unit', async function () {
+      const conn = MemoryDBConnection.build<ExpenseProps>(2);
+      const service = buildBillService({ expenseConn: conn });
+      const bill = await service.createBill({ name: casual.name });
+      await addExpenses(service, bill.id, ['Pizza', 'Pizzaria do bairro', 'Açaí natural']);
+
+      const matches = await service.getExpensesPage(bill.id, 1, { search: 'PIZZA' });
+
+      expect(matches.map((expense) => expense.name)).toEqual(['Pizza', 'Pizzaria do bairro']);
+      expect(await service.countExpenses(bill.id, { search: 'pIZZA' })).toBe(2);
+      expect((await service.getExpensesPage(bill.id, 1, { search: '  acai  ' })).map((e) => e.name)).toEqual([
+        'Açaí natural',
+      ]);
+      expect(await service.countExpenses(bill.id, { search: 'acai' })).toBe(1);
+      // No match: empty page, zero count.
+      expect(await service.getExpensesPage(bill.id, 1, { search: 'hospitaL' })).toHaveLength(0);
+      expect(await service.countExpenses(bill.id, { search: 'hospital' })).toBe(0);
+    });
+
+    it('should list everything when the expense search is blank #unit', async function () {
+      const service = buildBillService();
+      const bill = await service.createBill({ name: casual.name });
+      await addExpenses(service, bill.id, ['Pizza', 'Cinema']);
+
+      expect(await service.getExpensesPage(bill.id, 1, { search: '   ' })).toHaveLength(2);
+      expect(await service.countExpenses(bill.id, { search: '' })).toBe(2);
     });
 
     it.each<string[]>([

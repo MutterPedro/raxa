@@ -69,8 +69,46 @@ describe('BillDetail', () => {
     for (let i = 1; i <= 5; i++) {
       expect(await screen.findByText(`Despesa ${i}`)).toBeInTheDocument();
     }
-    expect(billService.getExpensesPage).toHaveBeenCalledWith(1, 3);
-    expect(billService.getExpensesPage).not.toHaveBeenCalledWith(1, 4);
+    expect(billService.getExpensesPage).toHaveBeenCalledWith(1, 3, { search: '' });
+    expect(billService.getExpensesPage).not.toHaveBeenCalledWith(1, 4, { search: '' });
+  });
+
+  it('narrows the expense feed with the name search #unit', async () => {
+    const expenses = [
+      createExpense({ id: 1, name: 'Pizza' }),
+      createExpense({ id: 2, name: 'Pizzaria do bairro' }),
+      createExpense({ id: 3, name: 'Cinema' }),
+    ];
+    const billService = createBillServiceFake({ bill: createBill(), expenses, total: 30 });
+
+    renderDetail(billService);
+
+    // The debounce is a real 250ms wait, comfortably inside findBy's polling window.
+    fireEvent.change(await screen.findByTestId('expenses-search-input'), { target: { value: 'pizza' } });
+
+    await waitFor(() => expect(billService.getExpensesPage).toHaveBeenCalledWith(1, 1, { search: 'pizza' }));
+    expect(await screen.findByText('Pizza')).toBeInTheDocument();
+    expect(screen.getByText('Pizzaria do bairro')).toBeInTheDocument();
+    expect(screen.queryByText('Cinema')).not.toBeInTheDocument();
+    expect(billService.countExpenses).toHaveBeenCalledWith(1, { search: 'pizza' });
+  });
+
+  it('reports when no expense matches the search and restores the list when it clears #unit', async () => {
+    const expenses = [createExpense({ id: 1, name: 'Pizza' }), createExpense({ id: 2, name: 'Cinema' })];
+    const billService = createBillServiceFake({ bill: createBill(), expenses, total: 2 });
+
+    renderDetail(billService);
+
+    const input = await screen.findByTestId('expenses-search-input');
+    fireEvent.change(input, { target: { value: 'hospital' } });
+
+    expect(await screen.findByText('Nenhuma despesa encontrada')).toBeInTheDocument();
+    expect(screen.queryByText('Pizza')).not.toBeInTheDocument();
+
+    fireEvent.change(input, { target: { value: '' } });
+
+    expect(await screen.findByText('Pizza')).toBeInTheDocument();
+    expect(screen.getByText('Cinema')).toBeInTheDocument();
   });
 
   it('renders division rows with amounts and owes/gets labels #unit', async () => {

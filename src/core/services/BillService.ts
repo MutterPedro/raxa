@@ -97,14 +97,23 @@ export class BillService {
     return expenses;
   }
 
-  /** One page of the bill's expenses in insertion order (page 1 = oldest). */
-  async getExpensesPage(billId: number, page: number): Promise<Expense[]> {
-    return this.expenseRepo.searchPage((expense) => expense.billId === billId, page);
+  /**
+   * One page of the bill's expenses in insertion order (page 1 = oldest), optionally
+   * narrowed by a name search ignoring case and accents; blank/omitted terms list everything.
+   */
+  async getExpensesPage(billId: number, page: number, opts: { search?: string } = {}): Promise<Expense[]> {
+    return this.expenseRepo.searchPage(this.billExpensesMatcher(billId, opts.search), page);
   }
 
-  /** How many expenses the bill has — the feed decides "more pages" from this. */
-  async countExpenses(billId: number): Promise<number> {
-    return this.expenseRepo.count((expense) => expense.billId === billId);
+  /** How many expenses the bill has under the same filter — the feed decides "more pages" from this. */
+  async countExpenses(billId: number, opts: { search?: string } = {}): Promise<number> {
+    return this.expenseRepo.count(this.billExpensesMatcher(billId, opts.search));
+  }
+
+  private billExpensesMatcher(billId: number, search?: string): (expense: WithId<ExpenseProps>) => boolean {
+    const term = search?.trim();
+    const nameMatcher = term ? buildNameMatcher(term) : undefined;
+    return (expense) => expense.billId === billId && (!nameMatcher || nameMatcher(expense));
   }
 
   async getTotal(billId: number): Promise<number> {

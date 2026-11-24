@@ -24,6 +24,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   and the list auto-loads older pages as its end scrolls into view — no buttons, no
   page-size knowledge in the UI (`countBills` drives "more pages"). The persistence port
   gained predicate paging (`searchPage`/`count`) for this.
+- **Expense search** — the same name search now lives inside the bill detail's expense
+  feed: a field above the rows narrows them by name ignoring case and accents (debounced;
+  blank lists everything), paging stays correct under the filter, and writes while
+  filtering refetch instead of guessing where the row belongs (`getExpensesPage` and
+  `countExpenses` gained the search option).
 - **Edit bills and expenses** — an `Editar` button on the bill card opens an inline form
   for name and date, and a pencil on each expense row opens a fully prefilled edit form
   (name, amount, date, participants, payer).

@@ -28,6 +28,15 @@ test('bill-detail', async ({ page }) => {
   await capture(page, 'bill-detail');
 });
 
+test('bill-detail-search', async ({ page }) => {
+  await gotoSeeded(page, '/bill/1');
+  await page.getByTestId('expenses-search-input').fill('trans');
+  // Debounce plus fetch: only the seeded "Transporte" expense survives the filter.
+  await expect(page.getByTestId('edit-expense-1-button')).toHaveCount(0);
+  await expect(page.getByText('Transporte')).toBeVisible();
+  await capture(page, 'bill-detail-search');
+});
+
 test('new-bill-form', async ({ page }) => {
   await gotoFresh(page);
   await page.getByTestId('new-bill-jumbo-button').click();

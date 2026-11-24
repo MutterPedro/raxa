@@ -25,7 +25,9 @@ const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense, onEdit }) => {
     <li>
       <div className="flex items-center gap-3 py-3">
         <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold text-ink">{expense.name}</p>
+          <p data-testid={`expense-item-name-${expense.id}`} className="truncate font-semibold text-ink">
+            {expense.name}
+          </p>
           <p className="mt-0.5 truncate text-sm text-ink-muted">{formatDate(expense.date)}</p>
         </div>
         <div className="flex shrink-0 items-center gap-3">

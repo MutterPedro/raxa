@@ -22,6 +22,7 @@ Playwright), Visual (`test/visual/`), Unit (`test/components/`).
 | `bills-list-sentinel`                                                                                                   | `expense/BillsList.tsx`          | acceptance, unit                                                              |
 | `expenses-sentinel`                                                                                                     | `expense/BillDetail.tsx`         | unit                                                                          |
 | `bills-search-input`                                                                                                    | `MainContainer.tsx`              | acceptance, unit, visual                                                      |
+| `expenses-search-input`                                                                                                 | `expense/BillDetail.tsx`         | acceptance, unit, visual                                                      |
 | `new-bill-jumbo-button`                                                                                                 | `expense/NewBillJumboButton.tsx` | acceptance, unit, visual                                                      |
 | `new-bill-float-button`                                                                                                 | `expense/NewBillFloatButton.tsx` | acceptance, integration                                                       |
 | `new-bill-form`, `new-bill-form-name-input`, `new-bill-form-amount-input`                                               | `expense/NewBillForm.tsx`        | acceptance, unit, visual                                                      |
@@ -38,6 +39,7 @@ Playwright), Visual (`test/visual/`), Unit (`test/components/`).
 | pattern                              | component                              | notes                                                                      |
 | ------------------------------------ | -------------------------------------- | -------------------------------------------------------------------------- |
 | `bill-item-name-${bill.id}`          | `expense/BillItem.tsx`                 | bill row title on the home list                                            |
+| `expense-item-name-${expense.id}`    | `expense/ExpenseItem.tsx`              | expense row title on the bill feed                                         |
 | `bill-total-${bill.id}`              | `expense/BillItem.tsx`                 | bill row total; assertions format money via `test/acceptance/steps/brl.ts` |
 | `bill-part-participant-${user.name}` | `expense/BillParticipantsPartList.tsx` | keyed by display name, not id                                              |
 | `bill-part-amount-${user.name}`      | `expense/BillParticipantsPartList.tsx` | same keying                                                                |
