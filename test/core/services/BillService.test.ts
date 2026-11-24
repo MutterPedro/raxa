@@ -20,8 +20,13 @@ function buildBillService(
   return new BillService(
     BillRepositoryFake.build(options.billConn),
     ExpenseRepositoryFake.build(options.expenseConn),
-    options.userService ?? new UserService(UserRepositoryFake.build(), ExpenseRepositoryFake.build()),
+    options.userService ?? buildUserService(),
   );
+}
+
+/** The real UserService over a fresh in-memory world (each call is a new device). */
+function buildUserService(): UserService {
+  return new UserService(UserRepositoryFake.build(), ExpenseRepositoryFake.build());
 }
 
 describe('BillService.ts', function () {
@@ -297,7 +302,7 @@ describe('BillService.ts', function () {
       [casual.name, casual.name, casual.name],
       [casual.name, casual.name, casual.name, casual.name],
     ])('should list all the participants of a bill #unit', async function (...userNames: string[]) {
-      const userService = new UserService(UserRepositoryFake.build(), ExpenseRepositoryFake.build());
+      const userService = buildUserService();
       const service = buildBillService({ userService });
 
       const userIds = (
@@ -332,7 +337,7 @@ describe('BillService.ts', function () {
     });
 
     it('should list all the participants of a bill with their part of the total #unit', async function () {
-      const userService = new UserService(UserRepositoryFake.build(), ExpenseRepositoryFake.build());
+      const userService = buildUserService();
       const service = buildBillService({ userService });
 
       const user1 = await userService.createUser({ name: casual.name, email: casual.email });
@@ -468,7 +473,7 @@ describe('BillService.ts', function () {
 
     it('should ignore participants that no longer exist when listing them #unit', async function () {
       const conn = MemoryDBConnection.build<BillProps>();
-      const userService = new UserService(UserRepositoryFake.build(), ExpenseRepositoryFake.build());
+      const userService = buildUserService();
       const service = buildBillService({ billConn: conn, userService });
 
       const user = await userService.createUser({ name: casual.name, email: casual.email });
@@ -487,7 +492,7 @@ describe('BillService.ts', function () {
     });
 
     it('should quick add an amount-only expense split with every current bill participant #unit', async function () {
-      const userService = new UserService(UserRepositoryFake.build(), ExpenseRepositoryFake.build());
+      const userService = buildUserService();
       const service = buildBillService({ userService });
 
       const self = await userService.createSelf();
@@ -526,7 +531,7 @@ describe('BillService.ts', function () {
     });
 
     it('should keep a quick added expense paid by an outsider out of the bill participants #unit', async function () {
-      const userService = new UserService(UserRepositoryFake.build(), ExpenseRepositoryFake.build());
+      const userService = buildUserService();
       const service = buildBillService({ userService });
 
       const self = await userService.createSelf();
@@ -559,7 +564,7 @@ describe('BillService.ts', function () {
     });
 
     it('should keep every explicitly provided value of a quick added expense #unit', async function () {
-      const userService = new UserService(UserRepositoryFake.build(), ExpenseRepositoryFake.build());
+      const userService = buildUserService();
       const service = buildBillService({ userService });
 
       const friend = await userService.createUser({ name: casual.name, email: casual.email });

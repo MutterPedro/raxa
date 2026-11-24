@@ -8,6 +8,8 @@ import { ExpenseRepositoryFake } from '../fakes/ExpenseRepository.fake';
 import { UserRepositoryFake } from '../fakes/UserRepository.fake';
 import { UserService } from '../../../src/core/services/UserService';
 
+import type { SessionCredentials } from '../../../src/infra/SessionManager';
+
 /**
  * The worlds the scenarios arrange on top of. Every factory clears the repository's
  * process-wide logged-in marker, so no test inherits a session from whoever ran
@@ -29,6 +31,67 @@ function arrange() {
 async function arrangeExpense(expenseRepo: ExpenseRepositoryFake, overrides: Partial<Expense>) {
   // id 0 sends BaseRepository.save down the create path (the factory default id is 1).
   return expenseRepo.save(createExpense({ id: 0, ...overrides }));
+}
+
+/**
+ * The Google account the fold scenarios run on: deployed devices hold both the
+ * untouched self row and a provider row like this one, created by earlier logins.
+ */
+const PROVIDER: SessionCredentials = {
+  uid: 'pedro-google-uid',
+  email: 'pedro@gmail.com',
+  name: 'Pedro',
+  picture: 'https://lh3.googleusercontent.com/a/pedro',
+};
+
+type World = ReturnType<typeof arrange>;
+
+/** arrange: a provider user row with the uid already bound, as older logins left it. */
+async function arrangeProviderRow(world: World) {
+  const dup = await world.service.createUser({ name: PROVIDER.name, email: PROVIDER.email });
+  dup.firebase_uid = PROVIDER.uid;
+  await world.repo.save(dup);
+
+  return dup;
+}
+
+/** arrange: deployed device — unclaimed self row plus the provider row for PROVIDER. */
+async function arrangeDeviceWithProviderRow() {
+  const world = arrange();
+  const self = await world.service.createSelf();
+  const dup = await arrangeProviderRow(world);
+
+  return { ...world, self, dup };
+}
+
+/** arrange: self row already claimed by another account. */
+async function arrangeOwnedSelf() {
+  const world = arrange();
+  const self = await world.service.createSelf();
+  self.firebase_uid = 'someone-else-uid';
+  self.email = 'outra@gmail.com';
+  await world.repo.save(self);
+
+  return { ...world, self };
+}
+
+/** assert: only the self row remains locally, and it now carries the provider account. */
+function expectClaimedSelf(conn: MemoryDBConnection<UserProps>, creds: SessionCredentials) {
+  expect(conn.items.map((u) => u.id)).toEqual([1337]);
+  const [self] = conn.items;
+  expect(self.email).toBe(creds.email);
+  expect(self.firebase_uid).toBe(creds.uid);
+  expect(self.photo_url).toBe(creds.picture);
+}
+
+/** assert: the stored expense row references the expected payer and participants. */
+function expectExpenseRefs(
+  expenseConn: MemoryDBConnection<ExpenseProps>,
+  expenseId: number,
+  refs: { payerId: number; participantIds: number[] },
+) {
+  const row = expenseConn.items.find((e) => e.id === expenseId);
+  expect([row?.payerId, row?.participantIds]).toEqual([refs.payerId, refs.participantIds]);
 }
 
 /** arrange: one local user that never signed in (no firebase uid bound yet). */
@@ -167,7 +230,8 @@ describe('UserService.ts', function () {
 
     it('should log in with Google claiming the self row when the email is new locally #unit', async function () {
       const { conn, session, service } = arrange();
-      session.googleCreds = { uid: 'novo-google-uid', email: 'novo@gmail.com', name: 'Novo Usuario', picture: '' };
+      const creds = { uid: 'novo-google-uid', email: 'novo@gmail.com', name: 'Novo Usuario', picture: '' };
+      session.googleCreds = creds;
 
       const logged = await service.loginWithGoogle();
 
@@ -175,132 +239,94 @@ describe('UserService.ts', function () {
       // friendly name stays 'Eu' instead of the Google display name.
       expect(logged.id).toBe(1337);
       expect(logged.name).toBe('Eu');
-      expect(logged.email).toBe('novo@gmail.com');
       expect(logged.logged_in).toBe(true);
-      expect(conn.items).toHaveLength(1);
-      expect(conn.items[0].firebase_uid).toBe('novo-google-uid');
+      expectClaimedSelf(conn, creds);
     });
 
     it('should fold a duplicate provider row into the self row on google login #unit', async function () {
-      const { conn, session, repo, expenseConn, expenseRepo, service } = arrange();
-      // Deployed devices hold both rows: the untouched self row and the Google row
-      // created by earlier logins, with expenses on each side.
-      const self = await service.createSelf();
-      const dup = await service.createUser({ name: 'Pedro', email: 'pedro@gmail.com' });
-      dup.firebase_uid = 'pedro-google-uid';
-      await repo.save(dup);
+      const { conn, session, expenseConn, expenseRepo, self, dup, service } = await arrangeDeviceWithProviderRow();
       const payerExpense = await arrangeExpense(expenseRepo, { payerId: dup.id, participantIds: [self.id, dup.id] });
       const selfExpense = await arrangeExpense(expenseRepo, { payerId: self.id, participantIds: [self.id] });
       const otherExpense = await arrangeExpense(expenseRepo, { payerId: 99, participantIds: [99, dup.id] });
-      session.googleCreds = {
-        uid: 'pedro-google-uid',
-        email: 'pedro@gmail.com',
-        name: 'Pedro',
-        picture: 'https://lh3.googleusercontent.com/a/pedro',
-      };
+      session.googleCreds = PROVIDER;
 
       const logged = await service.loginWithGoogle();
 
-      expect(logged.id).toBe(1337);
+      expect(logged.id).toBe(self.id);
       expect(logged.name).toBe('Eu');
-      expect(logged.photo_url).toBe('https://lh3.googleusercontent.com/a/pedro');
-      // The duplicate is gone, and only the survivor keeps its uid.
-      expect(conn.items.map((u) => u.id)).toEqual([1337]);
-      // Expenses keep pointing at one row: the payer moves, participants dedupe.
-      const [payerRow] = expenseConn.items.filter((e) => e.id === payerExpense.id);
-      expect(payerRow.payerId).toBe(1337);
-      expect(payerRow.participantIds).toEqual([self.id]); // the dropped id folds in, leaving one reference
-      const [selfRow] = expenseConn.items.filter((e) => e.id === selfExpense.id);
-      expect(selfRow.payerId).toBe(self.id);
-      expect(selfRow.participantIds).toEqual([self.id]);
-      // Expenses paid by someone else also move the participant reference.
-      const [otherRow] = expenseConn.items.filter((e) => e.id === otherExpense.id);
-      expect(otherRow.payerId).toBe(99);
-      expect(otherRow.participantIds).toEqual([99, self.id]);
+      expectClaimedSelf(conn, PROVIDER);
+      // The payer moves, the dropped id folds into the participants (leaving one
+      // reference), and other payers keep their own rows.
+      expectExpenseRefs(expenseConn, payerExpense.id, { payerId: self.id, participantIds: [self.id] });
+      expectExpenseRefs(expenseConn, selfExpense.id, { payerId: self.id, participantIds: [self.id] });
+      expectExpenseRefs(expenseConn, otherExpense.id, { payerId: 99, participantIds: [99, self.id] });
     });
 
     it('should fold the duplicate row into the self row when restoring a session #unit', async function () {
-      const { conn, session, repo, service } = arrange();
-      const self = await service.createSelf();
-      const dup = await service.createUser({ name: 'Pedro', email: 'pedro@gmail.com' });
-      dup.firebase_uid = 'pedro-google-uid';
-      await repo.save(dup);
-      session.currentUser = {
-        uid: 'pedro-google-uid',
-        email: 'pedro@gmail.com',
-        name: 'Pedro',
-        picture: 'https://lh3.googleusercontent.com/a/pedro',
-      };
+      const { conn, session, self, service } = await arrangeDeviceWithProviderRow();
+      session.currentUser = PROVIDER;
 
       const restored = await service.restoreSession();
 
       // A reload on a device that still has the old duplicate self-heals onto 'Eu'.
       expect(restored?.id).toBe(self.id);
       expect(restored?.name).toBe('Eu');
-      expect(restored?.photo_url).toBe('https://lh3.googleusercontent.com/a/pedro');
-      expect(conn.items.map((u) => u.id)).toEqual([1337]);
+      expect(restored?.photo_url).toBe(PROVIDER.picture);
+      expectClaimedSelf(conn, PROVIDER);
 
       // Restoring again over the claimed self row only refreshes it.
-      session.currentUser = { ...session.currentUser, picture: 'https://lh3.googleusercontent.com/a/pedro-2' };
+      session.currentUser = { ...PROVIDER, picture: `${PROVIDER.picture}-2` };
       const again = await service.restoreSession();
-      expect(again?.id).toBe(1337);
-      expect(again?.photo_url).toBe('https://lh3.googleusercontent.com/a/pedro-2');
+      expect(again?.id).toBe(self.id);
+      expect(again?.photo_url).toBe(`${PROVIDER.picture}-2`);
       expect(conn.items).toHaveLength(1);
     });
 
     it('should create a separate row for a new google account when the self row has an owner #unit', async function () {
-      const { conn, session, repo, service } = arrange();
-      const self = await service.createSelf();
-      self.firebase_uid = 'someone-else-uid';
-      self.email = 'outra@gmail.com';
-      await repo.save(self);
-      session.googleCreds = {
+      const { conn, session, self, service } = await arrangeOwnedSelf();
+      const creds = {
         uid: 'terceiro-uid',
         email: 'terceiro@gmail.com',
         name: 'Terceiro',
         picture: 'https://lh3.googleusercontent.com/a/terceiro',
       };
+      session.googleCreds = creds;
 
       const logged = await service.loginWithGoogle();
 
       // Another person owns 'Eu', so this account gets its own row.
       expect(logged.id).not.toBe(self.id);
       expect(logged.name).toBe('Terceiro');
-      expect(logged.photo_url).toBe('https://lh3.googleusercontent.com/a/terceiro');
+      expect(logged.photo_url).toBe(creds.picture);
       expect(conn.items).toHaveLength(2);
     });
 
     it('should keep both rows when the self row already belongs to another account #unit', async function () {
-      const { conn, session, repo, service } = arrange();
-      const self = await service.createSelf();
-      self.firebase_uid = 'someone-else-uid';
-      self.email = 'outra@gmail.com';
-      await repo.save(self);
-      const dup = await service.createUser({ name: 'Pedro', email: 'pedro@gmail.com' });
-      dup.firebase_uid = 'pedro-google-uid';
-      await repo.save(dup);
-      session.googleCreds = { uid: 'pedro-google-uid', email: 'pedro@gmail.com', name: 'Pedro', picture: '' };
+      const world = await arrangeOwnedSelf();
+      const dup = await arrangeProviderRow(world);
+      world.session.googleCreds = PROVIDER;
 
-      const logged = await service.loginWithGoogle();
+      const logged = await world.service.loginWithGoogle();
 
       // Folding now would steal another person's rows, so both stay.
       expect(logged.id).toBe(dup.id);
-      expect(conn.items).toHaveLength(2);
+      expect(world.conn.items).toHaveLength(2);
     });
 
     it('should persist the Google profile picture on the user row #unit', async function () {
       const { conn, session, service } = arrange();
-      session.googleCreds = {
+      const creds = {
         uid: 'foto-google-uid',
         email: 'foto@gmail.com',
         name: 'Foto User',
         picture: 'https://lh3.googleusercontent.com/a/foto',
       };
+      session.googleCreds = creds;
 
       const logged = await service.loginWithGoogle();
 
-      expect(logged.photo_url).toBe('https://lh3.googleusercontent.com/a/foto');
-      expect(conn.items[0].photo_url).toBe('https://lh3.googleusercontent.com/a/foto');
+      expect(logged.photo_url).toBe(creds.picture);
+      expectClaimedSelf(conn, creds);
     });
 
     it('should reject when the Google popup fails #unit', async function () {
