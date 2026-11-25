@@ -6,8 +6,10 @@ import type { BillService } from '../../src/core/services/BillService';
 import type { UserService } from '../../src/core/services/UserService';
 import { ServicesContext } from '../../src/components/state/ServicesContext';
 import MainContainer from '../../src/components/MainContainer';
+import type Bill from '../../src/core/entities/Bill';
 import { createBillServiceFake } from '../core/fakes/BillService.fake';
 import { createUserServiceFake } from '../core/fakes/UserService.fake';
+import { createBill } from '../factories/entities';
 
 // BillItem navigates (same house pattern as the other component suites).
 jest.mock('react-router', () => ({
@@ -118,5 +120,28 @@ describe('New bill quick-capture', () => {
     await waitFor(() => expect(billService.deleteBill).toHaveBeenCalledWith(1));
     expect(screen.queryByTestId('bill-item-name-1')).not.toBeInTheDocument();
     expect(screen.getByTestId('new-bill-form')).toBeInTheDocument();
+  });
+
+  it('shows Criando… and blocks the form while the bill is being created #unit', async () => {
+    const billService = createBillServiceFake();
+    let release: (bill: Bill) => void = () => {};
+    (billService.createBill as jest.Mock).mockImplementationOnce(
+      () =>
+        new Promise<Bill>((resolve) => {
+          release = resolve;
+        }),
+    );
+    renderMain(billService);
+    await openQuickCapture();
+
+    fireEvent.change(screen.getByTestId('new-bill-form-name-input'), { target: { value: 'Show da Pizza' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Criar' }));
+
+    const submit = await screen.findByRole('button', { name: 'Criando…' });
+    expect(submit).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toBeDisabled();
+
+    release(createBill());
+    expect(await screen.findByTestId('bill-item-name-1')).toBeInTheDocument();
   });
 });

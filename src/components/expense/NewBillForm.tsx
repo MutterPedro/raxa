@@ -20,7 +20,8 @@ export interface NewBillFormValues {
 }
 
 export interface NewBillFormProps {
-  handleSubmitBill: (values: NewBillFormValues) => void;
+  /** May return a promise — the form stays pending (button disabled, "Criando…") until it settles. */
+  handleSubmitBill: (values: NewBillFormValues) => void | Promise<void>;
   handleCancel: () => void;
 }
 
@@ -30,6 +31,7 @@ export default function NewBillForm({ handleSubmitBill, handleCancel }: NewBillF
   const [participants, setParticipants] = useState<SelectOption[]>([]);
   const [options, setOptions] = useState<SelectOption[]>([]);
   const [payer, setPayer] = useState<SelectOption | null>();
+  const [pending, setPending] = useState(false);
   const placeholderSeq = useRef(0);
 
   useEffect(() => {
@@ -51,23 +53,31 @@ export default function NewBillForm({ handleSubmitBill, handleCancel }: NewBillF
 
   async function handleFormSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (pending) return;
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
     const name = (formData.get('name') as string) || '';
     const date = (formData.get('date') as string) || '';
     const amountNumber = parseAmount(amount) || 0;
 
-    // Typed-in names become real users here; the payer resolves through the same map
-    // so a payer that is still a placeholder lands on the very same new user.
-    const participantIds: number[] = [];
-    let payerId: number | undefined;
-    if (amountNumber > 0) {
-      const { ids, placeholderIds } = await resolveUserIds(participants, userService);
-      participantIds.push(...ids);
-      if (payer) payerId = toUserId(payer, placeholderIds);
-    }
+    setPending(true);
+    try {
+      // Typed-in names become real users here; the payer resolves through the same map
+      // so a payer that is still a placeholder lands on the very same new user.
+      const participantIds: number[] = [];
+      let payerId: number | undefined;
+      if (amountNumber > 0) {
+        const { ids, placeholderIds } = await resolveUserIds(participants, userService);
+        participantIds.push(...ids);
+        if (payer) payerId = toUserId(payer, placeholderIds);
+      }
 
-    handleSubmitBill({ name, date, amount: amountNumber, participantIds, payerId });
+      await handleSubmitBill({ name, date, amount: amountNumber, participantIds, payerId });
+    } finally {
+      // On success the parent closes the form (this unmounts, making the reset a no-op);
+      // on failure it stays open for a retry, so the button must free up again.
+      setPending(false);
+    }
   }
 
   function createParticipant(inputValue: string) {
@@ -125,10 +135,10 @@ export default function NewBillForm({ handleSubmitBill, handleCancel }: NewBillF
               />
             </div>
           )}
-          <Button type="submit" size="lg" className="w-full">
-            Criar
+          <Button type="submit" size="lg" className="w-full" disabled={pending}>
+            {pending ? 'Criando…' : 'Criar'}
           </Button>
-          <Button type="button" variant="ghost" onClick={handleCancel} className="w-full">
+          <Button type="button" variant="ghost" onClick={handleCancel} className="w-full" disabled={pending}>
             Cancelar
           </Button>
         </div>

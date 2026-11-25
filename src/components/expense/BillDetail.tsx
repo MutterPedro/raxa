@@ -43,6 +43,8 @@ export default function BillDetail() {
   const [loadingMoreExpenses, setLoadingMoreExpenses] = useState<boolean>(false);
   const [search, setSearch] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
+  // True while the inline bill edit waits on the service (button shows "Salvando…").
+  const [savingBill, setSavingBill] = useState<boolean>(false);
   // Stays true after the first successful write on this visit — on-device reassurance.
   const [saved, setSaved] = useState<boolean>(false);
   // Bumped whenever the division must be refetched (expense added or undone).
@@ -193,10 +195,12 @@ export default function BillDetail() {
 
   async function handleBillUpdate(e: React.FormEvent) {
     e.preventDefault();
+    if (savingBill) return;
     const formData = new FormData(e.target as HTMLFormElement);
     const name = (formData.get('name') as string).trim();
     const date = formData.get('date') as string;
 
+    setSavingBill(true);
     try {
       const updated = await billService.updateBill(bill?.id ?? Number(billId), {
         ...(name ? { name } : {}),
@@ -210,6 +214,8 @@ export default function BillDetail() {
     } catch (error) {
       console.error(error);
       notify('Não foi possível salvar a conta');
+    } finally {
+      setSavingBill(false);
     }
   }
 
@@ -261,10 +267,22 @@ export default function BillDetail() {
                 data-testid="edit-bill-form-date-input"
               />
               <div className="flex gap-2">
-                <Button type="submit" size="lg" className="flex-1" data-testid="edit-bill-form-submit">
-                  Salvar
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="flex-1"
+                  data-testid="edit-bill-form-submit"
+                  disabled={savingBill}
+                >
+                  {savingBill ? 'Salvando…' : 'Salvar'}
                 </Button>
-                <Button type="button" variant="ghost" size="lg" onClick={() => setEditingBill(false)}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="lg"
+                  onClick={() => setEditingBill(false)}
+                  disabled={savingBill}
+                >
                   Cancelar
                 </Button>
               </div>

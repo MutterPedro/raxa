@@ -29,6 +29,7 @@ export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }:
   const [options, setOptions] = useState<SelectOption[]>([]);
   const [payer, setPayer] = useState<SelectOption | null>();
   const [showOptions, setShowOptions] = useState(true);
+  const [pending, setPending] = useState(false);
   const placeholderSeq = useRef(0);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -52,7 +53,8 @@ export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }:
   async function handleFormSubmit(e: React.FormEvent) {
     e.preventDefault();
     const amountNumber = parseAmount(amount);
-    if (!(amountNumber > 0)) return;
+    if (pending || !(amountNumber > 0)) return;
+    setPending(true);
 
     try {
       if (!showOptions) {
@@ -86,6 +88,8 @@ export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }:
       notify('Não foi possível adicionar a despesa', {
         action: { label: 'Tentar novamente', onClick: () => formRef.current?.requestSubmit() },
       });
+    } finally {
+      setPending(false);
     }
   }
 
@@ -143,10 +147,10 @@ export default function NewExpenseForm({ bill, handleCancel, onExpenseCreated }:
               <SelectField label="Quem pagou" inputId="payer" options={options} value={payer} onChange={setPayer} />
             </div>
           )}
-          <Button type="submit" size="lg" className="w-full" disabled={!(parseAmount(amount) > 0)}>
-            Adicionar
+          <Button type="submit" size="lg" className="w-full" disabled={pending || !(parseAmount(amount) > 0)}>
+            {pending ? 'Adicionando…' : 'Adicionar'}
           </Button>
-          <Button type="button" variant="ghost" onClick={handleCancel} className="w-full">
+          <Button type="button" variant="ghost" onClick={handleCancel} className="w-full" disabled={pending}>
             Cancelar
           </Button>
         </div>

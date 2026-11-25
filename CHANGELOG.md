@@ -9,6 +9,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Route transitions and pending forms** — opening a bill (or coming back) fades the new
+  screen in via the shared `fade-in` token, so route swaps read as navigation; a
+  transform-based slide was deliberately avoided because it would re-anchor the fixed FAB.
+  Every form now shows its work while saving: the submit button disables and swaps to
+  `Criando…` / `Adicionando…` / `Salvando…` (same idiom as the login form), cancel locks
+  with it, and a double-submit is ignored.
 - **Infinite expense feed** — the bill detail screen no longer loads every expense at once:
   the list appends the next page as its end scrolls into view, exactly like the home bills
   feed (the sentinel logic now lives in a shared `useSentinel` hook; `getExpensesPage` and

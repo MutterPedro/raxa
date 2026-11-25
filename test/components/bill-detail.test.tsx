@@ -7,6 +7,8 @@ import type { UserService } from '../../src/core/services/UserService';
 import { ServicesContext } from '../../src/components/state/ServicesContext';
 import { ToastProvider } from '../../src/components/common/Toast';
 import BillDetail from '../../src/components/expense/BillDetail';
+import type Bill from '../../src/core/entities/Bill';
+import type Expense from '../../src/core/entities/Expense';
 import { createBillServiceFake } from '../core/fakes/BillService.fake';
 import { createUserServiceFake } from '../core/fakes/UserService.fake';
 import { createBill, createExpense, createUser } from '../factories/entities';
@@ -223,6 +225,31 @@ describe('BillDetail', () => {
     consoleError.mockRestore();
   });
 
+  it('shows Adicionando… and blocks the form while the quick add runs #unit', async () => {
+    const billService = createBillServiceFake({ bill: createBill(), expenses: [], total: 0 });
+    let release: (expense: Expense) => void = () => {};
+    (billService.quickAddExpense as jest.Mock).mockImplementationOnce(
+      () =>
+        new Promise<Expense>((resolve) => {
+          release = resolve;
+        }),
+    );
+    renderDetail(billService);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Nova despesa' }));
+    fireEvent.change(await screen.findByTestId('new-expense-form-amount-input'), { target: { value: '30' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Adicionar' }));
+
+    // Submit and cancel stay locked while the write is in flight, and the pending
+    // label tells the user so.
+    const submit = await screen.findByRole('button', { name: 'Adicionando…' });
+    expect(submit).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toBeDisabled();
+
+    release(createExpense({ id: 2, name: 'Pizza extra', amount: 30 }));
+    expect(await screen.findByText('Pizza extra')).toBeInTheDocument();
+  });
+
   it('offers Desfazer after a quick add, and undoing removes the expense and refreshes the bill #unit', async () => {
     const created = createExpense({ id: 2, name: 'Pizza extra', amount: 30 });
     const billService = createBillServiceFake({
@@ -416,6 +443,32 @@ describe('BillDetail', () => {
       consoleError.mockRestore();
     });
 
+    it('shows Salvando… while the expense update runs #unit', async () => {
+      const me = createUser(1337, 'Eu');
+      const expense = createExpense({ id: 2 });
+      const billService = createBillServiceFake({ bill: createBill(), expenses: [expense] });
+      let release: (updated: Expense) => void = () => {};
+      (billService.updateExpense as jest.Mock).mockImplementationOnce(
+        () =>
+          new Promise<Expense>((resolve) => {
+            release = resolve;
+          }),
+      );
+      renderDetail(billService, createUserServiceFake({ users: [me], usersById: { 1337: me } }));
+
+      fireEvent.click(await screen.findByTestId('edit-expense-2-button'));
+      await screen.findByTestId('edit-expense-form');
+      fireEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+
+      const submit = await screen.findByTestId('edit-expense-form-submit');
+      await waitFor(() => expect(submit).toBeDisabled());
+      expect(submit).toHaveTextContent('Salvando…');
+
+      release(createExpense({ id: 2, amount: 70 }));
+      expect(await screen.findByText('R$ 70,00')).toBeInTheDocument();
+      expect(screen.queryByTestId('edit-expense-form')).not.toBeInTheDocument();
+    });
+
     it('keeps a payer who was removed from the participants, settling up from outside the split #unit', async () => {
       const me = createUser(1337, 'Eu');
       const ana = createUser(7, 'Ana');
@@ -455,6 +508,30 @@ describe('BillDetail', () => {
       expect(await screen.findByText('Conta atualizada')).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: 'Pizza Night' })).toBeInTheDocument();
       expect(screen.queryByTestId('edit-bill-form')).not.toBeInTheDocument();
+    });
+
+    it('shows Salvando… while the bill update runs #unit', async () => {
+      const billService = createBillServiceFake({ bill: createBill() });
+      let release: (updated: Bill) => void = () => {};
+      (billService.updateBill as jest.Mock).mockImplementationOnce(
+        () =>
+          new Promise<Bill>((resolve) => {
+            release = resolve;
+          }),
+      );
+      renderDetail(billService);
+
+      fireEvent.click(await screen.findByTestId('edit-bill-button'));
+      fireEvent.change(await screen.findByTestId('edit-bill-form-name-input'), { target: { value: 'Pizza Night' } });
+      fireEvent.click(screen.getByTestId('edit-bill-form-submit'));
+
+      const submit = await screen.findByTestId('edit-bill-form-submit');
+      await waitFor(() => expect(submit).toBeDisabled());
+      expect(submit).toHaveTextContent('Salvando…');
+      expect(screen.getByRole('button', { name: 'Cancelar' })).toBeDisabled();
+
+      release(createBill({ name: 'Pizza Night' }));
+      expect(await screen.findByRole('heading', { name: 'Pizza Night' })).toBeInTheDocument();
     });
   });
 });

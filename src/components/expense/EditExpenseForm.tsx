@@ -27,6 +27,7 @@ export default function EditExpenseForm({ expense, handleCancel, onExpenseSaved 
   const [participants, setParticipants] = useState<SelectOption[]>([]);
   const [options, setOptions] = useState<SelectOption[]>([]);
   const [payer, setPayer] = useState<SelectOption | null>();
+  const [pending, setPending] = useState(false);
   const placeholderSeq = useRef(0);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -51,7 +52,8 @@ export default function EditExpenseForm({ expense, handleCancel, onExpenseSaved 
   async function handleFormSubmit(e: React.FormEvent) {
     e.preventDefault();
     const amountNumber = parseAmount(amount);
-    if (!(amountNumber > 0) || participants.length === 0) return;
+    if (pending || !(amountNumber > 0) || participants.length === 0) return;
+    setPending(true);
 
     try {
       // Typed-in names become real users here; the payer resolves through the same map
@@ -80,6 +82,8 @@ export default function EditExpenseForm({ expense, handleCancel, onExpenseSaved 
       notify('Não foi possível salvar a despesa', {
         action: { label: 'Tentar novamente', onClick: () => formRef.current?.requestSubmit() },
       });
+    } finally {
+      setPending(false);
     }
   }
 
@@ -121,12 +125,12 @@ export default function EditExpenseForm({ expense, handleCancel, onExpenseSaved 
             type="submit"
             size="lg"
             className="w-full"
-            disabled={!(parseAmount(amount) > 0) || participants.length === 0}
+            disabled={pending || !(parseAmount(amount) > 0) || participants.length === 0}
             data-testid="edit-expense-form-submit"
           >
-            Salvar
+            {pending ? 'Salvando…' : 'Salvar'}
           </Button>
-          <Button type="button" variant="ghost" onClick={handleCancel} className="w-full">
+          <Button type="button" variant="ghost" onClick={handleCancel} className="w-full" disabled={pending}>
             Cancelar
           </Button>
         </div>
