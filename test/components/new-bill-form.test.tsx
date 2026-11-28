@@ -10,6 +10,7 @@ import type Bill from '../../src/core/entities/Bill';
 import { createBillServiceFake } from '../core/fakes/BillService.fake';
 import { createUserServiceFake } from '../core/fakes/UserService.fake';
 import { createBill } from '../factories/entities';
+import { holdNextCall } from '../helpers/pending-call';
 
 // BillItem navigates (same house pattern as the other component suites).
 jest.mock('react-router', () => ({
@@ -124,13 +125,7 @@ describe('New bill quick-capture', () => {
 
   it('shows Criando… and blocks the form while the bill is being created #unit', async () => {
     const billService = createBillServiceFake();
-    let release: (bill: Bill) => void = () => {};
-    (billService.createBill as jest.Mock).mockImplementationOnce(
-      () =>
-        new Promise<Bill>((resolve) => {
-          release = resolve;
-        }),
-    );
+    const release = holdNextCall<Bill>(billService.createBill as jest.Mock);
     renderMain(billService);
     await openQuickCapture();
 

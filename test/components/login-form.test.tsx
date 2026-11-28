@@ -7,6 +7,7 @@ import { ServicesContext } from '../../src/components/state/ServicesContext';
 import LoginForm from '../../src/components/login/LoginForm';
 import { createBillServiceFake } from '../core/fakes/BillService.fake';
 import { createUserServiceFake } from '../core/fakes/UserService.fake';
+import { holdNextCall } from '../helpers/pending-call';
 
 // The form is wired, so every render needs the services context; routing is mocked
 // (real navigation lives in the acceptance suite).
@@ -181,14 +182,8 @@ describe('LoginForm', () => {
   });
 
   it('keeps typed input under control while pending and disables the buttons #unit', async () => {
-    let release: () => void = () => {};
     const userService = createUserServiceFake();
-    (userService.login as jest.Mock).mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          release = () => resolve({ id: 1 });
-        }),
-    );
+    const release = holdNextCall(userService.login as jest.Mock);
     renderLogin(userService);
 
     fill('Email', 'ana@exemplo.com');

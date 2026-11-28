@@ -12,6 +12,7 @@ import type Expense from '../../src/core/entities/Expense';
 import { createBillServiceFake } from '../core/fakes/BillService.fake';
 import { createUserServiceFake } from '../core/fakes/UserService.fake';
 import { createBill, createExpense, createUser } from '../factories/entities';
+import { holdNextCall } from '../helpers/pending-call';
 
 // Mock react-router (same pattern as bills-list.test.tsx), with one navigate spy per
 // test file: the delete flow assertions check where the component navigates.
@@ -227,13 +228,7 @@ describe('BillDetail', () => {
 
   it('shows Adicionando… and blocks the form while the quick add runs #unit', async () => {
     const billService = createBillServiceFake({ bill: createBill(), expenses: [], total: 0 });
-    let release: (expense: Expense) => void = () => {};
-    (billService.quickAddExpense as jest.Mock).mockImplementationOnce(
-      () =>
-        new Promise<Expense>((resolve) => {
-          release = resolve;
-        }),
-    );
+    const release = holdNextCall<Expense>(billService.quickAddExpense as jest.Mock);
     renderDetail(billService);
 
     fireEvent.click(await screen.findByRole('button', { name: 'Nova despesa' }));
@@ -447,13 +442,7 @@ describe('BillDetail', () => {
       const me = createUser(1337, 'Eu');
       const expense = createExpense({ id: 2 });
       const billService = createBillServiceFake({ bill: createBill(), expenses: [expense] });
-      let release: (updated: Expense) => void = () => {};
-      (billService.updateExpense as jest.Mock).mockImplementationOnce(
-        () =>
-          new Promise<Expense>((resolve) => {
-            release = resolve;
-          }),
-      );
+      const release = holdNextCall<Expense>(billService.updateExpense as jest.Mock);
       renderDetail(billService, createUserServiceFake({ users: [me], usersById: { 1337: me } }));
 
       fireEvent.click(await screen.findByTestId('edit-expense-2-button'));
@@ -512,13 +501,7 @@ describe('BillDetail', () => {
 
     it('shows Salvando… while the bill update runs #unit', async () => {
       const billService = createBillServiceFake({ bill: createBill() });
-      let release: (updated: Bill) => void = () => {};
-      (billService.updateBill as jest.Mock).mockImplementationOnce(
-        () =>
-          new Promise<Bill>((resolve) => {
-            release = resolve;
-          }),
-      );
+      const release = holdNextCall<Bill>(billService.updateBill as jest.Mock);
       renderDetail(billService);
 
       fireEvent.click(await screen.findByTestId('edit-bill-button'));
